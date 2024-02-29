@@ -20,6 +20,7 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.List;
 import org.glassfish.jersey.client.ClientConfig;
 
 import commons.Quote;
+import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
@@ -49,7 +51,7 @@ public class ServerUtils {
 		return ClientBuilder.newClient(new ClientConfig()) //
 				.target(SERVER).path("api/quotes") //
 				.request(APPLICATION_JSON) //
-                .get(new GenericType<List<Quote>>() {});
+				.get(new GenericType<List<Quote>>() {});
 	}
 
 	public Quote addQuote(Quote quote) {
@@ -57,5 +59,19 @@ public class ServerUtils {
 				.target(SERVER).path("api/quotes") //
 				.request(APPLICATION_JSON) //
 				.post(Entity.entity(quote, APPLICATION_JSON), Quote.class);
+	}
+
+	public boolean isServerAvailable() {
+		try {
+			ClientBuilder.newClient(new ClientConfig()) //
+					.target(SERVER) //
+					.request(APPLICATION_JSON) //
+					.get();
+		} catch (ProcessingException e) {
+			if (e.getCause() instanceof ConnectException) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
