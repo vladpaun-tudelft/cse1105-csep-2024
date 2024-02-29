@@ -49,7 +49,6 @@ public class ServerUtils {
 		return ClientBuilder.newClient(new ClientConfig()) //
 				.target(SERVER).path("api/quotes") //
 				.request(APPLICATION_JSON) //
-				.accept(APPLICATION_JSON) //
                 .get(new GenericType<List<Quote>>() {});
 	}
 
@@ -57,7 +56,6 @@ public class ServerUtils {
 		return ClientBuilder.newClient(new ClientConfig()) //
 				.target(SERVER).path("api/quotes") //
 				.request(APPLICATION_JSON) //
-				.accept(APPLICATION_JSON) //
 				.post(Entity.entity(quote, APPLICATION_JSON), Quote.class);
 	}
 }
