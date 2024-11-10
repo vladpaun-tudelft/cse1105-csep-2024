@@ -2,4 +2,4 @@ image: maven:3.9.9-amazoncorretto-23
 
 build:
   script:
-    - mvn clean package
+    - mvn -B -ntp clean verify
