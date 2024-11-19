@@ -21,12 +21,12 @@ Agenda Items:
     - Brief introductions: names, backgrounds, and one fun fact.
     - Team roles and expectations for the project.
 
-2. **Project Overview & Understanding the Scope** (10 min)
+2. **Project Overview & Understanding the Scope** (5 min)
     - High-level explanation of the project: key features and overall goal.
     - Discuss the technology stack: Spring Boot, JavaFX, Jackson, Dependency Injection.
     - Clarify how these technologies work and are integrated.
 
-3. **Code of Conduct Discussion** (15 min)
+3. **Code of Conduct Discussion** (10 min)
     - Discuss and set the ambition level.
     - Cover all other Code of Conduct topics:
         - Planning and meeting expectations.
@@ -38,7 +38,7 @@ Agenda Items:
         - Handling broken agreements and problem resolution.
     - Assign action points to finalize a draft version of the Code of Conduct.
 
-4. **Assignment Overview and Expectations** (10 min)
+4. **Assignment Overview and Expectations** (5 min)
     - **Feedback Assignment**:
         - Discuss the feedback assignment.
         - Review the AID model (Action, Impact, Desire) for giving feedback.
@@ -48,7 +48,7 @@ Agenda Items:
         - Outline the process for submitting and reviewing merge requests.
         - Establish guidelines for conducting meaningful code reviews.
 
-5. **Initial Development Planning** (15 min)
+5. **Initial Development Planning** (10 min)
     - **Project Setup**:
         - Confirm that all team members have the development environment configured.
         - Ensure access to the version control system and shared repositories.
@@ -67,8 +67,8 @@ Agenda Items:
         - Prepare a demo of the basic functionalities for the next meeting.
         - Gather feedback and plan for iterative improvements.
 
-- Summarize action points: Who, what, when? (3 min)
-- Feedback round: What went well and what can be improved next time? (3 min)
+- Summarize action points: Who, what, when? (2 min)
+- Feedback round: What went well and what can be improved next time? (2 min)
 - Planned meeting duration != actual duration? Where/why did you mis-estimate? (2 min)
-- Question round: Does anyone have anything to add before the meeting closes? (2 min)
+- Question round: Does anyone have anything to add before the meeting closes? (1 min)
 - Closure (1 min)
