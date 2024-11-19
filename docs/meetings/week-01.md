@@ -39,14 +39,15 @@ Agenda Items:
     - Assign action points to finalize a draft version of the Code of Conduct.
 
 4. **Assignment Overview and Expectations** (5 min)
-    - **Feedback Assignment**:
-        - Discuss the feedback assignment.
-        - Review the AID model (Action, Impact, Desire) for giving feedback.
-        - Set expectations for participation in peer evaluations via Buddycheck.
-    - **Code Contribution & Code Reviews**:
-        - Emphasize the significance of regular code contributions.
-        - Outline the process for submitting and reviewing merge requests.
-        - Establish guidelines for conducting meaningful code reviews.
+   - **Code Contribution & Code Reviews**:
+      - Emphasize the significance of regular code contributions.
+      - Outline the process for submitting and reviewing merge requests.
+      - Establish guidelines for conducting meaningful code reviews.
+   - **Tasks and Planning**:
+       - Discuss the SCRUM process model and how to implement it.
+       - Discuss the use of GitLab Issues.
+       - Split the full backlog into manageable Issues.
+    
 
 5. **Initial Development Planning** (10 min)
     - **Project Setup**:
@@ -68,7 +69,7 @@ Agenda Items:
         - Gather feedback and plan for iterative improvements.
 
 - Summarize action points: Who, what, when? (2 min)
-- Feedback round: What went well and what can be improved next time? (2 min)
-- Planned meeting duration != actual duration? Where/why did you mis-estimate? (2 min)
+- Feedback round: What went well and what can be improved next time? (1 min)
+- Planned meeting duration != actual duration? Where/why did you mis-estimate? (1 min)
 - Question round: Does anyone have anything to add before the meeting closes? (1 min)
 - Closure (1 min)
