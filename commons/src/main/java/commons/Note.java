@@ -1,9 +1,8 @@
 package commons;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -15,8 +14,16 @@ public class Note {
     @GeneratedValue(strategy= GenerationType.AUTO)
     public long id;
 
-    public String title;
+
+    @Column(unique = true, nullable = false)
+    private String title;
+
+    @Lob
     public String body;
+
+    @ManyToOne
+    @JoinColumn(name = "collectionId", nullable = false)
+    public commons.Collection collection;
 
     @SuppressWarnings("unused")
     private Note() {
