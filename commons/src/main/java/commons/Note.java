@@ -7,6 +7,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
+
 @Entity
 public class Note {
 
@@ -16,13 +18,13 @@ public class Note {
 
 
     @Column(unique = true, nullable = false)
-    private String title;
+    public String title;
 
     @Lob
     public String body;
 
     @ManyToOne
-    @JoinColumn(name = "collectionId", nullable = false)
+    @JoinColumn(name = "collection_id", nullable = false)
     public commons.Collection collection;
 
     @SuppressWarnings("unused")
@@ -47,6 +49,6 @@ public class Note {
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this);
+        return ToStringBuilder.reflectionToString(this, MULTI_LINE_STYLE);
     }
 }

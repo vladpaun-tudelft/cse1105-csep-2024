@@ -19,8 +19,12 @@ public class Collection {
     @Column(unique = true, nullable = false)
     public String title;
 
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    public Set<Note> noteList;
+    // Refined the annotation here.
+    //  mapped by specifies the field in the child entity (Note) that maps the relationship.
+    // we can just use cascadeType.ALL for all the cascading types.
+    // with orphanRemoval, if a Note is removed from a collection, it is deleted from the database.
+    @OneToMany(mappedBy = "collection",cascade = CascadeType.ALL, orphanRemoval = true)
+    public Set<Note> notes;
 
     @SuppressWarnings("unused")
     private Collection() {
@@ -28,7 +32,7 @@ public class Collection {
 
     public Collection(String title) {
         this.title = title;
-        this.noteList = new HashSet<>();
+        this.notes = new HashSet<>();
     }
 
     @Override
