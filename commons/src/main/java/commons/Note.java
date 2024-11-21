@@ -32,9 +32,10 @@ public class Note {
         // for object mapper
     }
 
-    public Note(String title, String body) {
+    public Note(String title, String body, Collection collection) {
         this.title = title;
         this.body = body;
+        this.collection = collection;
     }
 
     @Override
