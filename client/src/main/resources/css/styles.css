@@ -1,0 +1,44 @@
+* {
+    -main-foreground: #2B2D30;
+    -main-background: #1E1F22;
+    -fx-text-fill: white;       /* Main text color*/
+}
+
+.content-view {
+    -fx-border-color: -main-background; /* Ensure borders are invisible */
+    -fx-background-insets: 0; /* Adjust insets to prevent spacing */
+    -fx-padding: 0; /* Optional: Reset padding if borders added space */
+}
+
+.table-view {
+    -fx-background-color: -main-foreground;
+}
+
+.table-row-cell {
+    -fx-background-color: -main-foreground;
+}
+
+.table-cell {
+    -fx-background-color: -main-foreground;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: -main-foreground;
+}
+
+.background-element {
+    -fx-background-color: -main-background;
+    -fx-border-color: -main-background;
+    -fx-text-fill: white;
+
+}
+.foreground-element {
+    -fx-background-color: -main-foreground;
+    -fx-border-color: -main-foreground;
+    -fx-text-fill: white;
+}
+
+.split-pane .split-pane-divider {
+    -fx-padding: 1; /* Width/Height of the divider */
+    -fx-background-color: -main-foreground;
+}
