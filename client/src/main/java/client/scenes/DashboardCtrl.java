@@ -4,9 +4,6 @@ import com.google.inject.Inject;
 
 import client.utils.ServerUtils;
 import commons.Note;
-import commons.Person;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -24,7 +21,7 @@ public class DashboardCtrl implements Initializable {
 
     @FXML
     private TreeView treeView;
-    
+
     @Inject
     public DashboardCtrl(ServerUtils server, MainCtrl mainCtrl) {
         this.mainCtrl = mainCtrl;
