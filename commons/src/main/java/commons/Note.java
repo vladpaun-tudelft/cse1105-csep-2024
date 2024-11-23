@@ -17,7 +17,7 @@ public class Note {
     public long id;
 
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     public String title;
 
     @Lob
