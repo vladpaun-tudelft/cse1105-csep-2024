@@ -3,18 +3,8 @@ package client.scenes;
 import com.google.inject.Inject;
 
 import client.utils.ServerUtils;
-import commons.Note;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.Cursor;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import org.w3c.dom.Text;
-
-import java.net.URL;
-import java.util.ResourceBundle;
 
 public class AddNoteCtrl {
 
