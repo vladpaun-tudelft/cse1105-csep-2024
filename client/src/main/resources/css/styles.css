@@ -10,20 +10,25 @@
     -fx-padding: 0; /* Optional: Reset padding if borders added space */
 }
 
-.table-view {
+.options-bar {
+    -fx-background-color: -main-foreground;
+
+}
+
+.tree-view {
     -fx-background-color: -main-foreground;
 }
 
-.table-row-cell {
-    -fx-background-color: -main-foreground;
+.tree-view .tree-cell {
+    -fx-background-color: -main-foreground; /* Default to transparent */
 }
 
-.table-cell {
+.button {
     -fx-background-color: -main-foreground;
+    -fx-transition:1s;
 }
-
-.table-view .column-header, .table-view .filler {
-    -fx-background-color: -main-foreground;
+.button:hover {
+    -fx-background-color: #3D3F42; /* New background color on hover */
 }
 
 .background-element {
