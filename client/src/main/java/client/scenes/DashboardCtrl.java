@@ -4,15 +4,19 @@ import com.google.inject.Inject;
 
 import client.utils.ServerUtils;
 import commons.Note;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Cursor;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
- * Controlls all logic for the main dashboard.
+ * Controls all logic for the main dashboard.
  */
 public class DashboardCtrl implements Initializable {
 
@@ -20,7 +24,13 @@ public class DashboardCtrl implements Initializable {
     private final MainCtrl mainCtrl;
 
     @FXML
-    private TreeView treeView;
+    private VBox notes;
+    @FXML
+    private TextArea noteBody;
+    @FXML
+    private Label noteTitle;
+    @FXML
+    private Button addNoteButton;
 
     @Inject
     public DashboardCtrl(ServerUtils server, MainCtrl mainCtrl) {
@@ -30,16 +40,29 @@ public class DashboardCtrl implements Initializable {
 
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
-        TreeItem<Note> rootItem = new TreeItem<>(new Note("John", "e", null));
-        treeView.setRoot(rootItem);
-
-        // TODO: Display note title as TreeView element -> Note class change required (communicate with backend?)
+        var noteList = server.getNotes();
+        for (var note : noteList) {
+            notes.getChildren().add(createNoteButton(note));
+        }
     }
-    /**
-     * Creates a note and immediately selects it
-     */
-    public void onAddButtonClicked() {
-        treeView.getRoot().getChildren().add(new TreeItem<>(new Note("John", "e", null)));
+
+    public void addNote() {
+        mainCtrl.showAddNote();
+    }
+
+    private Button createNoteButton(Note note) {
+        Button b = new Button(note.title);
+        b.setPrefWidth(notes.getPrefWidth());
+        b.setStyle("-fx-background-color: transparent");
+        b.setCursor(Cursor.HAND);
+        b.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                noteTitle.setText(note.title);
+                noteBody.setText(note.body);
+            }
+        });
+        return b;
     }
 
 }

@@ -1,6 +1,7 @@
 package server.service;
 
 import commons.Note;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import server.database.NoteRepository;
 
