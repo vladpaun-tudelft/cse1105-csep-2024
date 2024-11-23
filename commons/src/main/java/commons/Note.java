@@ -17,7 +17,7 @@ public class Note {
     public long id;
 
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     public String title;
 
     @Lob
@@ -36,6 +36,10 @@ public class Note {
         this.title = title;
         this.body = body;
         this.collection = collection;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     @Override
