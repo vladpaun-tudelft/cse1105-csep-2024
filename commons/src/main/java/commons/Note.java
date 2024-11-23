@@ -38,10 +38,6 @@ public class Note {
         this.collection = collection;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
     @Override
     public boolean equals(Object obj) {
         return EqualsBuilder.reflectionEquals(this, obj);

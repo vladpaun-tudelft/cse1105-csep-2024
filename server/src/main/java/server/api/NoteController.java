@@ -27,7 +27,7 @@ public class NoteController {
     public ResponseEntity<Note> updateNote(@PathVariable long id, @RequestBody Note note) {
         Optional<Note> existingNote = noteService.findById(id);
         if (existingNote.isPresent()) {
-            note.setId(id); // Ensure the note's ID is set
+            note.id = id; // Ensure the note's ID is set
             Note updatedNote = noteService.save(note);
             return ResponseEntity.ok(updatedNote);
         }
