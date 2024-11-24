@@ -49,6 +49,7 @@ public class MainCtrl {
 
         this.dashboardCtrl = dashboard.getKey();
         this.dashboard = new Scene(dashboard.getValue());
+        this.dashboard.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
 
         this.addNote = new Scene(addNote.getValue());
 

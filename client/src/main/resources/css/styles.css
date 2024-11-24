@@ -1,41 +1,65 @@
 * {
     -main-foreground: #2B2D30;
     -main-background: #1E1F22;
-    -fx-text-fill: white;       /* Main text color*/
+    -main-selected: #3D3F42;
+    -fx-text-fill: white;
 }
 
+.separator:horizontal .line {
+    -fx-background-color: -main-background;
+    -fx-border-width: 0;
+    -fx-pref-height: 1px;
+}
+
+/* LIST VIEW */
+.list-view .text-field {
+    -fx-background-color: -main-background;
+    -fx-border-width: 0;
+}
+.list-view .list-cell:selected {
+    -fx-background-color: -main-selected;
+}
+.list-view {
+    -fx-background-color: -main-foreground;
+}
+.list-view .list-cell {
+    -fx-background-color: -main-foreground; /* Default background */
+    -fx-border-radius: 10;
+    -fx-padding: 3px;
+}
+
+/* Content view styles */
 .content-view {
-    -fx-border-color: -main-background; /* Ensure borders are invisible */
-    -fx-background-insets: 0; /* Adjust insets to prevent spacing */
-    -fx-padding: 0; /* Optional: Reset padding if borders added space */
+    -fx-border-color: -main-background;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
 }
 
+/* Options bar style */
 .options-bar {
     -fx-background-color: -main-foreground;
-
 }
 
-.tree-view {
-    -fx-background-color: -main-foreground;
+/* Text-area content background */
+.text-area .content {
+    -fx-background-color: -main-background;
+    -fx-border-color: -main-background;
 }
 
-.tree-view .tree-cell {
-    -fx-background-color: -main-foreground; /* Default to transparent */
-}
-
+/* BUTTON */
 .button {
     -fx-background-color: -main-foreground;
-    -fx-transition:1s;
+    -fx-transition: 1s;
 }
 .button:hover {
-    -fx-background-color: #3D3F42; /* New background color on hover */
+    -fx-background-color: -main-selected;
 }
 
+/* DEFAULT CLASSES */
 .background-element {
     -fx-background-color: -main-background;
     -fx-border-color: -main-background;
     -fx-text-fill: white;
-
 }
 .foreground-element {
     -fx-background-color: -main-foreground;
@@ -44,6 +68,6 @@
 }
 
 .split-pane .split-pane-divider {
-    -fx-padding: 1; /* Width/Height of the divider */
+    -fx-padding: 1;
     -fx-background-color: -main-foreground;
 }
