@@ -33,10 +33,13 @@ public class MainCtrl {
     private DashboardCtrl dashboardCtrl;
     private Scene dashboard;
 
+    private Scene addNote;
+
     public void initialize(Stage primaryStage,
                            Pair<QuoteOverviewCtrl, Parent> overview,
                            Pair<AddQuoteCtrl, Parent> add,
-                           Pair<DashboardCtrl, Parent> dashboard) {
+                           Pair<DashboardCtrl, Parent> dashboard,
+                           Pair<AddNoteCtrl, Parent> addNote) {
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
         this.overview = new Scene(overview.getValue());
@@ -46,6 +49,8 @@ public class MainCtrl {
 
         this.dashboardCtrl = dashboard.getKey();
         this.dashboard = new Scene(dashboard.getValue());
+
+        this.addNote = new Scene(addNote.getValue());
 
         showDashboard();
         primaryStage.show();
@@ -61,6 +66,11 @@ public class MainCtrl {
         primaryStage.setTitle("Quotes: Adding Quote");
         primaryStage.setScene(add);
         add.setOnKeyPressed(e -> addCtrl.keyPressed(e));
+    }
+
+    public void showAddNote() {
+        primaryStage.setTitle("Add note");
+        primaryStage.setScene(addNote);
     }
 
     /**

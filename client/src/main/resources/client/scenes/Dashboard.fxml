@@ -40,13 +40,14 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="900.0" stylesheets="@css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
+<VBox prefHeight="600.0" prefWidth="900.0" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
   <children>
     <MenuBar styleClass="options-bar" VBox.vgrow="NEVER">
       <menus>
@@ -89,24 +90,37 @@
     </MenuBar>
     <SplitPane dividerPositions="0.2506" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="content-view" VBox.vgrow="ALWAYS">
       <items>
-        <AnchorPane styleClass="foreground-element">
-          <children>
-                  <Label layoutX="15.0" layoutY="3.0" prefHeight="25.0" prefWidth="145.0" text="Notes" AnchorPane.topAnchor="3.0">
-                     <font>
-                        <Font name="System Bold" size="12.0" />
-                     </font>
-                  </Label>
-                  <Button layoutX="135.0" layoutY="3.0" mnemonicParsing="false" onAction="#onAddButtonClicked" prefHeight="25.0" prefWidth="25.0" styleClass="add-button" text="+" AnchorPane.rightAnchor="3.5" />
-                  <TreeView fx:id="treeView" editable="true" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
-          </children>
-        </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <ScrollPane layoutY="43.0" prefHeight="529.0" prefWidth="222.0">
+                    <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0">
+                           <children>
+                              <VBox fx:id="notes" prefHeight="529.0" prefWidth="199.0" />
+                           </children>
+                        </AnchorPane>
+                    </content>
+                  </ScrollPane>
+                  <Pane prefHeight="43.0" prefWidth="222.0">
+                     <children>
+                        <Label layoutX="14.0" layoutY="11.0" text="Notes">
+                           <font>
+                              <Font name="System Bold" size="15.0" />
+                           </font>
+                        </Label>
+                        <Button fx:id="addNoteButton" layoutX="182.0" layoutY="9.0" mnemonicParsing="false" onAction="#addNote" text="+" />
+                     </children>
+                  </Pane>
+               </children>
+            </AnchorPane>
             <SplitPane centerShape="false" dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0">
               <items>
               <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="-1.0" prefWidth="-1.0">
                 <content>
                   <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" styleClass="background-element">
                     <children>
-                      <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" style="&#10;" text="Note title" textAlignment="CENTER" wrapText="false">
+                              <TextArea fx:id="noteBody" layoutY="39.0" prefHeight="529.0" prefWidth="332.0" />
+                      <Label fx:id="noteTitle" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" text="Note title" textAlignment="CENTER" wrapText="false">
                                  <font>
                             <Font size="18.0" fx:id="x1" />
                                  </font>
