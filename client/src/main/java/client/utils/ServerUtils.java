@@ -56,13 +56,6 @@ public class ServerUtils {
 				.get(new GenericType<List<Quote>>() {});
 	}
 
-	public List<Note> getNotes() {
-		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("api/notes")
-				.request(APPLICATION_JSON)
-				.get(new GenericType<List<Note>>() {});
-	}
-
 	public Quote addQuote(Quote quote) {
 		return ClientBuilder.newClient(new ClientConfig()) //
 				.target(SERVER).path("api/quotes") //
