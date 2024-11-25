@@ -46,6 +46,16 @@
     -fx-border-color: -main-background;
     -fx-background-insets: 0;
 }
+.text-area .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-pref-width: 5px;
+
+}
+.text-area .scroll-bar .thumb {
+    -fx-background-color : derive(-main-foreground, 70.0%);
+    -fx-background-insets : 0.0, 0.0, 0.0;
+    -fx-background-radius : 0.1em;
+}
 
 /* BUTTON */
 .button {

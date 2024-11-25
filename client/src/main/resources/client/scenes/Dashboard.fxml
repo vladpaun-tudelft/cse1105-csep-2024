@@ -109,7 +109,7 @@
                 <content>
                   <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" styleClass="background-element">
                     <children>
-                              <TextArea fx:id="noteBody" layoutY="39.0" onKeyTyped="#onBodyChanged" prefHeight="529.0" prefWidth="332.0" styleClass="background-element" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0" />
+                              <TextArea fx:id="noteBody" layoutY="39.0" onKeyTyped="#onBodyChanged" prefHeight="529.0" prefWidth="332.0" styleClass="background-element" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0" />
                       <Label fx:id="noteTitle" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" text="Note title" textAlignment="CENTER" wrapText="false">
                                  <font>
                             <Font size="18.0" fx:id="x1" />
