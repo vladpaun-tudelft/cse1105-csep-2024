@@ -33,7 +33,6 @@ public class MainCtrl {
     private DashboardCtrl dashboardCtrl;
     private Scene dashboard;
 
-    private Scene addNote;
 
     public void initialize(Stage primaryStage,
                            Pair<QuoteOverviewCtrl, Parent> overview,
@@ -77,10 +76,6 @@ public class MainCtrl {
         add.setOnKeyPressed(e -> addCtrl.keyPressed(e));
     }
 
-    public void showAddNote() {
-        primaryStage.setTitle("Add note");
-        primaryStage.setScene(addNote);
-    }
 
     /**
      * Shows the dashboard scene and sets the title
