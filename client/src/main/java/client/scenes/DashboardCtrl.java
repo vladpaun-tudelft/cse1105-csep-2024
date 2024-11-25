@@ -12,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
@@ -160,6 +161,15 @@ public class DashboardCtrl implements Initializable {
 
         noteTitle.setText("New Note");
         noteBody.setText("");
+
+        TextFieldListCell t = (TextFieldListCell) collectionView.lookup(".cell");
+        var textField = t.getGraphic();
+        collectionView.fireEvent(new MouseEvent(MouseEvent.MOUSE_CLICKED,
+                textField.getLayoutX(), textField.getLayoutY(), textField.getLayoutX(), textField.getLayoutY(),
+                MouseButton.PRIMARY, 2,
+                true, true, true, true, true, true, true, true, true, true, null
+                ));
+
     }
 
     @FXML
