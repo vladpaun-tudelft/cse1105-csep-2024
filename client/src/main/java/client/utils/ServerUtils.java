@@ -25,6 +25,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import commons.Collection;
+import commons.Note;
 import org.glassfish.jersey.client.ClientConfig;
 
 import commons.Quote;
@@ -60,6 +62,78 @@ public class ServerUtils {
 				.request(APPLICATION_JSON) //
 				.post(Entity.entity(quote, APPLICATION_JSON), Quote.class);
 	}
+
+
+	public Note addNote(Note note) {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/notes")
+				.request(APPLICATION_JSON)
+				.post(Entity.entity(note, APPLICATION_JSON), Note.class);
+	}
+
+	public List<Note> getAllNotes() {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/notes")
+				.request(APPLICATION_JSON)
+				.get(new GenericType<List<Note>>() {});
+	}
+
+	public Note getNoteById(long id) {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/notes/" + id)
+				.request(APPLICATION_JSON)
+				.get(Note.class);
+	}
+
+	public Note updateNote(Note note) {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/notes/" + note.id)
+				.request(APPLICATION_JSON)
+				.put(Entity.entity(note, APPLICATION_JSON), Note.class);
+	}
+
+	public void deleteNote(long id) {
+		ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("api/notes/" + id)
+				.request(APPLICATION_JSON)
+				.delete();
+	}
+
+	public List<Note> getNotesByCollection(Collection collection) {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/collection/" + collection.title)
+				.request(APPLICATION_JSON)
+				.get(new GenericType<List<Note>>() {});
+	}
+
+	public Collection addCollection(Collection collection) {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/collection")
+				.request(APPLICATION_JSON)
+				.post(Entity.entity(collection, APPLICATION_JSON), Collection.class);
+	}
+
+	public List<Collection> getCollections() {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/collection")
+				.request(APPLICATION_JSON)
+				.get(new GenericType<List<Collection>>() {});
+	}
+
+	public Collection updateCollection(Collection collection) {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/collection/" + collection.id)
+				.request(APPLICATION_JSON)
+				.put(Entity.entity(collection, APPLICATION_JSON), Collection.class);
+	}
+
+	public void deleteCollection(long id) {
+		ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/collection/" + id)
+				.request(APPLICATION_JSON)
+				.delete();
+	}
+
 
 	public boolean isServerAvailable() {
 		try {
