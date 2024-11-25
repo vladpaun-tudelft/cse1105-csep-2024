@@ -58,7 +58,16 @@ public class DashboardCtrl implements Initializable {
     private void listViewSetup() {
         collectionNotes = FXCollections.observableArrayList(
                 new Note("Note 1", "This is the body of Note 1.", null),
-                new Note("Note 2", "This is the body of Note 2.", null)
+                new Note("Note 2", "This is the body of Note 2.", null),
+                new Note("Lorem Ipsum", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam massa dolor, viverra eget lectus id, laoreet egestas sem. Cras facilisis sed sem nec posuere. Interdum et malesuada fames ac ante ipsum primis in faucibus. Vivamus eget egestas sem. Donec rhoncus aliquam finibus. Vestibulum sed nisl vitae arcu venenatis malesuada. Nulla a dignissim erat. Duis sodales faucibus luctus.\n" +
+                        "\n" +
+                        "Cras mattis dictum tempus. Sed et maximus mauris. Curabitur placerat urna non placerat convallis. Integer nec rutrum lacus. Nunc imperdiet quam eget ante tincidunt, vitae consequat urna pulvinar. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; In hac habitasse platea dictumst. Proin nec efficitur arcu, sed laoreet odio. Phasellus varius purus et odio lobortis pharetra a et nunc. Etiam ut iaculis velit, sit amet malesuada mi.\n" +
+                        "\n" +
+                        "Vestibulum in lacinia tortor. Vestibulum elementum sed nulla sed volutpat. Curabitur eleifend ornare tincidunt. Ut et leo vel mauris dignissim porta. Donec est eros, ullamcorper sed mi eu, lacinia tempus elit. Curabitur commodo eget metus semper hendrerit. Pellentesque magna orci, volutpat in justo nec, sollicitudin molestie lectus. Nulla finibus rhoncus luctus. Praesent dapibus ultricies purus. Integer varius ipsum a magna imperdiet, eget dictum felis euismod. Curabitur auctor ante sit amet pellentesque consectetur. Aliquam pretium porttitor porta.\n" +
+                        "\n" +
+                        "Pellentesque dignissim ac ligula nec finibus. Donec est nisi, tincidunt vel tellus nec, porta aliquet dui. Praesent id aliquet tortor. Aliquam risus massa, egestas in dolor aliquam, venenatis semper est. Fusce finibus, purus sit amet bibendum mollis, ipsum ipsum eleifend augue, quis egestas nunc felis nec velit. Curabitur imperdiet tellus at dictum eleifend. Vivamus id tristique lectus. Donec magna purus, mollis quis erat quis, iaculis porttitor enim.\n" +
+                        "\n" +
+                        "Donec rutrum ornare efficitur. Aliquam molestie tempus posuere. Curabitur vel lorem accumsan, elementum sem id, viverra velit. Etiam consectetur sapien a ante commodo, ut euismod elit aliquet. Donec sodales posuere dolor vel maximus. Ut et purus maximus, condimentum tortor in, consectetur odio. Aliquam venenatis ligula id consectetur aliquet. Nam iaculis fringilla faucibus. Praesent et neque quis lectus volutpat suscipit non ullamcorper velit.", null)
         );
 
         // Set required settings

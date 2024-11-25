@@ -49,12 +49,23 @@
 .text-area .scroll-bar {
     -fx-background-color: transparent;
     -fx-pref-width: 5px;
-
 }
 .text-area .scroll-bar .thumb {
     -fx-background-color : derive(-main-foreground, 70.0%);
     -fx-background-insets : 0.0, 0.0, 0.0;
     -fx-background-radius : 0.1em;
+}
+.text-area .scroll-bar:pressed {
+    -fx-background-color: derive(-main-foreground, 15.0%);
+}
+.text-area .scroll-bar:hover {
+    -fx-background-color: derive(-main-foreground, 15.0%);
+
+}
+.text-area .scroll-bar .increment-arrow,
+.text-area .scroll-bar .decrement-arrow{
+    -fx-shape : " ";
+    -fx-padding :0.15em 0.0;
 }
 
 /* BUTTON */
