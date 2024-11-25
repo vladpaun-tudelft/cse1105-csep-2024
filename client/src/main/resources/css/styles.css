@@ -34,6 +34,9 @@
     -fx-background-insets: 0;
     -fx-padding: 0;
 }
+.content-blocker {
+    -fx-text-fill: #7e7e7e;
+}
 
 /* Options bar style */
 .options-bar {
@@ -60,7 +63,6 @@
 }
 .text-area .scroll-bar:hover {
     -fx-background-color: derive(-main-foreground, 15.0%);
-
 }
 .text-area .scroll-bar .increment-arrow,
 .text-area .scroll-bar .decrement-arrow{
@@ -81,7 +83,6 @@
 .background-element {
     -fx-background-color: -main-background;
     -fx-border-color: -main-background;
-    -fx-text-fill: white;
 }
 .foreground-element {
     -fx-background-color: -main-foreground;

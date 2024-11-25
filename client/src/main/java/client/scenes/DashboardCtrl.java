@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 
 import client.utils.ServerUtils;
 import commons.Note;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -27,7 +29,7 @@ public class DashboardCtrl implements Initializable {
     private final MainCtrl mainCtrl;
 
     @FXML
-    private VBox notes;
+    private Label contentBlocker;
     @FXML
     private TextArea noteBody;
     @FXML
@@ -114,6 +116,17 @@ public class DashboardCtrl implements Initializable {
                 int selected = collectionView.getSelectionModel().getSelectedIndex();
                 collectionView.getSelectionModel().clearSelection();
                 collectionView.getSelectionModel().select(selected);
+            }
+        });
+
+        // Remove content blocker on select
+        collectionView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Note>() {
+
+            @Override
+            public void changed(ObservableValue<? extends Note> observable, Note oldValue, Note newValue) {
+                if(newValue!=null) {
+                    contentBlocker.setVisible(false);
+                }
             }
         });
 
