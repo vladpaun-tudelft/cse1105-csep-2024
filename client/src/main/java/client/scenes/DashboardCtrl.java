@@ -22,6 +22,7 @@ import javafx.util.StringConverter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -213,12 +214,18 @@ public class DashboardCtrl implements Initializable {
     public void deleteSelectedNote() {
         Note currentNote = (Note) collectionView.getSelectionModel().getSelectedItem();
         if (currentNote != null) {
-            deleteNote(currentNote);
-            noteBody.clear();
-            noteTitle.setText("");
-            deleteButton.setDisable(true);
-            contentBlocker.setVisible(true);
-            System.out.println("Note deleted: " + currentNote.getTitle());
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm deletion");
+            alert.setContentText("Do you really want to delete this note?");
+            Optional<ButtonType> buttonType = alert.showAndWait();
+            if(buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
+                deleteNote(currentNote);
+                noteBody.clear();
+                noteTitle.setText("");
+                deleteButton.setDisable(true);
+                contentBlocker.setVisible(true);
+                System.out.println("Note deleted: " + currentNote.getTitle());
+            }
         }
     }
 
