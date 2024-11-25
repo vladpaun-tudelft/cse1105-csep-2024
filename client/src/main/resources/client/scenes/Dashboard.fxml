@@ -92,14 +92,14 @@
     </MenuBar>
     <SplitPane dividerPositions="0.2506" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="content-view" VBox.vgrow="ALWAYS">
       <items>
-            <AnchorPane layoutY="1.0" prefHeight="200.0" prefWidth="200.0" styleClass="foreground-element">
+            <AnchorPane layoutY="1.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" styleClass="foreground-element">
                <children>
                   <Label layoutX="9.0" layoutY="6.0" text="CurrentCollectionName">
                      <font>
                         <Font name="System Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Pane prefHeight="35.0" prefWidth="35.0" styleClass="foreground-element" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <Pane prefHeight="35.0" prefWidth="40.0" styleClass="foreground-element" AnchorPane.rightAnchor="-5.0" AnchorPane.topAnchor="0.0" />
                   <Button fx:id="addButton" layoutX="188.5" layoutY="6.0" mnemonicParsing="false" onAction="#addNote" prefHeight="25.0" prefWidth="25.0" text="+" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
                   <ListView fx:id="collectionView" onEditCommit="#onEditCommit" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="35.0" />
                </children>

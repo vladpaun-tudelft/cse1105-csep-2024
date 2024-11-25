@@ -43,6 +43,8 @@ public class DashboardCtrl implements Initializable {
 
     private ObservableList<Note> collectionNotes;
 
+    private boolean pendingHideContentBlocker = true;
+
     @Inject
     public DashboardCtrl(ServerUtils server, MainCtrl mainCtrl) {
         this.mainCtrl = mainCtrl;
@@ -104,6 +106,7 @@ public class DashboardCtrl implements Initializable {
                         System.out.println("Cell selected: " + item.getTitle());
                         noteBody.setText((item).getBody());
                         noteTitle.setText((item).getTitle());
+                        handleContentBlocker();
                     }
                 }
             });
@@ -124,12 +127,18 @@ public class DashboardCtrl implements Initializable {
 
             @Override
             public void changed(ObservableValue<? extends Note> observable, Note oldValue, Note newValue) {
-                if(newValue!=null) {
-                    contentBlocker.setVisible(false);
-                }
+                pendingHideContentBlocker = (newValue!=null);
             }
         });
 
+    }
+
+    /**
+     * Handles content blocker when new Note is loaded
+     */
+    private void handleContentBlocker() {
+        pendingHideContentBlocker = !pendingHideContentBlocker;
+        contentBlocker.setVisible(pendingHideContentBlocker);
     }
 
     public void addNote() {
