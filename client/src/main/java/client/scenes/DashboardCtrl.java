@@ -22,12 +22,17 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Controls all logic for the main dashboard.
  */
 @SuppressWarnings("rawtypes")
 public class DashboardCtrl implements Initializable {
+
+    //TODO: This is just a temporary solution, to be changed with something smarter
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
@@ -65,6 +70,9 @@ public class DashboardCtrl implements Initializable {
         collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
 
         listViewSetup();
+
+        // Temporary solution
+        scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
     }
 
     /**
@@ -144,6 +152,7 @@ public class DashboardCtrl implements Initializable {
         collectionNotes.add(newNote);
         // Add the new note to a list of notes pending being sent to the server
         createPendingNotes.add(newNote);
+        System.out.println("Note added to createPendingNotes: " + newNote.getTitle());
 
         collectionView.getSelectionModel().select(collectionNotes.size() - 1);
         collectionView.getFocusModel().focus(collectionNotes.size() - 1);
@@ -175,23 +184,38 @@ public class DashboardCtrl implements Initializable {
             // Add any edited but already existing note to the pending list
             if (!createPendingNotes.contains(currentNote) && !updatePendingNotes.contains(currentNote)) {
                 updatePendingNotes.add(currentNote);
+                System.out.println("Note added to updatePendingNotes: " + currentNote.getTitle());
             }
         }
     }
 
-    public void saveAllPendingNotes() {
-        for (Note note : createPendingNotes) {
-            Note savedNote = server.addNote(note);
-            note.id = savedNote.id;
-        }
-        createPendingNotes.clear();
+    // Temporary solution
+    @FXML
+    public void onClose() {
+        saveAllPendingNotes();
 
-        for (Note note : updatePendingNotes) {
-            server.updateNote(note);
-        }
-        updatePendingNotes.clear();
-        System.out.println("Saved all notes on server");
+        // Ensure the scheduler is shut down when the application closes
+        scheduler.shutdown();
     }
+
+    public void saveAllPendingNotes() {
+            try {
+                for (Note note : createPendingNotes) {
+                    Note savedNote = server.addNote(note);
+                    note.id = savedNote.id;
+                }
+                createPendingNotes.clear();
+
+                for (Note note : updatePendingNotes) {
+                    server.updateNote(note);
+                }
+                updatePendingNotes.clear();
+                System.out.println("Saved all notes on server");
+            } catch (Exception e) {
+                e.printStackTrace(); // Log the exception to debug
+            }
+    }
+
 
     //TODO: Implement a 'delete' button next to a note and pass that respective note to this function
     //TODO: Implement a 'confirm delete' stage/scene or smth
