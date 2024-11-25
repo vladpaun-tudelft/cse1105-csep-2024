@@ -81,7 +81,7 @@ public class MainCtrl {
      * Shows the dashboard scene and sets the title
      */
     public void showDashboard() {
-        primaryStage.setTitle("Notes app");
+        primaryStage.setTitle("NetNote");
         primaryStage.setScene(dashboard);
     }
 }
