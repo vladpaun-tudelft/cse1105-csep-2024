@@ -8,6 +8,7 @@ import server.service.CollectionService;
 import server.service.NoteService;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/collection")
@@ -38,4 +39,51 @@ public class CollectionController {
         List<Note> notes = noteService.getNotesByCollection(collectionTitle);
         return ResponseEntity.ok(notes);
     }
+
+    /**
+     * endpoint for deleting the collection
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCollection(@PathVariable long id) {
+        if (collectionService.findById(id).isPresent()) {
+            collectionService.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * endpoint for saving the collection
+     */
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Collection> updateCollection(
+            @PathVariable long id,
+            @RequestBody Collection updatedCollection) {
+        Optional<Collection> existingCollection = collectionService.findById(id);
+        if (existingCollection.isPresent()) {
+            updatedCollection.id = id;
+            //Should we wrap it in a try and catch block if changed title will already exist in database
+            //Or database will automatically handle this?
+            Collection savedCollection = collectionService.save(updatedCollection);
+            return ResponseEntity.ok(savedCollection);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * endpoint for reading the collection
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Collection> getCollectionById(@PathVariable long id) {
+        Optional<Collection> collectionOptional = collectionService.findById(id);
+
+        return collectionOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+
+    }
+
+
 }
+
+
+
