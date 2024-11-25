@@ -52,6 +52,7 @@
 .text-area .scroll-bar {
     -fx-background-color: transparent;
     -fx-pref-width: 5px;
+    -fx-padding: 0;
 }
 .text-area .scroll-bar .thumb {
     -fx-background-color : derive(-main-foreground, 70.0%);
@@ -68,6 +69,9 @@
 .text-area .scroll-bar .decrement-arrow{
     -fx-shape : " ";
     -fx-padding :0.15em 0.0;
+}
+.text-area .content {
+    -fx-end-margin: 0 50px 0 0;;
 }
 
 /* BUTTON */
