@@ -30,8 +30,14 @@ public class MainCtrl {
     private AddQuoteCtrl addCtrl;
     private Scene add;
 
-    public void initialize(Stage primaryStage, Pair<QuoteOverviewCtrl, Parent> overview,
-            Pair<AddQuoteCtrl, Parent> add) {
+    private DashboardCtrl dashboardCtrl;
+    private Scene dashboard;
+
+
+    public void initialize(Stage primaryStage,
+                           Pair<QuoteOverviewCtrl, Parent> overview,
+                           Pair<AddQuoteCtrl, Parent> add,
+                           Pair<DashboardCtrl, Parent> dashboard) {
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
         this.overview = new Scene(overview.getValue());
@@ -39,7 +45,22 @@ public class MainCtrl {
         this.addCtrl = add.getKey();
         this.add = new Scene(add.getValue());
 
-        showOverview();
+        this.dashboardCtrl = dashboard.getKey();
+        this.dashboard = new Scene(dashboard.getValue());
+        this.dashboard.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        this.dashboard.setOnKeyPressed(event -> {
+            switch (event.getCode()) {
+                case F11 -> primaryStage.setFullScreen(!primaryStage.isFullScreen());
+                case ENTER -> {
+                    if (event.isAltDown()) {
+                        primaryStage.setFullScreen(!primaryStage.isFullScreen());
+                    }
+                }
+                default -> {}
+            }
+        });
+
+        showDashboard();
         primaryStage.show();
     }
 
@@ -53,5 +74,14 @@ public class MainCtrl {
         primaryStage.setTitle("Quotes: Adding Quote");
         primaryStage.setScene(add);
         add.setOnKeyPressed(e -> addCtrl.keyPressed(e));
+    }
+
+
+    /**
+     * Shows the dashboard scene and sets the title
+     */
+    public void showDashboard() {
+        primaryStage.setTitle("Notes app");
+        primaryStage.setScene(dashboard);
     }
 }
