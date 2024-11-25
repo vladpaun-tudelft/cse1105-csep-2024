@@ -20,6 +20,7 @@ import java.util.ResourceBundle;
 /**
  * Controls all logic for the main dashboard.
  */
+@SuppressWarnings("rawtypes")
 public class DashboardCtrl implements Initializable {
 
     private final ServerUtils server;
@@ -55,12 +56,6 @@ public class DashboardCtrl implements Initializable {
      * Handles the current collection viewer setup
      */
     private void listViewSetup() {
-//        // Fill list with current entries
-//        collectionNotes= FXCollections.observableArrayList();
-//        var noteList = server.getNotes();
-//        for (var note : noteList) {
-//            // TO DO LOAD NOTES
-//        }
         collectionNotes = FXCollections.observableArrayList(
                 new Note("Note 1", "This is the body of Note 1.", null),
                 new Note("Note 2", "This is the body of Note 2.", null)
@@ -103,8 +98,6 @@ public class DashboardCtrl implements Initializable {
             });
             return cell;
         });
-
-
 
         // Reset edit on click anywhere
         root.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {

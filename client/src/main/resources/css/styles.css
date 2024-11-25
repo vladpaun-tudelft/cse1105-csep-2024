@@ -44,6 +44,7 @@
 .text-area .content {
     -fx-background-color: -main-background;
     -fx-border-color: -main-background;
+    -fx-background-insets: 0;
 }
 
 /* BUTTON */
