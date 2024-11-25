@@ -12,6 +12,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
@@ -49,6 +51,8 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private Button addButton;
     @FXML
+    private Button deleteButton;
+    @FXML
     private VBox root;
 
     private ObservableList<Note> collectionNotes;
@@ -71,6 +75,11 @@ public class DashboardCtrl implements Initializable {
         collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
 
         listViewSetup();
+
+        Image img = new Image("client/icons/trash.png");
+        ImageView imgView = new ImageView(img);
+        deleteButton.setGraphic(imgView);
+        deleteButton.setDisable(true);
 
         // Temporary solution
         scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
@@ -113,6 +122,7 @@ public class DashboardCtrl implements Initializable {
                         System.out.println("Cell selected: " + item.getTitle());
                         noteBody.setText((item).getBody());
                         noteTitle.setText((item).getTitle());
+                        deleteButton.setDisable(false);
                         handleContentBlocker();
                     }
                 }
@@ -164,12 +174,13 @@ public class DashboardCtrl implements Initializable {
 
         TextFieldListCell t = (TextFieldListCell) collectionView.lookup(".cell");
         var textField = t.getGraphic();
-        collectionView.fireEvent(new MouseEvent(MouseEvent.MOUSE_CLICKED,
-                textField.getLayoutX(), textField.getLayoutY(), textField.getLayoutX(), textField.getLayoutY(),
-                MouseButton.PRIMARY, 2,
-                true, true, true, true, true, true, true, true, true, true, null
-                ));
-
+        if (textField != null) {
+            collectionView.fireEvent(new MouseEvent(MouseEvent.MOUSE_CLICKED,
+                    textField.getLayoutX(), textField.getLayoutY(), textField.getLayoutX(), textField.getLayoutY(),
+                    MouseButton.PRIMARY, 1,
+                    true, true, true, true, true, true, true, true, true, true, null
+            ));
+        }
     }
 
     @FXML
@@ -199,6 +210,18 @@ public class DashboardCtrl implements Initializable {
         }
     }
 
+    public void deleteSelectedNote() {
+        Note currentNote = (Note) collectionView.getSelectionModel().getSelectedItem();
+        if (currentNote != null) {
+            deleteNote(currentNote);
+            noteBody.clear();
+            noteTitle.setText("");
+            deleteButton.setDisable(true);
+            contentBlocker.setVisible(true);
+            System.out.println("Note deleted: " + currentNote.getTitle());
+        }
+    }
+
     // Temporary solution
     @FXML
     public void onClose() {
@@ -225,7 +248,6 @@ public class DashboardCtrl implements Initializable {
                 e.printStackTrace(); // Log the exception to debug
             }
     }
-
 
     //TODO: Implement a 'delete' button next to a note and pass that respective note to this function
     //TODO: Implement a 'confirm delete' stage/scene or smth
