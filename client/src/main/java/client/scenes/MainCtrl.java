@@ -84,4 +84,8 @@ public class MainCtrl {
         primaryStage.setTitle("NetNote");
         primaryStage.setScene(dashboard);
     }
+
+    public void onClose() {
+        dashboardCtrl.onClose();
+    }
 }

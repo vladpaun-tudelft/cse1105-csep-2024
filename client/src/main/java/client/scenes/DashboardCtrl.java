@@ -17,13 +17,22 @@ import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Controls all logic for the main dashboard.
  */
 @SuppressWarnings("rawtypes")
 public class DashboardCtrl implements Initializable {
+
+    //TODO: This is just a temporary solution, to be changed with something smarter
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
@@ -43,6 +52,9 @@ public class DashboardCtrl implements Initializable {
 
     private ObservableList<Note> collectionNotes;
 
+    private final List<Note> createPendingNotes = new ArrayList<>();
+    private final List<Note> updatePendingNotes = new ArrayList<>();
+
     private boolean pendingHideContentBlocker = true;
 
     @Inject
@@ -53,27 +65,20 @@ public class DashboardCtrl implements Initializable {
 
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
+        // Gets all the notes in the db into the list of notes in the client
+        // TODO: To be changed with server.getNotesByCollection when we implement collections
+        collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
 
         listViewSetup();
+
+        // Temporary solution
+        scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
     }
 
     /**
      * Handles the current collection viewer setup
      */
     private void listViewSetup() {
-        collectionNotes = FXCollections.observableArrayList(
-                new Note("Note 1", "This is the body of Note 1.", null),
-                new Note("Note 2", "This is the body of Note 2.", null),
-                new Note("Lorem Ipsum", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam massa dolor, viverra eget lectus id, laoreet egestas sem. Cras facilisis sed sem nec posuere. Interdum et malesuada fames ac ante ipsum primis in faucibus. Vivamus eget egestas sem. Donec rhoncus aliquam finibus. Vestibulum sed nisl vitae arcu venenatis malesuada. Nulla a dignissim erat. Duis sodales faucibus luctus.\n" +
-                        "\n" +
-                        "Cras mattis dictum tempus. Sed et maximus mauris. Curabitur placerat urna non placerat convallis. Integer nec rutrum lacus. Nunc imperdiet quam eget ante tincidunt, vitae consequat urna pulvinar. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; In hac habitasse platea dictumst. Proin nec efficitur arcu, sed laoreet odio. Phasellus varius purus et odio lobortis pharetra a et nunc. Etiam ut iaculis velit, sit amet malesuada mi.\n" +
-                        "\n" +
-                        "Vestibulum in lacinia tortor. Vestibulum elementum sed nulla sed volutpat. Curabitur eleifend ornare tincidunt. Ut et leo vel mauris dignissim porta. Donec est eros, ullamcorper sed mi eu, lacinia tempus elit. Curabitur commodo eget metus semper hendrerit. Pellentesque magna orci, volutpat in justo nec, sollicitudin molestie lectus. Nulla finibus rhoncus luctus. Praesent dapibus ultricies purus. Integer varius ipsum a magna imperdiet, eget dictum felis euismod. Curabitur auctor ante sit amet pellentesque consectetur. Aliquam pretium porttitor porta.\n" +
-                        "\n" +
-                        "Pellentesque dignissim ac ligula nec finibus. Donec est nisi, tincidunt vel tellus nec, porta aliquet dui. Praesent id aliquet tortor. Aliquam risus massa, egestas in dolor aliquam, venenatis semper est. Fusce finibus, purus sit amet bibendum mollis, ipsum ipsum eleifend augue, quis egestas nunc felis nec velit. Curabitur imperdiet tellus at dictum eleifend. Vivamus id tristique lectus. Donec magna purus, mollis quis erat quis, iaculis porttitor enim.\n" +
-                        "\n" +
-                        "Donec rutrum ornare efficitur. Aliquam molestie tempus posuere. Curabitur vel lorem accumsan, elementum sem id, viverra velit. Etiam consectetur sapien a ante commodo, ut euismod elit aliquet. Donec sodales posuere dolor vel maximus. Ut et purus maximus, condimentum tortor in, consectetur odio. Aliquam venenatis ligula id consectetur aliquet. Nam iaculis fringilla faucibus. Praesent et neque quis lectus volutpat suscipit non ullamcorper velit.", null)
-        );
 
         // Set required settings
         collectionView.setItems(collectionNotes);
@@ -143,7 +148,12 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void addNote() {
-        collectionNotes.add(new Note("New Note", "", null));
+        Note newNote = new Note("New Note", "", null);
+        collectionNotes.add(newNote);
+        // Add the new note to a list of notes pending being sent to the server
+        createPendingNotes.add(newNote);
+        System.out.println("Note added to createPendingNotes: " + newNote.getTitle());
+
         collectionView.getSelectionModel().select(collectionNotes.size() - 1);
         collectionView.getFocusModel().focus(collectionNotes.size() - 1);
         collectionView.edit(collectionNotes.size() - 1);
@@ -155,13 +165,66 @@ public class DashboardCtrl implements Initializable {
     @FXML
     public void onEditCommit() {
         Note currentNote = (Note)collectionView.getSelectionModel().getSelectedItem();
-        noteTitle.setText(currentNote.getTitle());
+        if (currentNote != null) {
+            noteTitle.setText(currentNote.getTitle());
+
+            if (!createPendingNotes.contains(currentNote) && !updatePendingNotes.contains(currentNote)) {
+                updatePendingNotes.add(currentNote);
+            }
+        }
+
     }
 
     @FXML
     public void onBodyChanged() {
         Note currentNote = (Note)collectionView.getSelectionModel().getSelectedItem();
-        currentNote.setBody(noteBody.getText());
+        if (currentNote != null) {
+            currentNote.setBody(noteBody.getText());
+
+            // Add any edited but already existing note to the pending list
+            if (!createPendingNotes.contains(currentNote) && !updatePendingNotes.contains(currentNote)) {
+                updatePendingNotes.add(currentNote);
+                System.out.println("Note added to updatePendingNotes: " + currentNote.getTitle());
+            }
+        }
+    }
+
+    // Temporary solution
+    @FXML
+    public void onClose() {
+        saveAllPendingNotes();
+
+        // Ensure the scheduler is shut down when the application closes
+        scheduler.shutdown();
+    }
+
+    public void saveAllPendingNotes() {
+            try {
+                for (Note note : createPendingNotes) {
+                    Note savedNote = server.addNote(note);
+                    note.id = savedNote.id;
+                }
+                createPendingNotes.clear();
+
+                for (Note note : updatePendingNotes) {
+                    server.updateNote(note);
+                }
+                updatePendingNotes.clear();
+                System.out.println("Saved all notes on server");
+            } catch (Exception e) {
+                e.printStackTrace(); // Log the exception to debug
+            }
+    }
+
+
+    //TODO: Implement a 'delete' button next to a note and pass that respective note to this function
+    //TODO: Implement a 'confirm delete' stage/scene or smth
+    public void deleteNote(Note note) {
+        collectionNotes.remove(note);
+        createPendingNotes.remove(note);
+        updatePendingNotes.remove(note);
+
+        server.deleteNote(note.id);
     }
 
 }

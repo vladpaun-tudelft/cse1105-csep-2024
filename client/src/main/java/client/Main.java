@@ -52,5 +52,11 @@ public class Main extends Application {
 
 		var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
 		mainCtrl.initialize(primaryStage, overview, add, dashboard);
+
+		// Add close request handler
+		primaryStage.setOnCloseRequest(event -> {
+			// Call the onClose method in the controller
+			mainCtrl.onClose();
+		});
 	}
 }
