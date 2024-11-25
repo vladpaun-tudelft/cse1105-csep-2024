@@ -4,6 +4,8 @@ import commons.Collection;
 import org.springframework.stereotype.Service;
 import server.database.CollectionRepository;
 
+import java.util.Optional;
+
 @Service
 public class CollectionService {
 
@@ -15,5 +17,13 @@ public class CollectionService {
 
     public Collection save(Collection collection) {
         return collectionRepository.save(collection);
+    }
+
+    public void deleteById(long id) {
+        collectionRepository.deleteById(id);
+    }
+
+    public Optional<Collection> findById(long id) {
+        return collectionRepository.findById(id);
     }
 }
