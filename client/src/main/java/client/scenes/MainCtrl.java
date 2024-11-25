@@ -38,8 +38,7 @@ public class MainCtrl {
     public void initialize(Stage primaryStage,
                            Pair<QuoteOverviewCtrl, Parent> overview,
                            Pair<AddQuoteCtrl, Parent> add,
-                           Pair<DashboardCtrl, Parent> dashboard,
-                           Pair<AddNoteCtrl, Parent> addNote) {
+                           Pair<DashboardCtrl, Parent> dashboard) {
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
         this.overview = new Scene(overview.getValue());
@@ -61,8 +60,6 @@ public class MainCtrl {
                 default -> {}
             }
         });
-
-        this.addNote = new Scene(addNote.getValue());
 
         showDashboard();
         primaryStage.show();
