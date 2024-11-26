@@ -100,6 +100,8 @@ public class DashboardCtrl implements Initializable {
             }
         });
 
+        // This is just a temporary solution
+        // TODO: Implement this properly once we also have the proper frontend for switching between collections
         if (server.getCollections().stream().filter(c -> c.title.equals("All")).toList().isEmpty()) {
             server.addCollection(new Collection("All"));
         }
@@ -193,7 +195,10 @@ public class DashboardCtrl implements Initializable {
 
     public void addNote() {
         setSearchIsActive(false);
-        Note newNote = new Note("New Note", "", server.getCollections().getFirst());
+
+        //This is a temporary solution
+        Collection defaultCollection = server.getCollections().stream().filter(c -> c.title.equals("All")).toList().getFirst();
+        Note newNote = new Note("New Note", "", defaultCollection);
         collectionNotes.add(newNote);
         // Add the new note to a list of notes pending being sent to the server
         createPendingNotes.add(newNote);
