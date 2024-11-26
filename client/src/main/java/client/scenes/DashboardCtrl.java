@@ -3,6 +3,7 @@ package client.scenes;
 import com.google.inject.Inject;
 
 import client.utils.ServerUtils;
+import commons.Collection;
 import commons.Note;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -82,6 +83,10 @@ public class DashboardCtrl implements Initializable {
         deleteButton.setGraphic(imgView);
         deleteButton.setDisable(true);
 
+        if (server.getCollections().stream().filter(c -> c.title.equals("All")).toList().isEmpty()) {
+            server.addCollection(new Collection("All"));
+        }
+
         // Temporary solution
         scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
     }
@@ -160,7 +165,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void addNote() {
-        Note newNote = new Note("New Note", "", null);
+        Note newNote = new Note("New Note", "", server.getCollections().getFirst());
         collectionNotes.add(newNote);
         // Add the new note to a list of notes pending being sent to the server
         createPendingNotes.add(newNote);
@@ -172,16 +177,6 @@ public class DashboardCtrl implements Initializable {
 
         noteTitle.setText("New Note");
         noteBody.setText("");
-
-        TextFieldListCell t = (TextFieldListCell) collectionView.lookup(".cell");
-        var textField = t.getGraphic();
-        if (textField != null) {
-            collectionView.fireEvent(new MouseEvent(MouseEvent.MOUSE_CLICKED,
-                    textField.getLayoutX(), textField.getLayoutY(), textField.getLayoutX(), textField.getLayoutY(),
-                    MouseButton.PRIMARY, 1,
-                    true, true, true, true, true, true, true, true, true, true, null
-            ));
-        }
     }
 
     @FXML
@@ -256,8 +251,6 @@ public class DashboardCtrl implements Initializable {
             }
     }
 
-    //TODO: Implement a 'delete' button next to a note and pass that respective note to this function
-    //TODO: Implement a 'confirm delete' stage/scene or smth
     public void deleteNote(Note note) {
         collectionNotes.remove(note);
         createPendingNotes.remove(note);

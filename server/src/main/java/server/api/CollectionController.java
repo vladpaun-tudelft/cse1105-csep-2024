@@ -35,9 +35,15 @@ public class CollectionController {
     }
 
     @GetMapping("/{collectionTitle}")
-    public ResponseEntity<List<Note>> getAllNotes(@PathVariable String collectionTitle) {
+    public ResponseEntity<List<Note>> getNotesInCollection(@PathVariable String collectionTitle) {
         List<Note> notes = noteService.getNotesByCollection(collectionTitle);
         return ResponseEntity.ok(notes);
+    }
+
+    @GetMapping(path = {"/", ""})
+    public ResponseEntity<List<Collection>> getAllCollections() {
+        List<Collection> collections = collectionService.getAllCollections();
+        return ResponseEntity.ok(collections);
     }
 
     /**

@@ -24,6 +24,7 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 
 import commons.Collection;
 import commons.Note;
@@ -66,28 +67,28 @@ public class ServerUtils {
 
 	public Note addNote(Note note) {
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/notes")
+				.target(SERVER).path("api/notes")
 				.request(APPLICATION_JSON)
 				.post(Entity.entity(note, APPLICATION_JSON), Note.class);
 	}
 
 	public List<Note> getAllNotes() {
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/notes")
+				.target(SERVER).path("api/notes")
 				.request(APPLICATION_JSON)
 				.get(new GenericType<List<Note>>() {});
 	}
 
 	public Note getNoteById(long id) {
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/notes/" + id)
+				.target(SERVER).path("api/notes/" + id)
 				.request(APPLICATION_JSON)
 				.get(Note.class);
 	}
 
 	public Note updateNote(Note note) {
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/notes/" + note.id)
+				.target(SERVER).path("api/notes/" + note.id)
 				.request(APPLICATION_JSON)
 				.put(Entity.entity(note, APPLICATION_JSON), Note.class);
 	}

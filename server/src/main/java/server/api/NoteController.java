@@ -17,7 +17,7 @@ public class NoteController {
         this.noteService = noteService;
     }
 
-    @PostMapping
+    @PostMapping(path = {"/", ""})
     public ResponseEntity<Note> createNote(@RequestBody Note note) {
         Note createdNote = noteService.save(note);
         return ResponseEntity.ok(createdNote);
