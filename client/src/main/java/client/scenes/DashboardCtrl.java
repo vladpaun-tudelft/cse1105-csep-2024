@@ -55,6 +55,10 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private Button deleteButton;
     @FXML
+    private Button searchButton;
+    @FXML
+    private TextField searchField;
+    @FXML
     private VBox root;
 
     private ObservableList<Note> collectionNotes;
@@ -82,6 +86,10 @@ public class DashboardCtrl implements Initializable {
         ImageView imgView = new ImageView(img);
         deleteButton.setGraphic(imgView);
         deleteButton.setDisable(true);
+
+        img = new Image("client/icons/search.png");
+        imgView = new ImageView(img);
+        searchButton.setGraphic(imgView);
 
         if (server.getCollections().stream().filter(c -> c.title.equals("All")).toList().isEmpty()) {
             server.addCollection(new Collection("All"));
