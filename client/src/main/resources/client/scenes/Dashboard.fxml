@@ -109,7 +109,7 @@
                         <Font size="12.0" />
                      </font>
                   </TextField>
-                  <Button fx:id="searchButton" layoutX="178.0" layoutY="36.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="17.0" />
+                  <Button fx:id="searchButton" layoutX="178.0" layoutY="36.0" mnemonicParsing="false" onAction="#search" prefHeight="26.0" prefWidth="17.0" />
                </children>
             </AnchorPane>
             <SplitPane centerShape="false" dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0">
