@@ -32,20 +32,25 @@ Agenda Items:
    - Discuss codebase structure and workflow: areas for improvement.
    - Gather suggestions for refining existing features.
 
-3. **Planning Next Features and Milestones** (10 min)
+3. **Discuss Code of Conduct** (7 min)
+   - Do a read of the current version.
+   - See if improvements can be made.
+   - Try to get the conduct to a state where everyone can agree on.
+
+4. **Planning Next Features and Milestones** (10 min)
    - Identify advanced features to prioritize (e.g., tagging notes, search functionality, user authentication).
    - Assign responsibilities for the new features.
    - Set timelines and deadlines for upcoming tasks.
 
-4. **Resolving Technical Issues** (5 min)
+5. **Resolving Technical Issues** (5 min)
    - Discuss major technical challenges faced during feature development or integration.
    - Brainstorm potential solutions or decide on next steps to overcome these issues.
 
-5. **TA Review Preparation** (5 min)
+6. **TA Review Preparation** (5 min)
    - Confirm app’s presentation plan for the TA during the next review.
    - Assign roles for the presentation (e.g., feature demonstration, backend explanation).
 
-6. **Wrap-Up** (3 min)
+7. **Wrap-Up** (3 min)
    - Summarize key action items and deadlines.
    - Gather any additional inputs or questions from the team.
    - Confirm details for the next meeting.
