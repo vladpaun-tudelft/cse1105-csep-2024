@@ -83,14 +83,14 @@ public class DashboardCtrl implements Initializable {
 
         listViewSetup(collectionNotes);
 
-        Image img = new Image("client/icons/trash.png");
-        ImageView imgView = new ImageView(img);
-        deleteButton.setGraphic(imgView);
+//        Image img = new Image("client/icons/trash.png");
+//        ImageView imgView = new ImageView(img);
+//        deleteButton.setGraphic(imgView);
         deleteButton.setDisable(true);
 
-        img = new Image("client/icons/search.png");
-        imgView = new ImageView(img);
-        searchButton.setGraphic(imgView);
+//        img = new Image("client/icons/search.png");
+//        imgView = new ImageView(img);
+//        searchButton.setGraphic(imgView);
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
                 case ENTER -> {
@@ -272,7 +272,13 @@ public class DashboardCtrl implements Initializable {
             alert.setContentText("Do you really want to delete this note?");
             Optional<ButtonType> buttonType = alert.showAndWait();
             if(buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
-                deleteNote(currentNote);
+                if (createPendingNotes.contains(currentNote)) {
+                    createPendingNotes.remove(currentNote);
+                }
+                else {
+                    deleteNote(currentNote);
+                }
+                collectionNotes.remove(currentNote);
                 noteBody.clear();
                 noteTitle.setText("");
                 deleteButton.setDisable(true);

@@ -104,12 +104,12 @@
                   <Pane prefHeight="35.0" prefWidth="40.0" styleClass="foreground-element" AnchorPane.rightAnchor="-5.0" AnchorPane.topAnchor="0.0" />
                   <Button fx:id="addButton" layoutX="188.5" layoutY="6.0" mnemonicParsing="false" onAction="#addNote" prefHeight="25.0" prefWidth="25.0" text="+" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
                   <ListView fx:id="collectionView" layoutX="2.0" layoutY="73.0" onEditCommit="#onEditCommit" prefHeight="498.0" prefWidth="222.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="72.0" />
-                  <TextField fx:id="searchField" layoutX="9.0" layoutY="36.0" prefHeight="25.0" prefWidth="160.0" promptText="Search..." style="-fx-background-color: #1E1F22;">
+                  <TextField fx:id="searchField" layoutX="9.0" layoutY="36.0" prefHeight="25.0" prefWidth="160.0" promptText="Search..." style="-fx-background-color: #1E1F22;" AnchorPane.leftAnchor="9.0" AnchorPane.rightAnchor="54.0" AnchorPane.topAnchor="36.0">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </TextField>
-                  <Button fx:id="searchButton" layoutX="178.0" layoutY="36.0" mnemonicParsing="false" onAction="#search" prefHeight="26.0" prefWidth="17.0" />
+                  <Button fx:id="searchButton" layoutX="178.0" layoutY="36.0" mnemonicParsing="false" onAction="#search" prefHeight="26.0" prefWidth="17.0" styleClass="search_icon" AnchorPane.rightAnchor="28.0" />
                </children>
             </AnchorPane>
             <SplitPane centerShape="false" dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0">
@@ -136,7 +136,7 @@
                                     <String fx:value="content-blocker" />
                                  </styleClass>
                               </Label>
-                              <Button fx:id="deleteButton" layoutX="295.0" layoutY="3.0" mnemonicParsing="false" onAction="#deleteSelectedNote" prefHeight="35.0" prefWidth="26.0" style="-fx-background-color: transparent;" textFill="#b93838" underline="true">
+                              <Button fx:id="deleteButton" layoutX="295.0" layoutY="3.0" mnemonicParsing="false" onAction="#deleteSelectedNote" prefHeight="35.0" prefWidth="26.0" style="-fx-background-color: transparent;" styleClass="delete_icon" textFill="#b93838" underline="true" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="3.0">
                                  <font>
                                     <Font size="12.0" />
                                  </font>
