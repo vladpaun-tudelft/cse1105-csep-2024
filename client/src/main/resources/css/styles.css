@@ -98,3 +98,21 @@
     -fx-padding: 1;
     -fx-background-color: -main-foreground;
 }
+
+.delete_icon {
+    -fx-background-image: url("icons/trash.png");
+    -fx-background-size: 18px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.search_icon {
+    -fx-background-image: url("icons/search.png");
+    -fx-background-size: 18px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}

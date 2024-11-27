@@ -4,6 +4,7 @@ import commons.Collection;
 import org.springframework.stereotype.Service;
 import server.database.CollectionRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,5 +26,9 @@ public class CollectionService {
 
     public Optional<Collection> findById(long id) {
         return collectionRepository.findById(id);
+    }
+
+    public List<Collection> getAllCollections() {
+        return collectionRepository.findAll();
     }
 }
