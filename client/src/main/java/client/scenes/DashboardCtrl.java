@@ -3,6 +3,7 @@ package client.scenes;
 import com.google.inject.Inject;
 
 import client.utils.ServerUtils;
+import commons.Collection;
 import commons.Note;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -12,6 +13,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
@@ -19,6 +22,7 @@ import javafx.util.StringConverter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -48,9 +52,17 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private Button addButton;
     @FXML
+    private Button deleteButton;
+    @FXML
+    private Button searchButton;
+    @FXML
+    private TextField searchField;
+    @FXML
     private VBox root;
 
     private ObservableList<Note> collectionNotes;
+    private List<Note> filteredNotes = new ArrayList<>();
+    private boolean searchIsActive = false;
 
     private final List<Note> createPendingNotes = new ArrayList<>();
     private final List<Note> updatePendingNotes = new ArrayList<>();
@@ -69,7 +81,30 @@ public class DashboardCtrl implements Initializable {
         // TODO: To be changed with server.getNotesByCollection when we implement collections
         collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
 
-        listViewSetup();
+        listViewSetup(collectionNotes);
+
+        Image img = new Image("client/icons/trash.png");
+        ImageView imgView = new ImageView(img);
+        deleteButton.setGraphic(imgView);
+        deleteButton.setDisable(true);
+
+        img = new Image("client/icons/search.png");
+        imgView = new ImageView(img);
+        searchButton.setGraphic(imgView);
+        searchField.setOnKeyPressed(event -> {
+            switch (event.getCode()) {
+                case ENTER -> {
+                    search();
+                }
+                default -> {}
+            }
+        });
+
+        // This is just a temporary solution
+        // TODO: Implement this properly once we also have the proper frontend for switching between collections
+        if (server.getCollections().stream().filter(c -> c.title.equals("All")).toList().isEmpty()) {
+            server.addCollection(new Collection("All"));
+        }
 
         // Temporary solution
         scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
@@ -78,7 +113,7 @@ public class DashboardCtrl implements Initializable {
     /**
      * Handles the current collection viewer setup
      */
-    private void listViewSetup() {
+    private void listViewSetup(ObservableList collectionNotes) {
 
         // Set required settings
         collectionView.setItems(collectionNotes);
@@ -112,6 +147,7 @@ public class DashboardCtrl implements Initializable {
                         System.out.println("Cell selected: " + item.getTitle());
                         noteBody.setText((item).getBody());
                         noteTitle.setText((item).getTitle());
+                        deleteButton.setDisable(false);
                         handleContentBlocker();
                     }
                 }
@@ -139,6 +175,16 @@ public class DashboardCtrl implements Initializable {
 
     }
 
+    public void setSearchIsActive(boolean b) {
+        searchIsActive = b;
+        if (!b) {
+            searchField.clear();
+            listViewSetup(collectionNotes);
+            collectionView.getSelectionModel().clearSelection();
+            contentBlocker.setVisible(true);
+        }
+    }
+
     /**
      * Handles content blocker when new Note is loaded
      */
@@ -148,7 +194,11 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void addNote() {
-        Note newNote = new Note("New Note", "", null);
+        setSearchIsActive(false);
+
+        //This is a temporary solution
+        Collection defaultCollection = server.getCollections().stream().filter(c -> c.title.equals("All")).toList().getFirst();
+        Note newNote = new Note("New Note", "", defaultCollection);
         collectionNotes.add(newNote);
         // Add the new note to a list of notes pending being sent to the server
         createPendingNotes.add(newNote);
@@ -160,6 +210,27 @@ public class DashboardCtrl implements Initializable {
 
         noteTitle.setText("New Note");
         noteBody.setText("");
+    }
+
+    public void search() {
+        if (searchField.getText().isEmpty()) {
+            return;
+        }
+        searchIsActive = true;
+        String searchText = searchField.getText().toLowerCase();
+        filteredNotes = new ArrayList<>();
+        for (Note note : collectionNotes) {
+            String noteText = note.body.toLowerCase();
+            String noteTitle = note.title.toLowerCase();
+            if (noteTitle.contains(searchText) || noteText.contains(searchText)) {
+                filteredNotes.add(note);
+            }
+        }
+        listViewSetup(FXCollections.observableArrayList(filteredNotes));
+        contentBlocker.setVisible(true);
+        deleteButton.setDisable(true);
+        collectionView.getSelectionModel().clearSelection();
+
     }
 
     @FXML
@@ -185,6 +256,28 @@ public class DashboardCtrl implements Initializable {
             if (!createPendingNotes.contains(currentNote) && !updatePendingNotes.contains(currentNote)) {
                 updatePendingNotes.add(currentNote);
                 System.out.println("Note added to updatePendingNotes: " + currentNote.getTitle());
+            }
+        }
+    }
+
+    public void deleteSelectedNote() {
+        Note currentNote = (Note) collectionView.getSelectionModel().getSelectedItem();
+        if (filteredNotes.contains(currentNote)) {
+            filteredNotes.remove(currentNote);
+            listViewSetup(FXCollections.observableArrayList(filteredNotes));
+        }
+        if (currentNote != null) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm deletion");
+            alert.setContentText("Do you really want to delete this note?");
+            Optional<ButtonType> buttonType = alert.showAndWait();
+            if(buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
+                deleteNote(currentNote);
+                noteBody.clear();
+                noteTitle.setText("");
+                deleteButton.setDisable(true);
+                contentBlocker.setVisible(true);
+                System.out.println("Note deleted: " + currentNote.getTitle());
             }
         }
     }
@@ -216,9 +309,6 @@ public class DashboardCtrl implements Initializable {
             }
     }
 
-
-    //TODO: Implement a 'delete' button next to a note and pass that respective note to this function
-    //TODO: Implement a 'confirm delete' stage/scene or smth
     public void deleteNote(Note note) {
         collectionNotes.remove(note);
         createPendingNotes.remove(note);

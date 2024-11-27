@@ -56,6 +56,9 @@ public class MainCtrl {
                         primaryStage.setFullScreen(!primaryStage.isFullScreen());
                     }
                 }
+                case ESCAPE -> {
+                    dashboardCtrl.setSearchIsActive(false);
+                }
                 default -> {}
             }
         });
