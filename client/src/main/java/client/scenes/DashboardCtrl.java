@@ -83,14 +83,14 @@ public class DashboardCtrl implements Initializable {
 
         listViewSetup(collectionNotes);
 
-        Image img = new Image("client/icons/trash.png");
-        ImageView imgView = new ImageView(img);
-        deleteButton.setGraphic(imgView);
+//        Image img = new Image("client/icons/trash.png");
+//        ImageView imgView = new ImageView(img);
+//        deleteButton.setGraphic(imgView);
         deleteButton.setDisable(true);
 
-        img = new Image("client/icons/search.png");
-        imgView = new ImageView(img);
-        searchButton.setGraphic(imgView);
+//        img = new Image("client/icons/search.png");
+//        imgView = new ImageView(img);
+//        searchButton.setGraphic(imgView);
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
                 case ENTER -> {
