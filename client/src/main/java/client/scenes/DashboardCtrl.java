@@ -114,38 +114,7 @@ public class DashboardCtrl implements Initializable {
         collectionView.setCellFactory(TextFieldListCell.forListView());
 
         // Set ListView entry as Title (editable)
-        collectionView.setCellFactory(lv -> {
-            TextFieldListCell<Note> cell = new TextFieldListCell<>();
-            cell.converterProperty().set(new StringConverter<>() {
-                @Override
-                public String toString(Note note) {
-                    return note != null ? note.getTitle() : "";
-                }
-
-                @Override
-                public Note fromString(String string) {
-                    // Create a new Note object or update an existing one based on the edited text
-                    Note note = cell.getItem();
-                    if (note != null) {
-                        note.setTitle(string);
-                    }
-                    return note;
-                }
-            });
-            cell.setOnMouseClicked(event -> {
-                if (event != null) {
-                    Note item = cell.getItem();
-                    if(item != null) {
-                        System.out.println("Cell selected: " + item.getTitle());
-                        noteBody.setText((item).getBody());
-                        noteTitle.setText((item).getTitle());
-                        deleteButton.setDisable(false);
-                        handleContentBlocker();
-                    }
-                }
-            });
-            return cell;
-        });
+        setupCellFactory();
 
         // Reset edit on click anywhere
         root.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
@@ -165,6 +134,40 @@ public class DashboardCtrl implements Initializable {
             }
         });
 
+    }
+
+    private void setupCellFactory() {
+        collectionView.setCellFactory(lv -> {
+            TextFieldListCell<Note> cell = new TextFieldListCell<>();   // Create basic TextField cell to edit
+            cell.converterProperty().set(new StringConverter<>() {      // Edit converter which cell uses to display the custom object
+                @Override
+                public String toString(Note note) {                     // Override toString which the cell uses to display the object
+                    return note != null ? note.getTitle() : "";         // We edit it such that it uses the cell uses the note title to display the note
+                }
+
+                @Override
+                public Note fromString(String string) {                 // Say what properties need to be changed on title edit
+                    Note note = cell.getItem();
+                    if (note != null) {
+                        note.setTitle(string);
+                    }
+                    return note;
+                }
+            });
+            cell.setOnMouseClicked(event -> {                           // Handle on edit behaviour
+                if (event != null) {
+                    Note item = cell.getItem();
+                    if(item != null) {
+                        System.out.println("Cell selected: " + item.getTitle());
+                        noteBody.setText((item).getBody());
+                        noteTitle.setText((item).getTitle());
+                        deleteButton.setDisable(false);
+                        handleContentBlocker();
+                    }
+                }
+            });
+            return cell;
+        });
     }
 
     public void setSearchIsActive(boolean b) {
