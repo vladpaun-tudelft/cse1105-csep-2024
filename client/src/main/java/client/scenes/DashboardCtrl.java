@@ -272,7 +272,13 @@ public class DashboardCtrl implements Initializable {
             alert.setContentText("Do you really want to delete this note?");
             Optional<ButtonType> buttonType = alert.showAndWait();
             if(buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
-                deleteNote(currentNote);
+                if (createPendingNotes.contains(currentNote)) {
+                    createPendingNotes.remove(currentNote);
+                }
+                else {
+                    deleteNote(currentNote);
+                }
+                collectionNotes.remove(currentNote);
                 noteBody.clear();
                 noteTitle.setText("");
                 deleteButton.setDisable(true);
