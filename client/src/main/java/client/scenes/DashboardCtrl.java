@@ -199,21 +199,21 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void saveAllPendingNotes() {
-            try {
-                for (Note note : createPendingNotes) {
-                    Note savedNote = server.addNote(note);
-                    note.id = savedNote.id;
-                }
-                createPendingNotes.clear();
-
-                for (Note note : updatePendingNotes) {
-                    server.updateNote(note);
-                }
-                updatePendingNotes.clear();
-                System.out.println("Saved all notes on server");
-            } catch (Exception e) {
-                e.printStackTrace(); // Log the exception to debug
+        try {
+            for (Note note : createPendingNotes) {
+                Note savedNote = server.addNote(note);
+                note.id = savedNote.id;
             }
+            createPendingNotes.clear();
+
+            for (Note note : updatePendingNotes) {
+                server.updateNote(note);
+            }
+            updatePendingNotes.clear();
+            System.out.println("Saved all notes on server");
+        } catch (Exception e) {
+            e.printStackTrace(); // Log the exception to debug
+        }
     }
 
 
