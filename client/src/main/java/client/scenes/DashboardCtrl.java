@@ -13,8 +13,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
@@ -83,14 +81,8 @@ public class DashboardCtrl implements Initializable {
 
         listViewSetup(collectionNotes);
 
-//        Image img = new Image("client/icons/trash.png");
-//        ImageView imgView = new ImageView(img);
-//        deleteButton.setGraphic(imgView);
         deleteButton.setDisable(true);
 
-//        img = new Image("client/icons/search.png");
-//        imgView = new ImageView(img);
-//        searchButton.setGraphic(imgView);
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
                 case ENTER -> {
