@@ -142,7 +142,8 @@ public class DashboardCtrl implements Initializable {
             cell.converterProperty().set(new StringConverter<>() {      // Edit converter which cell uses to display the custom object
                 @Override
                 public String toString(Note note) {                     // Override toString which the cell uses to display the object
-                    return note != null ? note.getTitle() : "";         // We edit it such that it uses the cell uses the note title to display the note
+                    return note != null ? note.getTitle() : "";
+                    // We edit it such that it uses the cell uses the note title to display the note
                 }
 
                 @Override

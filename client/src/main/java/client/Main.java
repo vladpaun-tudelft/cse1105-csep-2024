@@ -45,13 +45,10 @@ public class Main extends Application {
 			System.err.println(msg);
 			return;
 		}
-
-		var overview = FXML.load(QuoteOverviewCtrl.class, "client", "scenes", "QuoteOverview.fxml");
-		var add = FXML.load(AddQuoteCtrl.class, "client", "scenes", "AddQuote.fxml");
 		var dashboard = FXML.load(DashboardCtrl.class, "client", "scenes", "Dashboard.fxml");
 
 		var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-		mainCtrl.initialize(primaryStage, overview, add, dashboard);
+		mainCtrl.initialize(primaryStage, dashboard);
 
 		// Add close request handler
 		primaryStage.setOnCloseRequest(event -> {
