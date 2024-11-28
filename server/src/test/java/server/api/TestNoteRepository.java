@@ -11,39 +11,16 @@ import server.database.NoteRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class TestNoteRepository implements NoteRepository {
 
-    private final List<Note> notes = new ArrayList<>();
-    private final AtomicLong id = new AtomicLong(1);
+    public List<Note> notes = new ArrayList<>();
 
     @Override
     public List<Note> findByCollectionTitle(String collectionTitle) {
-        return notes.stream()
-                .filter(note -> note.collection.title.equals(collectionTitle))
-                .collect(Collectors.toList());
+        return List.of();
     }
-
-    @Override
-    public <S extends Note> S save(S entity) {
-        if (entity.id == 0) {
-            entity.id = id.getAndIncrement();
-        }
-
-        notes.removeIf(note ->  note.id == entity.id);
-        notes.add(entity);
-        return entity;
-    }
-
-    @Override
-    public List<Note> findAll() {
-        return new ArrayList<>(notes);
-    }
-
-
 
     @Override
     public void flush() {
@@ -126,18 +103,38 @@ public class TestNoteRepository implements NoteRepository {
     }
 
     @Override
+    public <S extends Note> S save(S entity) {
+        for (int i = 0; i < notes.size(); i++) {
+            if (notes.get(i).id == entity.id) {
+                notes.set(i, entity);
+                return entity;
+            }
+        }
+        entity.id = (long) (notes.size()+1);
+        notes.add(entity);
+        return entity;
+    }
+
+    @Override
     public <S extends Note> List<S> saveAll(Iterable<S> entities) {
         return List.of();
     }
 
     @Override
     public Optional<Note> findById(Long aLong) {
-        return Optional.empty();
-    }
+        return notes.stream()
+                .filter(note -> note.id == aLong)
+                .findFirst();
+    };
 
     @Override
     public boolean existsById(Long aLong) {
         return false;
+    }
+
+    @Override
+    public List<Note> findAll() {
+        return new ArrayList<>(notes);
     }
 
     @Override
@@ -152,7 +149,7 @@ public class TestNoteRepository implements NoteRepository {
 
     @Override
     public void deleteById(Long aLong) {
-
+        notes.removeIf(note -> aLong.equals(note.id));
     }
 
     @Override
@@ -177,7 +174,7 @@ public class TestNoteRepository implements NoteRepository {
 
     @Override
     public List<Note> findAll(Sort sort) {
-        return List.of();
+        return null;
     }
 
     @Override
