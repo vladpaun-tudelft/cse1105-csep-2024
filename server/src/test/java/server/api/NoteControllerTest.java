@@ -168,26 +168,4 @@ class NoteControllerTest {
         assertEquals(collection2, response.getBody().get(3).collection);
     }
 
-    /*
-    @Test
-    void getNotesByCollectionTest() {
-        ResponseEntity<List<Note>> response1 = collectionController.getAllNotes(collection1.title);
-        ResponseEntity<List<Note>> response2 = collectionController.getAllNotes(collection2.title);
-
-        assertEquals(200, response1.getStatusCodeValue());
-        assertEquals(200, response2.getStatusCodeValue());
-
-        assertNotNull(response1.getBody());
-        assertNotNull(response2.getBody());
-
-        assertEquals(2, response1.getBody().size());
-        assertEquals(2, response2.getBody().size());
-
-        assertEquals("note1", response1.getBody().get(0).title);
-        assertEquals("note2", response1.getBody().get(1).title);
-
-        assertEquals("note3", response2.getBody().get(0).title);
-        assertEquals("note4", response2.getBody().get(1).title);
-    }
-    */
 }

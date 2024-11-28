@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class TestNoteRepository implements NoteRepository {
 
@@ -19,7 +20,9 @@ public class TestNoteRepository implements NoteRepository {
 
     @Override
     public List<Note> findByCollectionTitle(String collectionTitle) {
-        return List.of();
+        return notes.stream()
+                .filter(note -> note.collection.title.equals(collectionTitle))
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package server.api;
 
 import commons.Collection;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -98,8 +99,14 @@ public class TestCollectionRepository implements CollectionRepository {
     }
 
     @Override
-    public <S extends Collection> S save(S entity) {
+    public <S extends Collection> S save(S entity) throws DataIntegrityViolationException {
+        for (Collection collection : collections) {
+            if (collection.title.equals(entity.title)) {
+                throw new DataIntegrityViolationException("Title already exists");
+            }
+        }
         for (int i = 0; i < collections.size(); i++) {
+
             if (collections.get(i).id == entity.id) {
                 collections.set(i, entity);
                 return entity;
@@ -117,7 +124,7 @@ public class TestCollectionRepository implements CollectionRepository {
 
     @Override
     public Optional<Collection> findById(Long aLong) {
-        return Optional.empty();
+        return collections.stream().filter(e -> e.id == aLong).findFirst();
     }
 
     @Override
@@ -142,6 +149,7 @@ public class TestCollectionRepository implements CollectionRepository {
 
     @Override
     public void deleteById(Long aLong) {
+        collections.removeIf(e -> e.id == aLong);
 
     }
 
