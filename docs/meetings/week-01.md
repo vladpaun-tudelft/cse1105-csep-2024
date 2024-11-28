@@ -73,3 +73,38 @@ Agenda Items:
 - Planned meeting duration != actual duration? Where/why did you mis-estimate? (1 min)
 - Question round: Does anyone have anything to add before the meeting closes? (1 min)
 - Closure (1 min)
+
+# Minutes
+
+## Project overview
+- Note taking app
+- Multiple notes organized in multiple collections
+- Tech stack: Spring boot, Maven, Jackson, dependency injection
+
+## Code of conduct
+- We are aiming for a grade of 8
+- Decision making will be done through consensus
+- We will have 20 minute weekly meetings to ensure the deliverable (online / in person)
+- Communication will be done through:
+    - WhatsApp and Discord
+    - Mattermost for official stuff
+
+## Tasks and planning
+- Scrum: We will split backlog into small issues
+- GitLab issues: check Brightspace and Mattermost for messages from TA regarding how to do issues properly
+
+## Initial development
+- Project setup: everyone should have their project set up done by next Monday
+- Feature development:
+    - We agreed on a frontend inspired by Notability
+    - We will try to get the first 6 basic requirements done by the next official meeting
+    - We will have a meeting on Monday 13:45 to make sure we have something deliverable
+    - Half of the people work on frontend, the other half on backend
+
+## Sum up
+- Action points:
+    - Vlad, Dhruvan and Bartosz will work on backend
+    - Dinu, Koen and Piotr will work on frontend
+    - First 6 basic requirements should be done by next week
+- Feedback:
+    - The meeting went well, everyone was involved and discussed topics were relevant

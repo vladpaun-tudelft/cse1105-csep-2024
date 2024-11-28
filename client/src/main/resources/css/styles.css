@@ -1,0 +1,118 @@
+* {
+    -main-foreground: #2B2D30;
+    -main-background: #1E1F22;
+    -main-selected: #3D3F42;
+    -fx-text-fill: white;
+}
+
+.separator:horizontal .line {
+    -fx-background-color: -main-background;
+    -fx-border-width: 0;
+    -fx-pref-height: 1px;
+}
+
+/* LIST VIEW */
+.list-view .text-field {
+    -fx-background-color: -main-background;
+    -fx-border-width: 0;
+}
+.list-view .list-cell:selected {
+    -fx-background-color: -main-selected;
+}
+.list-view {
+    -fx-background-color: -main-foreground;
+}
+.list-view .list-cell {
+    -fx-background-color: -main-foreground; /* Default background */
+    -fx-border-radius: 10;
+    -fx-padding: 3px;
+}
+
+/* Content view styles */
+.content-view {
+    -fx-border-color: -main-background;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+.content-blocker {
+    -fx-text-fill: #7e7e7e;
+}
+
+/* Options bar style */
+.options-bar {
+    -fx-background-color: -main-foreground;
+}
+
+/* Text-area content background */
+.text-area .content {
+    -fx-background-color: -main-background;
+    -fx-border-color: -main-background;
+    -fx-background-insets: 0;
+}
+.text-area .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-pref-width: 5px;
+    -fx-padding: 0;
+}
+.text-area .scroll-bar .thumb {
+    -fx-background-color : derive(-main-foreground, 70.0%);
+    -fx-background-insets : 0.0, 0.0, 0.0;
+    -fx-background-radius : 0.1em;
+}
+.text-area .scroll-bar:pressed {
+    -fx-background-color: derive(-main-foreground, 15.0%);
+}
+.text-area .scroll-bar:hover {
+    -fx-background-color: derive(-main-foreground, 15.0%);
+}
+.text-area .scroll-bar .increment-arrow,
+.text-area .scroll-bar .decrement-arrow{
+    -fx-shape : " ";
+    -fx-padding :0.15em 0.0;
+}
+.text-area .content {
+    -fx-end-margin: 0 50px 0 0;;
+}
+
+/* BUTTON */
+.button {
+    -fx-background-color: -main-foreground;
+    -fx-transition: 1s;
+}
+.button:hover {
+    -fx-background-color: -main-selected;
+}
+
+/* DEFAULT CLASSES */
+.background-element {
+    -fx-background-color: -main-background;
+    -fx-border-color: -main-background;
+}
+.foreground-element {
+    -fx-background-color: -main-foreground;
+    -fx-border-color: -main-foreground;
+    -fx-text-fill: white;
+}
+
+.split-pane .split-pane-divider {
+    -fx-padding: 1;
+    -fx-background-color: -main-foreground;
+}
+
+.delete_icon {
+    -fx-background-image: url("icons/trash.png");
+    -fx-background-size: 18px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.search_icon {
+    -fx-background-image: url("icons/search.png");
+    -fx-background-size: 18px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
