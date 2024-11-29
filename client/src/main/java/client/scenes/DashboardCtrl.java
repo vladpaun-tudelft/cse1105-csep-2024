@@ -16,6 +16,7 @@ import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import org.checkerframework.checker.units.qual.A;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -63,6 +64,8 @@ public class DashboardCtrl implements Initializable {
     private RadioMenuItem allNotesButton;
     @FXML
     private ToggleGroup collectionSelect;
+    @FXML
+    private MenuItem addCollectionButton;
     @FXML
     private VBox root;
 
@@ -223,6 +226,31 @@ public class DashboardCtrl implements Initializable {
 
         noteTitle.setText("New Note");
         noteBody.setText("");
+    }
+
+    public void addCollection() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("New collection");
+        dialog.setContentText("Please enter the title for your new collection");
+        Optional<String> collectionTitle = dialog.showAndWait();
+        if (collectionTitle.isPresent()) {
+            String s = collectionTitle.get();
+            if (s.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText("A collection needs a title");
+                alert.showAndWait();
+                return;
+            }
+            if (!server.getCollections().stream().filter(c -> c.title.equals(s)).toList().isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText("A collection with this title already exists");
+                alert.showAndWait();
+                return;
+            }
+            server.addCollection(new Collection(s));
+        }
     }
 
     public void search() {

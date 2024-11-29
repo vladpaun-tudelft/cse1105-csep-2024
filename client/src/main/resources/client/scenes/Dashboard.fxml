@@ -66,7 +66,7 @@
                   </RadioMenuItem>
                   <RadioMenuItem mnemonicParsing="false" style="-fx-text-fill: #000000;" text="Default" toggleGroup="$collectionSelect" />
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" style="-fx-text-fill: #000000;" text="Add collection" />
+                  <MenuItem fx:id="addCollectionButton" mnemonicParsing="false" onAction="#addCollection" style="-fx-text-fill: #000000;" text="Add collection" />
               </items>
             </Menu>
         <Menu mnemonicParsing="false" text="File">
