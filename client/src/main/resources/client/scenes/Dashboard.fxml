@@ -40,11 +40,13 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
@@ -55,6 +57,18 @@
   <children>
     <MenuBar styleClass="options-bar" VBox.vgrow="NEVER">
       <menus>
+            <Menu fx:id="collectionMenu" mnemonicParsing="false" style="-fx-text-fill: #000000;" text="Collection">
+              <items>
+                  <RadioMenuItem fx:id="allNotesButton" mnemonicParsing="false" style="-fx-text-fill: #000000;" text="Show all notes">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="collectionSelect" />
+                     </toggleGroup>
+                  </RadioMenuItem>
+                  <RadioMenuItem mnemonicParsing="false" style="-fx-text-fill: #000000;" text="Default" toggleGroup="$collectionSelect" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" style="-fx-text-fill: #000000;" text="Add collection" />
+              </items>
+            </Menu>
         <Menu mnemonicParsing="false" text="File">
           <items>
             <MenuItem mnemonicParsing="false" text="New" />
@@ -96,7 +110,7 @@
       <items>
             <AnchorPane layoutY="1.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" styleClass="foreground-element">
                <children>
-                  <Label layoutX="9.0" layoutY="6.0" text="CurrentCollectionName">
+                  <Label fx:id="currentCollectionTitle" layoutX="9.0" layoutY="6.0" text="CurrentCollectionName">
                      <font>
                         <Font name="System Bold" size="15.0" />
                      </font>

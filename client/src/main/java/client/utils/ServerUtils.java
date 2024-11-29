@@ -24,6 +24,7 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 
 import commons.Collection;
 import commons.Note;
@@ -83,6 +84,13 @@ public class ServerUtils {
 				.target(SERVER).path("api/notes/" + id)
 				.request(APPLICATION_JSON)
 				.get(Note.class);
+	}
+
+	public List<Note> getNotesInCollection(String title) {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("api/collection/" + title)
+				.request(APPLICATION_JSON)
+				.get(new GenericType<List<Note>>() {});
 	}
 
 	public Note updateNote(Note note) {

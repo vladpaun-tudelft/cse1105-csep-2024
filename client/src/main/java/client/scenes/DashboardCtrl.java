@@ -56,6 +56,14 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private TextField searchField;
     @FXML
+    private Label currentCollectionTitle;
+    @FXML
+    private Menu collectionMenu;
+    @FXML
+    private RadioMenuItem allNotesButton;
+    @FXML
+    private ToggleGroup collectionSelect;
+    @FXML
     private VBox root;
 
     private ObservableList<Note> collectionNotes;
@@ -94,9 +102,12 @@ public class DashboardCtrl implements Initializable {
 
         // This is just a temporary solution
         // TODO: Implement this properly once we also have the proper frontend for switching between collections
-        if (server.getCollections().stream().filter(c -> c.title.equals("All")).toList().isEmpty()) {
-            server.addCollection(new Collection("All"));
+        if (server.getCollections().stream().filter(c -> c.title.equals("Default")).toList().isEmpty()) {
+            server.addCollection(new Collection("Default"));
         }
+
+        collectionSelect.selectToggle(allNotesButton);
+        currentCollectionTitle.setText("All notes");
 
         // Temporary solution
         scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
@@ -192,8 +203,15 @@ public class DashboardCtrl implements Initializable {
         setSearchIsActive(false);
 
         //This is a temporary solution
-        Collection defaultCollection = server.getCollections().stream().filter(c -> c.title.equals("All")).toList().getFirst();
-        Note newNote = new Note("New Note", "", defaultCollection);
+        Collection collection;
+        if (collectionSelect.getSelectedToggle().equals(allNotesButton)) {
+            collection = server.getCollections().stream().filter(c -> c.title.equals("Default")).toList().getFirst();
+        }
+        else {
+            RadioMenuItem selectedCollection = (RadioMenuItem)(collectionSelect.getSelectedToggle());
+            collection = server.getCollections().stream().filter(c -> c.title.equals(selectedCollection.getText())).toList().getFirst();
+        }
+        Note newNote = new Note("New Note", "", collection);
         collectionNotes.add(newNote);
         // Add the new note to a list of notes pending being sent to the server
         createPendingNotes.add(newNote);
