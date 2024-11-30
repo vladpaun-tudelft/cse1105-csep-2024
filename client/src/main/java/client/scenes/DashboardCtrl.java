@@ -93,13 +93,6 @@ public class DashboardCtrl implements Initializable {
     @SneakyThrows
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
-        // Gets all the notes in the db into the list of notes in the client
-        // TODO: To be changed with server.getNotesByCollection when we implement collections
-//        collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
-//
-//        listViewSetup(collectionNotes);
-//        deleteButton.setDisable(true);
-
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
                 case ENTER -> {
@@ -109,15 +102,21 @@ public class DashboardCtrl implements Initializable {
             }
         });
 
-        // This is just a temporary solution
-        // TODO: Implement this properly once we also have the proper frontend for switching between collections
         if (server.getCollections().stream().filter(c -> c.title.equals("Default")).toList().isEmpty()) {
             Collection addedCollection = server.addCollection(new Collection("Default"));
-            config.writeToFile(addedCollection);
+            try {
+                config.writeToFile(addedCollection);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         // Set up the collections menu
-        collections = config.readFromFile();
+        try {
+            collections = config.readFromFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         for (Collection c : collections) {
             RadioMenuItem radioMenuItem = new RadioMenuItem(c.title);
             radioMenuItem.setOnAction(Event -> {
