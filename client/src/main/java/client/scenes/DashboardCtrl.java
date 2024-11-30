@@ -281,6 +281,8 @@ public class DashboardCtrl implements Initializable {
                 viewCollection();
             });
             collectionMenu.getItems().addFirst(radioMenuItem);
+            collectionSelect.selectToggle(radioMenuItem);
+            viewCollection();
         }
     }
 
@@ -352,7 +354,12 @@ public class DashboardCtrl implements Initializable {
         collectionNotes = FXCollections.observableArrayList(notes);
         listViewSetup(collectionNotes);
         currentCollectionTitle.setText(collectionTitle);
-        deleteCollectionButton.setDisable(false);
+        if (currentCollection.title.equals("Default")) {
+            deleteCollectionButton.setDisable(true);
+        }
+        else {
+            deleteCollectionButton.setDisable(false);
+        }
     }
 
     @FXML

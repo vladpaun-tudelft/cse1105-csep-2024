@@ -22,8 +22,7 @@ public class Note {
     public String body;
 
     @ManyToOne
-    // To be changed to nullable = false when we implement collections
-    @JoinColumn(name = "collection_id", nullable = true)
+    @JoinColumn(name = "collection_id", nullable = false)
     public commons.Collection collection;
 
     @SuppressWarnings("unused")
