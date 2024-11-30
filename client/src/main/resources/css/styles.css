@@ -116,3 +116,8 @@
     -fx-border-color: transparent;
     -fx-background-color: transparent;
 }
+
+/* WebView */
+.webview-content {
+    -fx-background-color: transparent;
+}
