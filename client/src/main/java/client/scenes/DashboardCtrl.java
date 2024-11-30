@@ -10,7 +10,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -19,8 +18,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import lombok.SneakyThrows;
-import org.checkerframework.checker.units.qual.A;
-import org.checkerframework.checker.units.qual.C;
 
 import java.io.IOException;
 import java.net.URL;
@@ -70,7 +67,7 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private ToggleGroup collectionSelect;
     @FXML
-    private MenuItem addCollectionButton;
+    private Button deleteCollectionButton;
     @FXML
     private VBox root;
 
@@ -239,7 +236,6 @@ public class DashboardCtrl implements Initializable {
             collection = server.getCollections().stream().filter(c -> c.title.equals(selectedCollection.getText())).toList().getFirst();
         }
         Note newNote = new Note("New Note", "", collection);
-        config.writeAllToFile(collections);
         collectionNotes.add(newNote);
         // Add the new note to a list of notes pending being sent to the server
         createPendingNotes.add(newNote);
@@ -289,6 +285,35 @@ public class DashboardCtrl implements Initializable {
         }
     }
 
+    public void deleteCollection() throws IOException {
+        String selectedCollectionTitle = ((RadioMenuItem)collectionSelect.getSelectedToggle()).getText();
+        Collection selectedCollection = server.getCollections().stream().filter(c -> c.title.equals(selectedCollectionTitle)).toList().getFirst();
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Delete collection");
+        alert.setContentText("Are you sure you want to delete this collection? All notes in the collection will be deleted as well.");
+        Optional<ButtonType> buttonType = alert.showAndWait();
+        if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
+           List<Note> notesInCollection = server.getAllNotes()
+                   .stream().filter(n -> n.collection.id == selectedCollection.id)
+                   .toList();
+           for (Note n : notesInCollection) {
+               deleteNote(n);
+           }
+           // delete collection from server
+           server.deleteCollection(selectedCollection.id);
+           // delete collection from config file
+           collections.remove(selectedCollection);
+           config.writeAllToFile(collections);
+           // delete collection from collections menu
+           collectionMenu.getItems().remove(
+                   collectionSelect.getSelectedToggle()
+           );
+           collectionSelect.selectToggle(allNotesButton);
+           viewAllNotes();
+        }
+    }
+
     public void search() {
         if (searchField.getText().isEmpty()) {
             return;
@@ -316,6 +341,7 @@ public class DashboardCtrl implements Initializable {
         collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
         listViewSetup(collectionNotes);
         currentCollectionTitle.setText("All Notes");
+        deleteCollectionButton.setDisable(true);
     }
 
     public void viewCollection() {
@@ -327,6 +353,7 @@ public class DashboardCtrl implements Initializable {
         collectionNotes = FXCollections.observableArrayList(notes);
         listViewSetup(collectionNotes);
         currentCollectionTitle.setText(collectionTitle);
+        deleteCollectionButton.setDisable(false);
     }
 
     @FXML
