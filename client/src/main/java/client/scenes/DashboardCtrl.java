@@ -52,11 +52,15 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private Label noteTitle;
     @FXML
+    private Label noteTitle_md;
+    @FXML
     private ListView collectionView;
     @FXML
     private Button addButton;
     @FXML
     private Button deleteButton;
+    @FXML
+    private Button deleteButton_md;
     @FXML
     private Button searchButton;
     @FXML
@@ -90,6 +94,7 @@ public class DashboardCtrl implements Initializable {
         updateMarkdownView("");
 
         deleteButton.setDisable(true);
+        deleteButton_md.setDisable(true);
 
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
@@ -184,8 +189,13 @@ public class DashboardCtrl implements Initializable {
                     if(item != null) {
                         System.out.println("Cell selected: " + item.getTitle());
                         noteBody.setText((item).getBody());
+
                         noteTitle.setText((item).getTitle());
+                        noteTitle_md.setText((item).getTitle());
+
                         deleteButton.setDisable(false);
+                        deleteButton_md.setDisable(false);
+
                         handleContentBlocker();
                     }
                 }
@@ -228,6 +238,8 @@ public class DashboardCtrl implements Initializable {
         collectionView.edit(collectionNotes.size() - 1);
 
         noteTitle.setText("New Note");
+        noteTitle_md.setText("New Note");
+
         noteBody.setText("");
 
         updateMarkdownView("");
@@ -249,7 +261,10 @@ public class DashboardCtrl implements Initializable {
         }
         listViewSetup(FXCollections.observableArrayList(filteredNotes));
         contentBlocker.setVisible(true);
+
         deleteButton.setDisable(true);
+        deleteButton_md.setDisable(true);
+
         collectionView.getSelectionModel().clearSelection();
 
     }
@@ -259,6 +274,7 @@ public class DashboardCtrl implements Initializable {
         Note currentNote = (Note)collectionView.getSelectionModel().getSelectedItem();
         if (currentNote != null) {
             noteTitle.setText(currentNote.getTitle());
+            noteTitle_md.setText(currentNote.getTitle());
 
             if (!createPendingNotes.contains(currentNote) && !updatePendingNotes.contains(currentNote)) {
                 updatePendingNotes.add(currentNote);
@@ -345,9 +361,15 @@ public class DashboardCtrl implements Initializable {
                 }
                 collectionNotes.remove(currentNote);
                 noteBody.clear();
+
                 noteTitle.setText("");
+                noteTitle_md.setText("");
+
                 updateMarkdownView("");
+
                 deleteButton.setDisable(true);
+                deleteButton_md.setDisable(true);
+
                 contentBlocker.setVisible(true);
                 System.out.println("Note deleted: " + currentNote.getTitle());
             }
