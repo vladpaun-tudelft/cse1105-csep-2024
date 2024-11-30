@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.utils.Config;
 import com.google.inject.Inject;
 
 import client.utils.ServerUtils;
@@ -17,7 +18,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.checkerframework.checker.units.qual.A;
+import org.checkerframework.checker.units.qual.C;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,14 +87,16 @@ public class DashboardCtrl implements Initializable {
         this.server = server;
     }
 
+    @lombok.SneakyThrows
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
         // Gets all the notes in the db into the list of notes in the client
         // TODO: To be changed with server.getNotesByCollection when we implement collections
         collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
 
-        listViewSetup(collectionNotes);
+        Config config = new Config();
 
+        listViewSetup(collectionNotes);
         deleteButton.setDisable(true);
 
         searchField.setOnKeyPressed(event -> {
@@ -106,7 +111,9 @@ public class DashboardCtrl implements Initializable {
         // This is just a temporary solution
         // TODO: Implement this properly once we also have the proper frontend for switching between collections
         if (server.getCollections().stream().filter(c -> c.title.equals("Default")).toList().isEmpty()) {
-            server.addCollection(new Collection("Default"));
+            Collection defaultCollection = new Collection("Default");
+            server.addCollection(defaultCollection);
+            config.writeToFile(defaultCollection);
         }
 
         collectionSelect.selectToggle(allNotesButton);
