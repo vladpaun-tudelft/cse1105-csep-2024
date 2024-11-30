@@ -1,12 +1,12 @@
 /* General styles */
 body {
-    background-color: #2b2d30;
+    background-color: #1e1f22;
     color: #ffffff;
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0 18px;
     line-height: 1.6;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 /* Headings */
