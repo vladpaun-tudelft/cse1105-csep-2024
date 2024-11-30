@@ -11,7 +11,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.junit>5.10.1</version.junit>
-		<version.mockito>5.8.0</version.mockito>
+		<version.mockito>5.13.0</version.mockito>
 		<version.jersey>3.1.9</version.jersey>
 		<version.jfx>23.0.1</version.jfx>
 	</properties>
@@ -76,6 +76,13 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.18.0</version>
+		</dependency>
+
+		<!-- Markdown -->
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark</artifactId>
+			<version>0.24.0</version>
 		</dependency>
 
 		<!-- test -->

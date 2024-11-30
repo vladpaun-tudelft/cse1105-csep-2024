@@ -32,8 +32,11 @@ public class CollectionController {
      */
     @PostMapping
     public ResponseEntity<?> createCollection(@RequestBody Collection collection) {
+        if (collection == null) {
+            return ResponseEntity.badRequest().build();
+        }
         //handling the empty collection title
-        if (collection.title == null || collection.title.isEmpty()) {
+        if (collection.title == null || collection.title.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("A collection needs a title.");
         }
         //duplicated titles or different errors
@@ -90,11 +93,14 @@ public class CollectionController {
     public ResponseEntity<?> updateCollection(
             @PathVariable long id,
             @RequestBody Collection updatedCollection) {
+        if (updatedCollection == null) {
+            return ResponseEntity.badRequest().build();
+        }
         Optional<Collection> existingCollection = collectionService.findById(id);
         if (existingCollection.isPresent()) {
             updatedCollection.id = id;
             //handling the empty collection title
-            if (updatedCollection.title == null || updatedCollection.title.isEmpty()) {
+            if (updatedCollection.title == null || updatedCollection.title.isBlank()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("A collection needs a title.");
             }
             //handling duplication of titles or different errors

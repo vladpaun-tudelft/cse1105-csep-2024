@@ -2,6 +2,7 @@ package commons;
 
 import jakarta.persistence.*;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -77,9 +78,7 @@ public class Note {
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if(obj == null || (this.getClass() != obj.getClass())) return false;
-        return this.id == ((Note) obj).id;
+        return EqualsBuilder.reflectionEquals(this, obj);
     }
 
     /**

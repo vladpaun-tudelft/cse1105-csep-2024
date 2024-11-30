@@ -3,6 +3,7 @@ package server.api;
 import commons.Note;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import server.service.CollectionService;
 import server.service.NoteService;
 
 import java.util.List;
@@ -12,13 +13,21 @@ import java.util.Optional;
 @RequestMapping("/api/notes")
 public class NoteController {
     private final NoteService noteService;
+    private final CollectionService collectionService;
 
-    public NoteController(NoteService noteService) {
+    public NoteController(NoteService noteService, CollectionService collectionService) {
         this.noteService = noteService;
+        this.collectionService = collectionService;
     }
 
     @PostMapping(path = {"/", ""})
     public ResponseEntity<Note> createNote(@RequestBody Note note) {
+        if (note == null || note.collection == null || note.title.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (!collectionService.getAllCollections().contains(note.collection)) {
+            return ResponseEntity.badRequest().build();
+        }
         Note createdNote = noteService.save(note);
         return ResponseEntity.ok(createdNote);
     }
