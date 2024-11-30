@@ -62,4 +62,23 @@ Agenda Items:
 - Closure (1 min)
 
 # Minutes
-// TODO ADD MINUTES
+## Review of Completed Features
+- Frontend
+  - Basic UI for adding, deleting, and managing notes implemented.
+  - Notes saving feature implemented.
+- Backend
+  - Models and endpoints created.
+  - `ServerUtils` established for client-server communication.
+  - Auto-save functionality implemented, saving notes to the database every 10 seconds.
+- Integration
+  - Frontend and Backend connected
+##  Discuss Code of Conduct
+- Existing draft reviewed, with comments provided for edits.
+- Agreement on requiring at least two approvals on merge requests for all changes.
+## Action Items
+- Tasks for next week assigned to groups:
+  - **Markdown Features**: Dhruvan and Vlad.
+  - **Collections Module**: Dinu and Bartek.
+  - **General Frontend Enhancements**: Koen and Piotr.
+- General tasks
+  - Testing your own previous code
