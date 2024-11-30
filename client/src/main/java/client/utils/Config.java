@@ -33,7 +33,11 @@ public class Config {
     public void writeToFile(Collection collection) throws IOException {
         List<Collection> collections = readFromFile();
         collections.add(collection);
-        System.out.println(collections);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(config, collections);
+    }
+
+    public void writeAllToFile(List<Collection> collections) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(config, collections);
     }

@@ -10,6 +10,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -17,6 +18,7 @@ import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import lombok.SneakyThrows;
 import org.checkerframework.checker.units.qual.A;
 import org.checkerframework.checker.units.qual.C;
 
@@ -76,28 +78,30 @@ public class DashboardCtrl implements Initializable {
     private List<Note> filteredNotes = new ArrayList<>();
     private boolean searchIsActive = false;
 
+    private List<Collection> collections;
+
+    Config config = new Config();
+
     private final List<Note> createPendingNotes = new ArrayList<>();
     private final List<Note> updatePendingNotes = new ArrayList<>();
 
     private boolean pendingHideContentBlocker = true;
 
     @Inject
-    public DashboardCtrl(ServerUtils server, MainCtrl mainCtrl) {
+    public DashboardCtrl(ServerUtils server, MainCtrl mainCtrl) throws IOException {
         this.mainCtrl = mainCtrl;
         this.server = server;
     }
 
-    @lombok.SneakyThrows
+    @SneakyThrows
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
         // Gets all the notes in the db into the list of notes in the client
         // TODO: To be changed with server.getNotesByCollection when we implement collections
-        collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
-
-        Config config = new Config();
-
-        listViewSetup(collectionNotes);
-        deleteButton.setDisable(true);
+//        collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
+//
+//        listViewSetup(collectionNotes);
+//        deleteButton.setDisable(true);
 
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
@@ -111,13 +115,24 @@ public class DashboardCtrl implements Initializable {
         // This is just a temporary solution
         // TODO: Implement this properly once we also have the proper frontend for switching between collections
         if (server.getCollections().stream().filter(c -> c.title.equals("Default")).toList().isEmpty()) {
-            Collection defaultCollection = new Collection("Default");
-            server.addCollection(defaultCollection);
-            config.writeToFile(defaultCollection);
+            Collection addedCollection = server.addCollection(new Collection("Default"));
+            config.writeToFile(addedCollection);
+        }
+
+        // Set up the collections menu
+        collections = config.readFromFile();
+        for (Collection c : collections) {
+            RadioMenuItem radioMenuItem = new RadioMenuItem(c.title);
+            radioMenuItem.setOnAction(Event -> {
+                viewCollection();
+            });
+            radioMenuItem.setStyle("-fx-text-fill: #000000");
+            radioMenuItem.setToggleGroup(collectionSelect);
+            collectionMenu.getItems().addFirst(radioMenuItem);
         }
 
         collectionSelect.selectToggle(allNotesButton);
-        currentCollectionTitle.setText("All notes");
+        viewAllNotes();
 
         // Temporary solution
         scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
@@ -129,6 +144,8 @@ public class DashboardCtrl implements Initializable {
     private void listViewSetup(ObservableList collectionNotes) {
 
         // Set required settings
+        deleteButton.setDisable(true);
+        contentBlocker.setVisible(true);
         collectionView.setItems(collectionNotes);
         collectionView.setEditable(true);
         collectionView.setFixedCellSize(35);
@@ -209,7 +226,7 @@ public class DashboardCtrl implements Initializable {
         contentBlocker.setVisible(pendingHideContentBlocker);
     }
 
-    public void addNote() {
+    public void addNote() throws IOException {
         setSearchIsActive(false);
 
         //This is a temporary solution
@@ -222,6 +239,7 @@ public class DashboardCtrl implements Initializable {
             collection = server.getCollections().stream().filter(c -> c.title.equals(selectedCollection.getText())).toList().getFirst();
         }
         Note newNote = new Note("New Note", "", collection);
+        config.writeAllToFile(collections);
         collectionNotes.add(newNote);
         // Add the new note to a list of notes pending being sent to the server
         createPendingNotes.add(newNote);
@@ -235,7 +253,7 @@ public class DashboardCtrl implements Initializable {
         noteBody.setText("");
     }
 
-    public void addCollection() {
+    public void addCollection() throws IOException {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("New collection");
         dialog.setContentText("Please enter the title for your new collection");
@@ -256,7 +274,18 @@ public class DashboardCtrl implements Initializable {
                 alert.showAndWait();
                 return;
             }
-            server.addCollection(new Collection(s));
+            Collection addedCollection = server.addCollection(new Collection(s));
+            config.writeToFile(addedCollection);
+            collections.add(addedCollection);
+
+            // add entry in collections menu
+            RadioMenuItem radioMenuItem = new RadioMenuItem(s);
+            radioMenuItem.setToggleGroup(collectionSelect);
+            radioMenuItem.setStyle("-fx-text-fill: #000000");
+            radioMenuItem.setOnAction(Event -> {
+                viewCollection();
+            });
+            collectionMenu.getItems().addFirst(radioMenuItem);
         }
     }
 
@@ -279,6 +308,25 @@ public class DashboardCtrl implements Initializable {
         deleteButton.setDisable(true);
         collectionView.getSelectionModel().clearSelection();
 
+    }
+
+    public void viewAllNotes() {
+        setSearchIsActive(false);
+        contentBlocker.setVisible(true);
+        collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
+        listViewSetup(collectionNotes);
+        currentCollectionTitle.setText("All Notes");
+    }
+
+    public void viewCollection() {
+        setSearchIsActive(false);
+        contentBlocker.setVisible(true);
+        String collectionTitle = ((RadioMenuItem)collectionSelect.getSelectedToggle()).getText();
+        Collection currentCollection = server.getCollections().stream().filter(c -> c.title.equals(collectionTitle)).toList().getFirst();
+        List<Note> notes = server.getAllNotes().stream().filter(n -> n.collection.id == currentCollection.id).toList();
+        collectionNotes = FXCollections.observableArrayList(notes);
+        listViewSetup(collectionNotes);
+        currentCollectionTitle.setText(collectionTitle);
     }
 
     @FXML

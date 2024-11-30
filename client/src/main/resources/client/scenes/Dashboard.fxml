@@ -59,12 +59,11 @@
       <menus>
             <Menu fx:id="collectionMenu" mnemonicParsing="false" style="-fx-text-fill: #000000;" text="Collection">
               <items>
-                  <RadioMenuItem fx:id="allNotesButton" mnemonicParsing="false" style="-fx-text-fill: #000000;" text="Show all notes">
+                  <RadioMenuItem fx:id="allNotesButton" mnemonicParsing="false" onAction="#viewAllNotes" style="-fx-text-fill: #000000;" text="Show all notes">
                      <toggleGroup>
                         <ToggleGroup fx:id="collectionSelect" />
                      </toggleGroup>
                   </RadioMenuItem>
-                  <RadioMenuItem mnemonicParsing="false" style="-fx-text-fill: #000000;" text="Default" toggleGroup="$collectionSelect" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="addCollectionButton" mnemonicParsing="false" onAction="#addCollection" style="-fx-text-fill: #000000;" text="Add collection" />
               </items>
