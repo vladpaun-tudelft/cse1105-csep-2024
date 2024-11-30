@@ -108,6 +108,18 @@ public class DashboardCtrl implements Initializable {
 
         // Temporary solution
         scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
+
+        // Listener for updating the markdown view
+        noteBody.textProperty().addListener((observable, oldValue, newValue) -> {
+            Note currentNote = (Note)collectionView.getSelectionModel().getSelectedItem();
+            if (currentNote != null) {
+                currentNote.setBody(newValue);
+                String renderedHtml = convertMarkdownToHtml(newValue);
+                markdownView.getEngine().loadContent(renderedHtml, "text/html");
+
+                markdownViewBlocker.setVisible(newValue == null || newValue.isEmpty());
+            }
+        });
     }
 
     /**
@@ -217,6 +229,8 @@ public class DashboardCtrl implements Initializable {
 
         noteTitle.setText("New Note");
         noteBody.setText("");
+
+        updateMarkdownView("");
     }
 
     public void search() {
