@@ -464,15 +464,17 @@ public class DashboardCtrl implements Initializable {
             selectedCollection.title = newTitle;
 
             // Update the collection on the server
-            server.updateCollection(selectedCollection);
+            Collection updatedCollection = server.updateCollection(selectedCollection);
 
             // Update the title locally
             for (int i = 0; i < collections.size(); i++) {
                 if (collections.get(i).id == selectedCollection.id) {
-                    collections.set(i, selectedCollection);
+                    collections.set(i, updatedCollection);
                     break;
                 }
             }
+            config.writeAllToFile(collections);
+
             config.writeAllToFile(collections);
 
             // update the menu item
