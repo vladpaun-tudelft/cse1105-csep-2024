@@ -1,9 +1,8 @@
 package client.scenes;
 
 import client.utils.Config;
-import com.google.inject.Inject;
-
 import client.utils.ServerUtils;
+import com.google.inject.Inject;
 import commons.Collection;
 import commons.Note;
 import javafx.application.Platform;
@@ -26,7 +25,10 @@ import org.commonmark.renderer.html.HtmlRenderer;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -80,6 +82,8 @@ public class DashboardCtrl implements Initializable {
     private Button deleteCollectionButton;
     @FXML
     private VBox root;
+    @FXML
+    private Button editCollectionButton;
 
     private ObservableList<Note> collectionNotes;
     private List<Note> filteredNotes = new ArrayList<>();
@@ -327,6 +331,74 @@ public class DashboardCtrl implements Initializable {
             collectionMenu.getItems().addFirst(radioMenuItem);
             collectionSelect.selectToggle(radioMenuItem);
             viewCollection();
+        }
+    }
+
+    /**
+     * Method that will change the title in collection
+     *
+     * @throws IOException exception
+     */
+    public void changeTitleInCollection() throws IOException {
+        // Get the collection title
+        String selectedCollectionTitle = ((RadioMenuItem) collectionSelect.getSelectedToggle()).getText();
+
+        // Find the collection
+        Collection selectedCollection = server.getCollections()
+                .stream()
+                .filter(c -> c.title.equals(selectedCollectionTitle))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Collection not found"));
+
+        // Ask for a new title with a dialog
+        TextInputDialog dialog = new TextInputDialog(selectedCollectionTitle);
+        dialog.setTitle("Change Collection Title");
+        dialog.setContentText("Please enter the new title for the collection:");
+
+        Optional<String> newTitleOptional = dialog.showAndWait();
+
+        // If we get a title
+        if (newTitleOptional.isPresent()) {
+            String newTitle = newTitleOptional.get().trim();
+
+            // Validate the new title
+            if (newTitle.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText("The collection title cannot be empty.");
+                alert.showAndWait();
+                return;
+            }
+
+            // Check if a collection with the same title already exists
+            if (server.getCollections()
+                    .stream()
+                    .anyMatch(c -> c.title.equals(newTitle))) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText("A collection with this title already exists.");
+                alert.showAndWait();
+                return;
+            }
+
+            // Update the collection's title
+            selectedCollection.title = newTitle;
+
+            // Update the collection on the server
+            server.updateCollection(selectedCollection);
+
+            // Update the title locally
+            for (int i = 0; i < collections.size(); i++) {
+                if (collections.get(i).id == selectedCollection.id) {
+                    collections.set(i, selectedCollection);
+                    break;
+                }
+            }
+            config.writeAllToFile(collections);
+
+            // update the menu item
+            ((RadioMenuItem) collectionSelect.getSelectedToggle()).setText(newTitle);
+            currentCollectionTitle.setText(newTitle);
         }
     }
 
