@@ -368,6 +368,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void viewAllNotes() {
+        saveAllPendingNotes();
         setSearchIsActive(false);
         contentBlocker.setVisible(true);
         collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
@@ -377,6 +378,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void viewCollection() {
+        saveAllPendingNotes();
         setSearchIsActive(false);
         contentBlocker.setVisible(true);
         String collectionTitle = ((RadioMenuItem)collectionSelect.getSelectedToggle()).getText();
