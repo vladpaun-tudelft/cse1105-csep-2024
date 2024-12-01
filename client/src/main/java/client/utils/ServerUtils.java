@@ -55,6 +55,13 @@ public class ServerUtils {
 				.get(Note.class);
 	}
 
+	public List<Note> getNotesInCollection(String title) {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("api/collection/" + title)
+				.request(APPLICATION_JSON)
+				.get(new GenericType<List<Note>>() {});
+	}
+
 	public Note updateNote(Note note) {
 		return ClientBuilder.newClient(new ClientConfig())
 				.target(SERVER).path("api/notes/" + note.id)
