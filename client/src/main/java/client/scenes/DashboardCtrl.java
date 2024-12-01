@@ -115,11 +115,21 @@ public class DashboardCtrl implements Initializable {
             }
         });
 
-        if (server.getCollections().stream().filter(c -> c.title.equals("Default")).toList().isEmpty()) {
-            Collection addedCollection = server.addCollection(new Collection("Default"));
+//        if (server.getCollections().stream().filter(c -> c.title.equals("Default")).toList().isEmpty()) {
+//            Collection addedCollection = server.addCollection(new Collection("Default"));
+//            try {
+//                config.writeToFile(addedCollection);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+
+        if (config.readFromFile().isEmpty()) {
+            Collection defaultCollection = server.addCollection(new Collection("Default"));
             try {
-                config.writeToFile(addedCollection);
-            } catch (IOException e) {
+                config.writeToFile(defaultCollection);
+            }
+            catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
