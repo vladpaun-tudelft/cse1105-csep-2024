@@ -1,21 +1,18 @@
 package client.scenes;
 
+import client.ui.NoteListItem;
 import com.google.inject.Inject;
 
 import client.utils.ServerUtils;
 import commons.Collection;
 import commons.Note;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.util.StringConverter;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -46,11 +43,9 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private Label noteTitle;
     @FXML
-    private ListView collectionView;
+    public ListView collectionView;
     @FXML
     private Button addButton;
-    @FXML
-    private Button deleteButton;
     @FXML
     private Button searchButton;
     @FXML
@@ -65,7 +60,7 @@ public class DashboardCtrl implements Initializable {
     private final List<Note> createPendingNotes = new ArrayList<>();
     private final List<Note> updatePendingNotes = new ArrayList<>();
 
-    private boolean pendingHideContentBlocker = true;
+    public boolean pendingHideContentBlocker = true;
 
     @Inject
     public DashboardCtrl(ServerUtils server, MainCtrl mainCtrl) {
@@ -81,7 +76,7 @@ public class DashboardCtrl implements Initializable {
 
         listViewSetup(collectionNotes);
 
-        deleteButton.setDisable(true);
+        collectionView.getSelectionModel().clearSelection();
 
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
@@ -114,61 +109,9 @@ public class DashboardCtrl implements Initializable {
         collectionView.setCellFactory(TextFieldListCell.forListView());
 
         // Set ListView entry as Title (editable)
-        setupCellFactory();
+        collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteBody, this));
 
-        // Reset edit on click anywhere
-        root.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
-            if(!addButton.contains(event.getX(), event.getY())) {
-                int selected = collectionView.getSelectionModel().getSelectedIndex();
-                collectionView.getSelectionModel().clearSelection();
-                collectionView.getSelectionModel().select(selected);
-            }
-        });
 
-        // Remove content blocker on select
-        collectionView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Note>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Note> observable, Note oldValue, Note newValue) {
-                pendingHideContentBlocker = (newValue!=null);
-            }
-        });
-
-    }
-
-    private void setupCellFactory() {
-        collectionView.setCellFactory(lv -> {
-            TextFieldListCell<Note> cell = new TextFieldListCell<>();   // Create basic TextField cell to edit
-            cell.converterProperty().set(new StringConverter<>() {      // Edit converter which cell uses to display the custom object
-                @Override
-                public String toString(Note note) {                     // Override toString which the cell uses to display the object
-                    return note != null ? note.getTitle() : "";
-                    // We edit it such that it uses the cell uses the note title to display the note
-                }
-
-                @Override
-                public Note fromString(String string) {                 // Say what properties need to be changed on title edit
-                    Note note = cell.getItem();
-                    if (note != null) {
-                        note.setTitle(string);
-                    }
-                    return note;
-                }
-            });
-            cell.setOnMouseClicked(event -> {                           // Handle on edit behaviour
-                if (event != null) {
-                    Note item = cell.getItem();
-                    if(item != null) {
-                        System.out.println("Cell selected: " + item.getTitle());
-                        noteBody.setText((item).getBody());
-                        noteTitle.setText((item).getTitle());
-                        deleteButton.setDisable(false);
-                        handleContentBlocker();
-                    }
-                }
-            });
-            return cell;
-        });
     }
 
     public void setSearchIsActive(boolean b) {
@@ -184,9 +127,8 @@ public class DashboardCtrl implements Initializable {
     /**
      * Handles content blocker when new Note is loaded
      */
-    private void handleContentBlocker() {
-        pendingHideContentBlocker = !pendingHideContentBlocker;
-        contentBlocker.setVisible(pendingHideContentBlocker);
+    public void handleContentBlocker(boolean state) {
+        contentBlocker.setVisible(state);
     }
 
     public void addNote() {
@@ -206,6 +148,7 @@ public class DashboardCtrl implements Initializable {
 
         noteTitle.setText("New Note");
         noteBody.setText("");
+        handleContentBlocker(false);
     }
 
     public void search() {
@@ -224,7 +167,6 @@ public class DashboardCtrl implements Initializable {
         }
         listViewSetup(FXCollections.observableArrayList(filteredNotes));
         contentBlocker.setVisible(true);
-        deleteButton.setDisable(true);
         collectionView.getSelectionModel().clearSelection();
 
     }
@@ -256,8 +198,7 @@ public class DashboardCtrl implements Initializable {
         }
     }
 
-    public void deleteSelectedNote() {
-        Note currentNote = (Note) collectionView.getSelectionModel().getSelectedItem();
+    public void deleteSelectedNote(Note currentNote) {
         if (filteredNotes.contains(currentNote)) {
             filteredNotes.remove(currentNote);
             listViewSetup(FXCollections.observableArrayList(filteredNotes));
@@ -277,9 +218,9 @@ public class DashboardCtrl implements Initializable {
                 collectionNotes.remove(currentNote);
                 noteBody.clear();
                 noteTitle.setText("");
-                deleteButton.setDisable(true);
                 contentBlocker.setVisible(true);
                 System.out.println("Note deleted: " + currentNote.getTitle());
+                collectionView.getSelectionModel().clearSelection();
             }
         }
     }
@@ -315,6 +256,8 @@ public class DashboardCtrl implements Initializable {
         collectionNotes.remove(note);
         createPendingNotes.remove(note);
         updatePendingNotes.remove(note);
+
+        if(collectionNotes.isEmpty()) handleContentBlocker(true);
 
         server.deleteNote(note.id);
     }

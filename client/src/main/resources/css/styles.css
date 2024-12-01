@@ -101,11 +101,17 @@
 
 .delete_icon {
     -fx-background-image: url("icons/trash.png");
-    -fx-background-size: 18px;
+    -fx-background-size: 13px;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
     -fx-border-color: transparent;
     -fx-background-color: transparent;
+    -fx-pref-width: 30px;
+    -fx-pref-height: 30px;
+}
+
+.delete_icon:hover {
+    -fx-background-color: -main-background;
 }
 
 .search_icon {
