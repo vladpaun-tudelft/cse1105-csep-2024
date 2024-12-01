@@ -21,6 +21,7 @@
 }
 .list-view {
     -fx-background-color: -main-foreground;
+    -fx-hbar-policy: never;
 }
 .list-view .list-cell {
     -fx-background-color: -main-foreground; /* Default background */

@@ -32,7 +32,6 @@ public class DashboardCtrl implements Initializable {
     //TODO: This is just a temporary solution, to be changed with something smarter
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
 

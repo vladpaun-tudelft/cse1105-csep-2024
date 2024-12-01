@@ -36,7 +36,7 @@ public class NoteListItem extends ListCell<Note> {
         // Initialize the note title
         noteTitle = new Label();
         noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-        noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(30));
+        noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(40));
         noteTitle.setWrapText(false);
         noteTitle.setMinWidth(0);
 
@@ -46,10 +46,11 @@ public class NoteListItem extends ListCell<Note> {
         deleteButton.setVisible(false);
 
         // Create layout
-        hBox = new HBox(10);
+        hBox = new HBox(0);
         Region spacer = new Region();
         hBox.getChildren().addAll(noteTitle, spacer, deleteButton);
-        HBox.setHgrow(spacer, Priority.SOMETIMES);
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox.setHgrow(deleteButton, Priority.NEVER);
         hBox.setAlignment(Pos.CENTER_LEFT);
 
         configureEventHandlers();
@@ -101,6 +102,7 @@ public class NoteListItem extends ListCell<Note> {
             originalTitle = item.getTitle();
             textField = new TextField(originalTitle);
             HBox.setHgrow(textField, Priority.ALWAYS);
+
             textField.setOnAction(e -> {
                 item.setTitle(textField.getText());
                 noteTitle.setText(item.getTitle());
