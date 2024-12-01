@@ -335,6 +335,85 @@ public class DashboardCtrl implements Initializable {
     }
 
     /**
+     * A method used to move note from one collection to the other
+     *
+     * @throws IOException exception
+     */
+    public void moveNoteFromCollection() throws IOException {
+        // Get the currently selected note
+        Note currentNote = (Note) collectionView.getSelectionModel().getSelectedItem();
+        if (currentNote == null) {
+            return;
+        }
+        // Get the title of current selected collection
+        String selectedCollectionTitle = ((RadioMenuItem) collectionSelect.getSelectedToggle()).getText();
+
+        // Find the collection
+        Collection selectedCollection = server.getCollections()
+                .stream()
+                .filter(c -> c.title.equals(selectedCollectionTitle))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Collection not found"));
+
+        // Ask for a new title with a dialog
+        TextInputDialog dialog = new TextInputDialog(selectedCollectionTitle);
+        dialog.setTitle("Move Note");
+        dialog.setContentText("Please enter the title of destination collection:");
+        Optional<String> destinationCollectionTitle = dialog.showAndWait();
+
+        // If user provided a title of destination collection
+        if (destinationCollectionTitle.isPresent()) {
+            String destinationTitle = destinationCollectionTitle.get().trim();
+
+            // If user provided a title that is empty
+            if (destinationTitle.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText("A destination collection needs a title");
+                alert.showAndWait();
+                return;
+            }
+
+            // If user will choose the same collection
+            if (destinationTitle.equals(selectedCollectionTitle)) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Warning");
+                alert.setContentText("Cannot move the note to the same collection");
+                alert.showAndWait();
+                return;
+            }
+
+            // We get the destination collection
+            Collection destinationCollection = server.getCollections()
+                    .stream()
+                    .filter(c -> c.title.equals(destinationTitle) && !c.title.equals(selectedCollection.title))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Destination collection not found"));
+
+            //Move the note from previous collection to the new collection
+            selectedCollection.notes.remove(currentNote);
+            destinationCollection.notes.add(currentNote);
+
+            // Update the note in server (we changed its collection)
+            server.updateNote(currentNote);
+
+            // Save collections locally
+            config.writeAllToFile(collections);
+
+            // Update menu
+            viewCollection();
+            viewAllNotes();
+
+            // Information aller whether the note has been moved successfully
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Moved Note");
+            alert.setContentText("Note moved successfully");
+            alert.showAndWait();
+
+        }
+    }
+
+    /**
      * Method that will change the title in collection
      *
      * @throws IOException exception
@@ -399,6 +478,12 @@ public class DashboardCtrl implements Initializable {
             // update the menu item
             ((RadioMenuItem) collectionSelect.getSelectedToggle()).setText(newTitle);
             currentCollectionTitle.setText(newTitle);
+
+            //information alert whether the collection title has been successfully changed
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Changed Collection Title");
+            alert.setContentText("Collection title changed successfully");
+            alert.showAndWait();
         }
     }
 
