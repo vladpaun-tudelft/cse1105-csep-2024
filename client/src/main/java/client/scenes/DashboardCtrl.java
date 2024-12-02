@@ -19,7 +19,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
-import javafx.util.StringConverter;
 
 import lombok.SneakyThrows;
 import org.commonmark.node.Node;
