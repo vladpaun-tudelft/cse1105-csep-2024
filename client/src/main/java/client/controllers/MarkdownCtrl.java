@@ -31,6 +31,10 @@ public class MarkdownCtrl {
         }
     }
 
+    public String getCssPath() {
+        return cssPath;
+    }
+
     public void initialize(WebView markdownView, Label markdownViewBlocker, TextArea noteBody) {
         this.markdownView = markdownView;
         this.markdownViewBlocker = markdownViewBlocker;
@@ -55,15 +59,19 @@ public class MarkdownCtrl {
     private String convertMarkdownToHtml(String markdown) {
         String htmlContent = markdown == null || markdown.isEmpty() ? "" : renderer.render(parser.parse(markdown));
 
-        return "<!DOCTYPE html>" +
-                "<html>" +
-                "<head>" +
-                "<link rel='stylesheet' type='text/css' href='" + cssPath + "'>" +
-                "</head>" +
-                "<body>" +
-                htmlContent +
-                "</body>" +
-                "</html>";
+        return """
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <link rel='stylesheet' type='text/css' href='""" + cssPath + "'>\n" +
+                """
+                    </head>
+                    <body>
+                """ + htmlContent + "\n" +
+                """
+                    </body>
+                </html>""";
+
     }
 
     /**
