@@ -9,6 +9,7 @@ import client.utils.ServerUtils;
 import commons.Collection;
 import commons.Note;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -217,6 +218,7 @@ public class DashboardCtrl implements Initializable {
         noteTitle_md.setText(note.getTitle());
         noteBody.setText(note.getBody());
         contentBlocker.setVisible(false);
+        Platform.runLater(() -> noteBody.requestFocus());
     }
 
     public void addCollection() throws IOException {
