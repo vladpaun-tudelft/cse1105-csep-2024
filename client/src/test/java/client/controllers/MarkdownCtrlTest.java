@@ -290,6 +290,33 @@ class MarkdownCtrlTest {
         assertTrue(renderedHtml.contains("<blockquote>\n<p>This is a blockquote<br />\nwith multiple lines.</p>\n</blockquote>"), "Expected blockquote not found.");
     }
 
+    @Test
+    void MDTableTest() throws InterruptedException {
+        String markdown = """
+        | Header 1 | Header 2 |
+        |----------|----------|
+        | Cell 1   | Cell 2   |
+        | Cell 3   | Cell 4   |
+        """;
+
+        markdownCtrl.updateMarkdownView(markdown);
+        waitForFXEvents();
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(mockedWebEngine, times(2)).loadContent(captor.capture(), eq("text/html"));
+
+        String renderedHtml = captor.getValue();
+
+        assertTrue(renderedHtml.contains("<table>"), "Expected <table> tag not found.");
+        assertTrue(renderedHtml.contains("<tr>"), "Expected <tr> tag not found.");
+        assertTrue(renderedHtml.contains("<th>Header 1</th>"), "Expected <th>Header 1</th> not found.");
+        assertTrue(renderedHtml.contains("<th>Header 2</th>"), "Expected <th>Header 2</th> not found.");
+        assertTrue(renderedHtml.contains("<td>Cell 1</td>"), "Expected <td>Cell 1</td> not found.");
+        assertTrue(renderedHtml.contains("<td>Cell 2</td>"), "Expected <td>Cell 2</td> not found.");
+        assertTrue(renderedHtml.contains("<td>Cell 3</td>"), "Expected <td>Cell 3</td> not found.");
+        assertTrue(renderedHtml.contains("<td>Cell 4</td>"), "Expected <td>Cell 4</td> not found.");
+    }
+
 
     @Test
     void scrollMarkdownView() {

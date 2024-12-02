@@ -6,8 +6,10 @@ import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.commonmark.ext.gfm.tables.TablesExtension;
 
 import java.net.URL;
+import java.util.Collections;
 
 public class MarkdownCtrl {
 
@@ -20,8 +22,10 @@ public class MarkdownCtrl {
     private final String cssPath;
 
     public MarkdownCtrl() {
-        parser = Parser.builder().build();
-        renderer = HtmlRenderer.builder().build();
+        var extensions = Collections.singletonList(TablesExtension.create());
+
+        parser = Parser.builder().extensions(extensions).build();
+        renderer = HtmlRenderer.builder().extensions(extensions).build();
 
         URL cssUrl = getClass().getResource("/css/markdown.css");
         if (cssUrl != null) {
