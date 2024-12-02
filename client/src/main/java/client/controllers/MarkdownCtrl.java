@@ -4,13 +4,10 @@ import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
-import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MarkdownCtrl {
 
