@@ -15,6 +15,7 @@
  */
 package client;
 
+import client.controllers.MarkdownCtrl;
 import client.scenes.DashboardCtrl;
 import com.google.inject.Binder;
 import com.google.inject.Module;
@@ -28,5 +29,6 @@ public class MyModule implements Module {
     public void configure(Binder binder) {
         binder.bind(MainCtrl.class).in(Scopes.SINGLETON);
         binder.bind(DashboardCtrl.class).in(Scopes.SINGLETON);
+        binder.bind(MarkdownCtrl.class).in(Scopes.SINGLETON);
     }
 }

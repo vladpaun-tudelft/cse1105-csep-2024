@@ -1,6 +1,7 @@
 package client.scenes;
 
 import client.ui.NoteListItem;
+import client.controllers.MarkdownCtrl;
 import client.utils.Config;
 import com.google.inject.Inject;
 
@@ -8,7 +9,6 @@ import client.utils.ServerUtils;
 import commons.Collection;
 import commons.Note;
 
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -21,9 +21,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 
 import lombok.SneakyThrows;
-import org.commonmark.node.Node;
-import org.commonmark.parser.Parser;
-import org.commonmark.renderer.html.HtmlRenderer;
 
 import java.io.IOException;
 import java.net.URL;
@@ -43,6 +40,9 @@ public class DashboardCtrl implements Initializable {
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
+    
+    @Inject
+    private final MarkdownCtrl markdownCtrl;
 
     @FXML
     private Label contentBlocker;
@@ -91,19 +91,18 @@ public class DashboardCtrl implements Initializable {
     public boolean pendingHideContentBlocker = true;
 
     @Inject
-    public DashboardCtrl(ServerUtils server, MainCtrl mainCtrl) throws IOException {
+    public DashboardCtrl(ServerUtils server, MainCtrl mainCtrl, MarkdownCtrl markdownCtrl) throws IOException {
         this.mainCtrl = mainCtrl;
         this.server = server;
+        this.markdownCtrl = markdownCtrl;
     }
 
     @SneakyThrows
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
+        markdownCtrl.initialize(markdownView, markdownViewBlocker, noteBody);
         collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
-
         listViewSetup(collectionNotes);
-
-        updateMarkdownView("");
 
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
@@ -146,21 +145,6 @@ public class DashboardCtrl implements Initializable {
 
         // Temporary solution
         scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
-
-        // Listener for updating the markdown view
-        noteBody.textProperty().addListener((observable, oldValue, newValue) -> {
-            Note currentNote = (Note)collectionView.getSelectionModel().getSelectedItem();
-            if (currentNote != null) {
-                currentNote.setBody(newValue);
-                String renderedHtml = convertMarkdownToHtml(newValue);
-                markdownView.getEngine().loadContent(renderedHtml, "text/html");
-
-                markdownViewBlocker.setVisible(newValue == null || newValue.isEmpty());
-            }
-        });
-
-        collectionView.getSelectionModel().clearSelection();
-
     }
 
     /**
@@ -180,13 +164,9 @@ public class DashboardCtrl implements Initializable {
 
         // Remove content blocker on select
         collectionView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Note>() {
-
             @Override
             public void changed(ObservableValue<? extends Note> observable, Note oldValue, Note newValue) {
-                if (newValue != null) {
-                    updateMarkdownView(newValue.getBody());
-                    showCurrentNote();
-                }
+                showCurrentNote();
             }
         });
 
@@ -227,12 +207,12 @@ public class DashboardCtrl implements Initializable {
         noteTitle_md.setText("New Note");
 
         noteBody.setText("");
-        updateMarkdownView("");
         contentBlocker.setVisible(false);
     }
 
     public void showCurrentNote() {
         Note note = (Note)collectionView.getSelectionModel().getSelectedItem();
+        if(note == null) return;
         noteTitle.setText(note.getTitle());
         noteTitle_md.setText(note.getTitle());
         noteBody.setText(note.getBody());
@@ -322,6 +302,7 @@ public class DashboardCtrl implements Initializable {
         }
         collectionView.setItems(FXCollections.observableArrayList(filteredNotes));
         contentBlocker.setVisible(true);
+        markdownViewBlocker.setVisible(true);
         collectionView.getSelectionModel().clearSelection();
 
     }
@@ -379,55 +360,12 @@ public class DashboardCtrl implements Initializable {
             String rawText = noteBody.getText();
             currentNote.setBody(rawText);
 
-            // Update the Markdown view
-            String renderedHtml = convertMarkdownToHtml(rawText);
-            Platform.runLater(() -> markdownView.getEngine().loadContent(renderedHtml, "text/html"));
-
             // Add any edited but already existing note to the pending list
             if (!createPendingNotes.contains(currentNote) && !updatePendingNotes.contains(currentNote)) {
                 updatePendingNotes.add(currentNote);
                 System.out.println("Note added to updatePendingNotes: " + currentNote.getTitle());
             }
         }
-    }
-
-    private String convertMarkdownToHtml(String markdown) {
-        URL cssUrl = getClass().getResource("/css/markdown.css");
-        assert cssUrl != null;
-        String cssPath = cssUrl.toExternalForm();
-
-        if (markdown == null || markdown.isEmpty()) {
-            return "<!DOCTYPE html>" +
-                    "<html>" +
-                    "<head>" +
-                        "<link rel='stylesheet' type='text/css' href='" + cssPath + "'>" +
-                    "</head>" +
-                    "<body></body>" +
-                    "</html>";
-        }
-
-        Parser parser = Parser.builder().build();
-        Node document = parser.parse(markdown);
-        HtmlRenderer renderer = HtmlRenderer.builder().build();
-
-        String htmlContent = renderer.render(document);
-
-        return "<!DOCTYPE html>" +
-                "<html>" +
-                "<head>" +
-                "<link rel='stylesheet' type='text/css' href='" + cssPath + "'>" +
-                "</head>" +
-                "<body>" +
-                htmlContent +
-                "</body>" +
-                "</html>";
-    }
-
-    @FXML
-    private void updateMarkdownView(String markdown) {
-        String renderedHtml = convertMarkdownToHtml(markdown);
-        Platform.runLater(() -> markdownView.getEngine().loadContent(renderedHtml, "text/html"));
-        markdownViewBlocker.setVisible(markdown == null || markdown.isEmpty());
     }
 
     public void deleteSelectedNote() {
@@ -454,7 +392,6 @@ public class DashboardCtrl implements Initializable {
                 noteTitle.setText("");
                 noteTitle_md.setText("");
 
-                updateMarkdownView("");
 
                 contentBlocker.setVisible(true);
                 System.out.println("Note deleted: " + currentNote.getTitle());
