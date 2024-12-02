@@ -41,6 +41,7 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
@@ -53,7 +54,6 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
-<?import javafx.scene.Cursor?>
 <VBox fx:id="root" prefHeight="600.0" prefWidth="900.0" stylesheets="@../../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
   <children>
     <MenuBar styleClass="options-bar" VBox.vgrow="NEVER">
@@ -170,6 +170,7 @@
                                     <Color red="0.624" green="0.624" blue="0.624" fx:id="x21" />
                                  </textFill>
                               </Label>
+                              <Separator layoutX="1.0" layoutY="43.0" prefWidth="200.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0" />
                                   <WebView fx:id="markdownView" prefHeight="571.0" prefWidth="441.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0" />
                                   <Label fx:id="markdownViewBlocker" alignment="CENTER" text="No rendered markdown" textAlignment="CENTER" textFill="#7e7e7e" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                       <font>
@@ -180,14 +181,6 @@
                                           <String fx:value="content-blocker" />
                                       </styleClass>
                                   </Label>
-                              <Button fx:id="deleteButton_md" layoutX="295.0" layoutY="3.0" mnemonicParsing="false" onAction="#deleteSelectedNote" prefHeight="35.0" prefWidth="26.0" style="-fx-background-color: transparent;" styleClass="delete_icon" textFill="#b93838" underline="true" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="3.0">
-                                 <font>
-                                    <Font size="12.0" />
-                                 </font>
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor>
-                              </Button>
                               </children>
                           </AnchorPane>
                       </content>

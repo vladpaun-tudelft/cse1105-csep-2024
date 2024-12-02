@@ -62,8 +62,6 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private Label noteTitle_md;
     @FXML
-    private Button deleteButton_md;
-    @FXML
     private Button searchButton;
     @FXML
     private TextField searchField;
@@ -106,9 +104,7 @@ public class DashboardCtrl implements Initializable {
 
         listViewSetup(collectionNotes);
 
-        collectionView.getSelectionModel().clearSelection();
         updateMarkdownView("");
-        deleteButton_md.setDisable(true);
 
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
@@ -148,6 +144,7 @@ public class DashboardCtrl implements Initializable {
         collectionSelect.selectToggle(allNotesButton);
         viewAllNotes();
 
+
         // Temporary solution
         scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
 
@@ -162,6 +159,9 @@ public class DashboardCtrl implements Initializable {
                 markdownViewBlocker.setVisible(newValue == null || newValue.isEmpty());
             }
         });
+
+        collectionView.getSelectionModel().clearSelection();
+
     }
 
     /**
@@ -179,7 +179,6 @@ public class DashboardCtrl implements Initializable {
         // Set ListView entry as Title (editable)
         collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteBody, this));
 
-
         // Remove content blocker on select
         collectionView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Note>() {
 
@@ -187,49 +186,11 @@ public class DashboardCtrl implements Initializable {
             public void changed(ObservableValue<? extends Note> observable, Note oldValue, Note newValue) {
                 if (newValue != null) {
                     updateMarkdownView(newValue.getBody());
+                    showCurrentNote();
                 }
             }
         });
 
-    }
-
-    private void setupCellFactory() {
-        collectionView.setCellFactory(lv -> {
-            TextFieldListCell<Note> cell = new TextFieldListCell<>();   // Create basic TextField cell to edit
-            cell.converterProperty().set(new StringConverter<>() {      // Edit converter which cell uses to display the custom object
-                @Override
-                public String toString(Note note) {                     // Override toString which the cell uses to display the object
-                    return note != null ? note.getTitle() : "";
-                    // We edit it such that it uses the cell uses the note title to display the note
-                }
-
-                @Override
-                public Note fromString(String string) {                 // Say what properties need to be changed on title edit
-                    Note note = cell.getItem();
-                    if (note != null) {
-                        note.setTitle(string);
-                    }
-                    return note;
-                }
-            });
-            cell.setOnMouseClicked(event -> {                           // Handle on edit behaviour
-                if (event != null) {
-                    Note item = cell.getItem();
-                    if(item != null) {
-                        System.out.println("Cell selected: " + item.getTitle());
-                        noteBody.setText((item).getBody());
-
-                        noteTitle.setText((item).getTitle());
-                        noteTitle_md.setText((item).getTitle());
-
-                        deleteButton_md.setDisable(false);
-
-                        handleContentBlocker(false);
-                    }
-                }
-            });
-            return cell;
-        });
     }
 
     public void setSearchIsActive(boolean b) {
@@ -275,6 +236,14 @@ public class DashboardCtrl implements Initializable {
 
         noteBody.setText("");
         updateMarkdownView("");
+        handleContentBlocker(false);
+    }
+
+    public void showCurrentNote() {
+        Note note = (Note)collectionView.getSelectionModel().getSelectedItem();
+        noteTitle.setText(note.getTitle());
+        noteTitle_md.setText(note.getTitle());
+        noteBody.setText(note.getBody());
         handleContentBlocker(false);
     }
 
@@ -361,7 +330,6 @@ public class DashboardCtrl implements Initializable {
         }
         listViewSetup(FXCollections.observableArrayList(filteredNotes));
         contentBlocker.setVisible(true);
-        deleteButton_md.setDisable(true);
         collectionView.getSelectionModel().clearSelection();
 
     }
@@ -492,7 +460,6 @@ public class DashboardCtrl implements Initializable {
 
                 updateMarkdownView("");
 
-                deleteButton_md.setDisable(true);
                 contentBlocker.setVisible(true);
                 System.out.println("Note deleted: " + currentNote.getTitle());
                 collectionView.getSelectionModel().clearSelection();

@@ -71,12 +71,9 @@ public class NoteListItem extends ListCell<Note> {
 
         focusedProperty().addListener((observable, oldValue, newValue) -> {
             Note item = getItem();
-            if (item == null || overviewTitle == null || overviewBody == null) return;
+            if (item == null) return;
 
             if (newValue) {
-                overviewTitle.setText(item.getTitle());
-                overviewBody.setText(item.getBody());
-                controller.handleContentBlocker(false);
                 deleteButton.setVisible(true);
             }else {
                 deleteButton.setVisible(false);
