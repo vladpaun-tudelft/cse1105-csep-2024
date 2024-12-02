@@ -155,18 +155,6 @@ public class DashboardCtrl implements Initializable {
         // Temporary solution
         scheduler.scheduleAtFixedRate(this::saveAllPendingNotes, 10,10, TimeUnit.SECONDS);
 
-
-        // What is this method actually doing?
-        // I removed it and tried it and it was still working? :))
-        // Because the onBodyChanged method already is fulfilling this functionality
-        // Listener for updating the markdown view
-        noteBody.textProperty().addListener((observable, oldValue, newValue) -> {
-            Note currentNote = (Note)collectionView.getSelectionModel().getSelectedItem();
-            if (currentNote != null) {
-                currentNote.setBody(newValue);
-                markdownCtrl.updateMarkdownView(newValue);
-            }
-        });
     }
 
     /**
@@ -200,9 +188,6 @@ public class DashboardCtrl implements Initializable {
             @Override
             public void changed(ObservableValue<? extends Note> observable, Note oldValue, Note newValue) {
                 pendingHideContentBlocker = (newValue!=null);
-                if (newValue != null) {
-                    markdownCtrl.updateMarkdownView(newValue.getBody());
-                }
             }
         });
 
@@ -292,10 +277,6 @@ public class DashboardCtrl implements Initializable {
 
         noteBody.setText("");
 
-        // Again, this call is unnecessary, as when a new note is created,
-        // the listViewSetup method is called, which already updates the markdown.
-        // so either one of these calls should be removed
-        markdownCtrl.updateMarkdownView("");;
     }
 
     public void addCollection() throws IOException {
@@ -438,9 +419,6 @@ public class DashboardCtrl implements Initializable {
             String rawText = noteBody.getText();
             currentNote.setBody(rawText);
 
-            // Update the Markdown view
-            markdownCtrl.updateMarkdownView(rawText);
-
             // Add any edited but already existing note to the pending list
             if (!createPendingNotes.contains(currentNote) && !updatePendingNotes.contains(currentNote)) {
                 updatePendingNotes.add(currentNote);
@@ -473,7 +451,6 @@ public class DashboardCtrl implements Initializable {
                 noteTitle.setText("");
                 noteTitle_md.setText("");
 
-                markdownCtrl.updateMarkdownView("");;
 
                 deleteButton.setDisable(true);
                 deleteButton_md.setDisable(true);

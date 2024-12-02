@@ -48,6 +48,11 @@ public class MarkdownCtrl {
 
         updateMarkdownView(""); // Initialize view
 
+        // Add listener for text changes to update markdown view and content blocker
+        noteBody.textProperty().addListener((observable, oldValue, newValue) -> {
+            updateMarkdownView(newValue);
+        });
+
         // Add listener for synchronized scrolling
         noteBody.scrollTopProperty().addListener((observable, oldValue, newValue) -> {
             scrollMarkdownView();
@@ -83,8 +88,7 @@ public class MarkdownCtrl {
      *
      * @param markdown the markdown content
      */
-    public void updateMarkdownView(String markdown) {
-
+    private void updateMarkdownView(String markdown) {
         String renderedHtml = convertMarkdownToHtml(markdown);
         Platform.runLater(() -> {
             markdownView.getEngine().loadContent(renderedHtml, "text/html");
