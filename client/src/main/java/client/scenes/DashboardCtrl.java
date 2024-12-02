@@ -196,17 +196,10 @@ public class DashboardCtrl implements Initializable {
         searchIsActive = b;
         if (!b) {
             searchField.clear();
-            listViewSetup(collectionNotes);
+            collectionView.setItems(collectionNotes);
             collectionView.getSelectionModel().clearSelection();
             contentBlocker.setVisible(true);
         }
-    }
-
-    /**
-     * Handles content blocker when new Note is loaded
-     */
-    public void handleContentBlocker(boolean state) {
-        contentBlocker.setVisible(state);
     }
 
     public void addNote() throws IOException {
@@ -235,7 +228,7 @@ public class DashboardCtrl implements Initializable {
 
         noteBody.setText("");
         updateMarkdownView("");
-        handleContentBlocker(false);
+        contentBlocker.setVisible(false);
     }
 
     public void showCurrentNote() {
@@ -243,7 +236,7 @@ public class DashboardCtrl implements Initializable {
         noteTitle.setText(note.getTitle());
         noteTitle_md.setText(note.getTitle());
         noteBody.setText(note.getBody());
-        handleContentBlocker(false);
+        contentBlocker.setVisible(false);
     }
 
     public void addCollection() throws IOException {
@@ -327,7 +320,7 @@ public class DashboardCtrl implements Initializable {
                 filteredNotes.add(note);
             }
         }
-        listViewSetup(FXCollections.observableArrayList(filteredNotes));
+        collectionView.setItems(FXCollections.observableArrayList(filteredNotes));
         contentBlocker.setVisible(true);
         collectionView.getSelectionModel().clearSelection();
 
@@ -337,8 +330,10 @@ public class DashboardCtrl implements Initializable {
         saveAllPendingNotes();
         setSearchIsActive(false);
         contentBlocker.setVisible(true);
+        markdownViewBlocker.setVisible(true);
         collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
-        listViewSetup(collectionNotes);
+        collectionView.setItems(collectionNotes);
+        collectionView.getSelectionModel().clearSelection();
         currentCollectionTitle.setText("All Notes");
         deleteCollectionButton.setDisable(true);
     }
@@ -347,11 +342,12 @@ public class DashboardCtrl implements Initializable {
         saveAllPendingNotes();
         setSearchIsActive(false);
         contentBlocker.setVisible(true);
+        markdownViewBlocker.setVisible(true);
         String collectionTitle = ((RadioMenuItem)collectionSelect.getSelectedToggle()).getText();
         Collection currentCollection = server.getCollections().stream().filter(c -> c.title.equals(collectionTitle)).toList().getFirst();
         List<Note> notes = server.getAllNotes().stream().filter(n -> n.collection.id == currentCollection.id).toList();
         collectionNotes = FXCollections.observableArrayList(notes);
-        listViewSetup(collectionNotes);
+        collectionView.setItems(collectionNotes);
         currentCollectionTitle.setText(collectionTitle);
         if (currentCollection.title.equals("Default")) {
             deleteCollectionButton.setDisable(true);
@@ -359,6 +355,7 @@ public class DashboardCtrl implements Initializable {
         else {
             deleteCollectionButton.setDisable(false);
         }
+        collectionView.getSelectionModel().clearSelection();
     }
 
     @FXML
@@ -498,7 +495,7 @@ public class DashboardCtrl implements Initializable {
         createPendingNotes.remove(note);
         updatePendingNotes.remove(note);
 
-        if(collectionNotes.isEmpty()) handleContentBlocker(true);
+        if(collectionNotes.isEmpty()) contentBlocker.setVisible(true);
 
         server.deleteNote(note.id);
     }
