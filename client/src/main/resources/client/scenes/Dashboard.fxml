@@ -39,21 +39,36 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.web.WebView?>
 
+<?import javafx.scene.Cursor?>
 <VBox fx:id="root" prefHeight="600.0" prefWidth="900.0" stylesheets="@../../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
   <children>
     <MenuBar styleClass="options-bar" VBox.vgrow="NEVER">
       <menus>
+            <Menu fx:id="collectionMenu" mnemonicParsing="false" style="-fx-text-fill: #000000;" text="Collection">
+              <items>
+                  <RadioMenuItem fx:id="allNotesButton" mnemonicParsing="false" onAction="#viewAllNotes" style="-fx-text-fill: #000000;" text="Show all notes">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="collectionSelect" />
+                     </toggleGroup>
+                  </RadioMenuItem>
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem fx:id="addCollectionButton" mnemonicParsing="false" onAction="#addCollection" style="-fx-text-fill: #000000;" text="Add collection" />
+              </items>
+            </Menu>
         <Menu mnemonicParsing="false" text="File">
           <items>
             <MenuItem mnemonicParsing="false" text="New" />
@@ -95,7 +110,7 @@
       <items>
             <AnchorPane layoutY="1.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" styleClass="foreground-element">
                <children>
-                  <Label layoutX="9.0" layoutY="6.0" text="CurrentCollectionName">
+                  <Label fx:id="currentCollectionTitle" layoutX="9.0" layoutY="6.0" text="CurrentCollectionName">
                      <font>
                         <Font name="System Bold" size="15.0" />
                      </font>
@@ -108,7 +123,8 @@
                         <Font size="12.0" />
                      </font>
                   </TextField>
-                  <Button fx:id="searchButton" layoutX="199.0" layoutY="36.0" mnemonicParsing="false" onAction="#search" prefHeight="26.0" prefWidth="17.0" styleClass="search_icon" AnchorPane.rightAnchor="7.0" />
+                  <Button fx:id="searchButton" layoutX="178.0" layoutY="36.0" mnemonicParsing="false" onAction="#search" prefHeight="26.0" prefWidth="17.0" styleClass="search_icon" AnchorPane.rightAnchor="5.0" />
+                  <Button fx:id="deleteCollectionButton" layoutX="40.0" layoutY="539.0" mnemonicParsing="false" onAction="#deleteCollection" style="-fx-text-fill: #c73232;" text="Delete this collection" underline="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="38.0" />
                </children>
             </AnchorPane>
             <SplitPane centerShape="false" dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0">
@@ -117,7 +133,10 @@
                 <content>
                   <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" styleClass="background-element">
                     <children>
-                              <TextArea fx:id="noteBody" layoutY="39.0" onKeyTyped="#onBodyChanged" prefHeight="529.0" prefWidth="332.0" styleClass="background-element" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0" />
+                              <TextArea fx:id="noteBody" layoutY="39.0" onKeyReleased="#onBodyChanged" prefHeight="529.0" prefWidth="332.0" styleClass="background-element" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font></TextArea>
                       <Label fx:id="noteTitle" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" text="Note title" textAlignment="CENTER" wrapText="false">
                                  <font>
                             <Font size="18.0" fx:id="x1" />
@@ -139,11 +158,11 @@
                   </AnchorPane>
                 </content>
               </ScrollPane>
-                  <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="10.0" layoutY="10.0" prefHeight="-1.0" prefWidth="-1.0">
-                     <content>
-                        <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" styleClass="background-element">
-                           <children>
-                              <Label alignment="CENTER" layoutX="14.0" layoutY="14.0" style="&#10;" text="Markdown render" textAlignment="CENTER" wrapText="false">
+                  <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="-1.0" prefWidth="-1.0">
+                      <content>
+                          <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" styleClass="background-element">
+                              <children>
+                              <Label fx:id="noteTitle_md" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" text="Note title" textAlignment="CENTER" wrapText="false">
                                  <font>
                                     <Font size="18.0" fx:id="x11" />
                                  </font>
@@ -151,9 +170,27 @@
                                     <Color red="0.624" green="0.624" blue="0.624" fx:id="x21" />
                                  </textFill>
                               </Label>
-                           </children>
-                        </AnchorPane>
-                     </content>
+                                  <WebView fx:id="markdownView" prefHeight="571.0" prefWidth="441.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0" />
+                                  <Label fx:id="markdownViewBlocker" alignment="CENTER" text="No rendered markdown" textAlignment="CENTER" textFill="#7e7e7e" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                      <font>
+                                          <Font name="System Italic" size="12.0" />
+                                      </font>
+                                      <styleClass>
+                                          <String fx:value="background-element" />
+                                          <String fx:value="content-blocker" />
+                                      </styleClass>
+                                  </Label>
+                              <Button fx:id="deleteButton_md" layoutX="295.0" layoutY="3.0" mnemonicParsing="false" onAction="#deleteSelectedNote" prefHeight="35.0" prefWidth="26.0" style="-fx-background-color: transparent;" styleClass="delete_icon" textFill="#b93838" underline="true" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="3.0">
+                                 <font>
+                                    <Font size="12.0" />
+                                 </font>
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                              </Button>
+                              </children>
+                          </AnchorPane>
+                      </content>
                   </ScrollPane>
               </items>
             </SplitPane>

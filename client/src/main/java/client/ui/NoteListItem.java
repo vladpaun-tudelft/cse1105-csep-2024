@@ -58,7 +58,7 @@ public class NoteListItem extends ListCell<Note> {
 
     private void configureEventHandlers() {
         deleteButton.setOnAction(event -> {
-            controller.deleteSelectedNote(getItem());
+            controller.deleteSelectedNote();  // getItem()
         });
 
         hBox.setOnMouseClicked(event -> {
@@ -84,6 +84,7 @@ public class NoteListItem extends ListCell<Note> {
         });
     }
 
+    @Override
     protected void updateItem(Note item, boolean empty) {
         super.updateItem(item, empty);
 
