@@ -3,9 +3,8 @@ package client.scenes;
 import client.ui.NoteListItem;
 import client.controllers.MarkdownCtrl;
 import client.utils.Config;
-import com.google.inject.Inject;
-
 import client.utils.ServerUtils;
+import com.google.inject.Inject;
 import commons.Collection;
 import commons.Note;
 
@@ -25,7 +24,10 @@ import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -77,6 +79,8 @@ public class DashboardCtrl implements Initializable {
     private Button deleteCollectionButton;
     @FXML
     private VBox root;
+    @FXML
+    private MenuItem editCollectionTitle;
 
     @FXML
     private Button refreshButton;
@@ -258,7 +262,158 @@ public class DashboardCtrl implements Initializable {
             });
             collectionMenu.getItems().addFirst(radioMenuItem);
             collectionSelect.selectToggle(radioMenuItem);
+
             viewCollection();
+        }
+    }
+
+    /**
+     * A method used to move note from one collection to the other
+     *
+     * @throws IOException exception
+     */
+    public void moveNoteFromCollection() throws IOException {
+        // Get the currently selected note
+        Note currentNote = (Note) collectionView.getSelectionModel().getSelectedItem();
+        if (currentNote == null) {
+            return;
+        }
+        // Get the title of current selected collection
+        String selectedCollectionTitle = ((RadioMenuItem) collectionSelect.getSelectedToggle()).getText();
+
+        // Find the collection
+        Collection selectedCollection = server.getCollections()
+                .stream()
+                .filter(c -> c.title.equals(selectedCollectionTitle))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Collection not found"));
+
+        // Ask for a new title with a dialog
+        TextInputDialog dialog = new TextInputDialog(selectedCollectionTitle);
+        dialog.setTitle("Move Note");
+        dialog.setContentText("Please enter the title of destination collection:");
+        Optional<String> destinationCollectionTitle = dialog.showAndWait();
+
+        // If user provided a title of destination collection
+        if (destinationCollectionTitle.isPresent()) {
+            String destinationTitle = destinationCollectionTitle.get().trim();
+
+            // If user provided a title that is empty
+            if (destinationTitle.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText("A destination collection needs a title");
+                alert.showAndWait();
+                return;
+            }
+
+            // If user will choose the same collection
+            if (destinationTitle.equals(selectedCollectionTitle)) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Warning");
+                alert.setContentText("Cannot move the note to the same collection");
+                alert.showAndWait();
+                return;
+            }
+
+            // We get the destination collection
+            Collection destinationCollection = server.getCollections()
+                    .stream()
+                    .filter(c -> c.title.equals(destinationTitle) && !c.title.equals(selectedCollection.title))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Destination collection not found"));
+
+            //Move the note from previous collection to the new collection
+            selectedCollection.notes.remove(currentNote);
+            destinationCollection.notes.add(currentNote);
+
+            // Update the note in server (we changed its collection)
+            server.updateNote(currentNote);
+
+            // Save collections locally
+            config.writeAllToFile(collections);
+
+            // Update menu
+            viewCollection();
+            viewAllNotes();
+
+            // Information aller whether the note has been moved successfully
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Moved Note");
+            alert.setContentText("Note moved successfully");
+            alert.showAndWait();
+
+        }
+    }
+
+    /**
+     * Method that will change the title in collection
+     *
+     * @throws IOException exception
+     */
+    public void changeTitleInCollection() throws IOException {
+        // Get the collection title
+        String selectedCollectionTitle = ((RadioMenuItem) collectionSelect.getSelectedToggle()).getText();
+
+
+        // Find the collection
+        Collection selectedCollection = server.getCollections()
+                .stream()
+                .filter(c -> c.title.equals(selectedCollectionTitle))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Collection not found"));
+
+        // Ask for a new title with a dialog
+        TextInputDialog dialog = new TextInputDialog(selectedCollectionTitle);
+        dialog.setTitle("Change Collection Title");
+        dialog.setContentText("Please enter the new title for the collection:");
+
+        Optional<String> newTitleOptional = dialog.showAndWait();
+
+        // If we get a title
+        if (newTitleOptional.isPresent()) {
+            String newTitle = newTitleOptional.get().trim();
+
+            // Validate the new title
+            if (newTitle.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText("The collection title cannot be empty.");
+                alert.showAndWait();
+                return;
+            }
+
+            // Check if a collection with the same title already exists
+            if (server.getCollections()
+                    .stream()
+                    .anyMatch(c -> c.title.equals(newTitle))) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText("A collection with this title already exists.");
+                alert.showAndWait();
+                return;
+            }
+
+            // Update the collection's title
+            selectedCollection.title = newTitle;
+
+            // Update the collection on the server
+            Collection updatedCollection = server.updateCollection(selectedCollection);
+
+            // Update the title locally
+            for (int i = 0; i < collections.size(); i++) {
+                if (collections.get(i).id == selectedCollection.id) {
+                    collections.set(i, updatedCollection);
+                    break;
+                }
+            }
+            config.writeAllToFile(collections);
+
+            // update the menu item
+            ((RadioMenuItem) collectionSelect.getSelectedToggle()).setText(newTitle);
+            currentCollectionTitle.setText(newTitle);
+
+
         }
     }
 
@@ -322,6 +477,9 @@ public class DashboardCtrl implements Initializable {
         collectionView.getSelectionModel().clearSelection();
         currentCollectionTitle.setText("All Notes");
         deleteCollectionButton.setDisable(true);
+        editCollectionTitle.setDisable(true);
+
+
     }
 
     public void viewCollection() {
@@ -337,9 +495,11 @@ public class DashboardCtrl implements Initializable {
         currentCollectionTitle.setText(collectionTitle);
         if (currentCollection.title.equals("Default")) {
             deleteCollectionButton.setDisable(true);
+            editCollectionTitle.setDisable(true);
         }
         else {
             deleteCollectionButton.setDisable(false);
+            editCollectionTitle.setDisable(false);
         }
         collectionView.getSelectionModel().clearSelection();
     }
