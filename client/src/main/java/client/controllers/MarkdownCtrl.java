@@ -7,9 +7,10 @@ import javafx.scene.web.WebView;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.ext.gfm.tables.TablesExtension;
+import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 
 import java.net.URL;
-import java.util.Collections;
+import java.util.Arrays;
 
 public class MarkdownCtrl {
 
@@ -22,7 +23,10 @@ public class MarkdownCtrl {
     private final String cssPath;
 
     public MarkdownCtrl() {
-        var extensions = Collections.singletonList(TablesExtension.create());
+        var extensions = Arrays.asList(
+                TablesExtension.create(),
+                StrikethroughExtension.create()
+        );
 
         parser = Parser.builder().extensions(extensions).build();
         renderer = HtmlRenderer.builder().extensions(extensions).build();

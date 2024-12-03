@@ -319,6 +319,21 @@ class MarkdownCtrlTest {
         assertTrue(renderedHtml.contains("<td>Cell 4</td>"), "Expected <td>Cell 4</td> not found.");
     }
 
+    @Test
+    void MDStrikethroughTest() throws InterruptedException {
+        String markdown = "~~Strikethrough text~~";
+
+        markdownCtrl.updateMarkdownView(markdown);
+        waitForFXEvents();
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(mockedWebEngine, times(2)).loadContent(captor.capture(), eq("text/html"));
+
+        String renderedHtml = captor.getValue();
+
+        assertTrue(renderedHtml.contains("<del>Strikethrough text</del>"), "Expected <del>Strikethrough text</del> not found.");
+    }
+
 
     @Test
     void scrollMarkdownView() {
