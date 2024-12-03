@@ -406,7 +406,11 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void refresh() {
-        viewCollection();
+        if(collectionSelect.getSelectedToggle().equals(allNotesButton)) {
+            viewAllNotes();
+        } else {
+            viewCollection();
+        }
     }
 
     // Temporary solution
