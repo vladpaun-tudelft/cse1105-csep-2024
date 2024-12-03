@@ -78,6 +78,9 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private VBox root;
 
+    @FXML
+    private Button refreshButton;
+
     private ObservableList<Note> collectionNotes;
     private List<Note> filteredNotes = new ArrayList<>();
     private boolean searchIsActive = false;
@@ -400,6 +403,10 @@ public class DashboardCtrl implements Initializable {
                 collectionView.getSelectionModel().clearSelection();
             }
         }
+    }
+
+    public void refresh() {
+        viewCollection();
     }
 
     // Temporary solution
