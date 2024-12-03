@@ -67,6 +67,7 @@
                   </RadioMenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="addCollectionButton" mnemonicParsing="false" onAction="#addCollection" style="-fx-text-fill: #000000;" text="Add collection" />
+                  <MenuItem fx:id="editCollectionTitle" mnemonicParsing="false" onAction="#changeTitleInCollection" style="-fx-text-fill: #000000;" text="Edit collection" />
               </items>
             </Menu>
         <Menu mnemonicParsing="false" text="File">

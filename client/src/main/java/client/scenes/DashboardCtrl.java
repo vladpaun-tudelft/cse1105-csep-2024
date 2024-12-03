@@ -83,7 +83,7 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private VBox root;
     @FXML
-    private Button editCollectionButton;
+    private MenuItem editCollectionTitle;
 
     private ObservableList<Note> collectionNotes;
     private List<Note> filteredNotes = new ArrayList<>();
@@ -168,6 +168,8 @@ public class DashboardCtrl implements Initializable {
                 markdownViewBlocker.setVisible(newValue == null || newValue.isEmpty());
             }
         });
+
+
     }
 
     /**
@@ -330,6 +332,7 @@ public class DashboardCtrl implements Initializable {
             });
             collectionMenu.getItems().addFirst(radioMenuItem);
             collectionSelect.selectToggle(radioMenuItem);
+
             viewCollection();
         }
     }
@@ -422,6 +425,7 @@ public class DashboardCtrl implements Initializable {
         // Get the collection title
         String selectedCollectionTitle = ((RadioMenuItem) collectionSelect.getSelectedToggle()).getText();
 
+
         // Find the collection
         Collection selectedCollection = server.getCollections()
                 .stream()
@@ -475,17 +479,11 @@ public class DashboardCtrl implements Initializable {
             }
             config.writeAllToFile(collections);
 
-            config.writeAllToFile(collections);
-
             // update the menu item
             ((RadioMenuItem) collectionSelect.getSelectedToggle()).setText(newTitle);
             currentCollectionTitle.setText(newTitle);
 
-            //information alert whether the collection title has been successfully changed
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Changed Collection Title");
-            alert.setContentText("Collection title changed successfully");
-            alert.showAndWait();
+
         }
     }
 
@@ -550,6 +548,9 @@ public class DashboardCtrl implements Initializable {
         listViewSetup(collectionNotes);
         currentCollectionTitle.setText("All Notes");
         deleteCollectionButton.setDisable(true);
+        editCollectionTitle.setDisable(true);
+
+
     }
 
     public void viewCollection() {
@@ -564,10 +565,13 @@ public class DashboardCtrl implements Initializable {
         currentCollectionTitle.setText(collectionTitle);
         if (currentCollection.title.equals("Default")) {
             deleteCollectionButton.setDisable(true);
+            editCollectionTitle.setDisable(true);
         }
         else {
             deleteCollectionButton.setDisable(false);
+            editCollectionTitle.setDisable(false);
         }
+
     }
 
     @FXML
