@@ -128,3 +128,12 @@
 .webview-content {
     -fx-background-color: transparent;
 }
+
+.refresh_icon {
+    -fx-background-image: url("icons/refresh.png");
+    -fx-background-size: 18px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}

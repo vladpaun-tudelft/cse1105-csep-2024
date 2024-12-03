@@ -78,6 +78,9 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private VBox root;
 
+    @FXML
+    private Button refreshButton;
+
     private ObservableList<Note> collectionNotes;
     private List<Note> filteredNotes = new ArrayList<>();
     private boolean searchIsActive = false;
@@ -399,6 +402,14 @@ public class DashboardCtrl implements Initializable {
                 System.out.println("Note deleted: " + currentNote.getTitle());
                 collectionView.getSelectionModel().clearSelection();
             }
+        }
+    }
+
+    public void refresh() {
+        if(collectionSelect.getSelectedToggle().equals(allNotesButton)) {
+            viewAllNotes();
+        } else {
+            viewCollection();
         }
     }
 
