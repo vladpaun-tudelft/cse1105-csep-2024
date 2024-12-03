@@ -119,7 +119,7 @@
                   <Pane prefHeight="35.0" prefWidth="40.0" styleClass="foreground-element" AnchorPane.rightAnchor="-5.0" AnchorPane.topAnchor="0.0" />
                   <Button fx:id="addButton" layoutX="188.5" layoutY="6.0" mnemonicParsing="false" onAction="#addNote" prefHeight="25.0" prefWidth="25.0" text="+" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
                   <ListView fx:id="collectionView" layoutX="3.0" layoutY="74.0" onEditCommit="#onEditCommit" prefHeight="465.0" prefWidth="220.0" AnchorPane.bottomAnchor="33.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="73.0" />
-                  <TextField fx:id="searchField" layoutX="9.0" layoutY="36.0" prefHeight="25.0" prefWidth="160.0" promptText="Search..." style="-fx-background-color: #1E1F22;" AnchorPane.leftAnchor="9.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="36.0">
+                  <TextField fx:id="searchField" layoutX="9.0" layoutY="36.0" onKeyTyped="#search" prefHeight="25.0" prefWidth="160.0" promptText="Search..." style="-fx-background-color: #1E1F22;" AnchorPane.leftAnchor="9.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="36.0">
                      <font>
                         <Font size="12.0" />
                      </font>
