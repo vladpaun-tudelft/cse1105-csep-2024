@@ -1,11 +1,11 @@
-| Key | Value |
-| --- | --- |
-| Date : | 4/11/2024 |
-| Time : | 13:45 - 14:30 |
-| Location : | DW PC3 |
-| Chair | Dinu Dunăreanu |
-| Minute Taker | Bartosz Bieryło |
-| Attendees : | Koen Draisma, Dhruvan Gnadhandayuthapani, Piotr Kupczak, Vlad Păun |
+| Key | Value                                               |
+| --- |-----------------------------------------------------|
+| Date : | 4/11/2024                                           |
+| Time : | 13:45 - 14:30                                       |
+| Location : | DW PC3                                              |
+| Chair | Dinu Dunăreanu                                      |
+| Minute Taker | Bartosz Bieryło                                     |
+| Attendees : | Koen Draisma, Dhruvan Gnadhandayuthapani, Vlad Păun |
 
 # Agenda Items:
 
