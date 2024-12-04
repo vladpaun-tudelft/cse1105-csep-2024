@@ -49,7 +49,6 @@ Quick Summary: Good
 Feedback:
 
 - The team mentioned that they have made progress and explained the changes they have made to the application.
-- The team did not however show anything visually on what they've done to the application.
 - They seem on a good track to create a working application by the end of the project.
 - The presented changes weren't merged into main however. Make sure to merge all changes into main before the meeting.
 
@@ -61,5 +60,5 @@ Quick Summary: Good
 Feedback:
 
 - The team discussed the action list from last week and mentioned that they have made progress.
-- Koen mentioned they weren't very involved in the project this week. Make sure to keep contributions equal, such that everyone can contribute in a meaningful manner.
+- Piotr mentioned they weren't very involved in the project this week. Make sure to keep contributions equal, such that everyone can contribute in a meaningful manner.
 - The task distribution was nice pairing up less and more experienced team members to ensure that everyone can contribute.
