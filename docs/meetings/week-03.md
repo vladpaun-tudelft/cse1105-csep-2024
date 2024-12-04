@@ -41,3 +41,39 @@
 - Feedback round : What went well and what can be improved next time? (2 min)
 - Question round: Does anyone have anything to add before the meeting closes? (2 min)
 - Closure (1 min)
+
+
+## Minutes
+
+# TA announcement
+- Buddy check till Friday
+- Read feedback on code of conduct
+- Always include in merge requests to get best mark
+- Code contribution should be similar
+- Make user-friendly application
+
+# What have we done
+
+- Transfering notes from one colleciton to another ( to be impelemented this Week)
+- We met our goals
+
+# Code of conduct
+
+- We want to implement all functions
+
+# Goals for next week
+
+- Refactor DashboardCtrl
+- Note transfering (multi-collection)
+- Change a config file
+- Multi-collection (use server utills) 
+- Fix server utills
+- Image/File embedding
+- Tags for note
+- Test for JavaFx
+
+# Division into groups
+- Vlad, Koen (Tags)
+- Bartek (Multi collection)
+- Dhruvan, Koen(file/img embedding)
+
