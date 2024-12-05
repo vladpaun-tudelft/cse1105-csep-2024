@@ -1,7 +1,9 @@
 package client.ui;
 
+import client.controllers.NoteCtrl;
 import client.scenes.DashboardCtrl;
 import commons.Note;
+import jakarta.ws.rs.ClientErrorException;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -13,8 +15,10 @@ public class NoteListItem extends ListCell<Note> {
 
     // References
     private Label overviewTitle;
+    private Label markdownTitle;
     private TextArea overviewBody;
     private DashboardCtrl controller;
+    private NoteCtrl noteCtrl;
 
     // List cell content
     private final Label noteTitle;
@@ -27,11 +31,13 @@ public class NoteListItem extends ListCell<Note> {
     private long lastClickTime = 0;
     private static final int DOUBLE_CLICK_TIMEFRAME = 400;
 
-    public NoteListItem(Label overviewTitle, TextArea overviewBody, DashboardCtrl controller) {
+    public NoteListItem(Label overviewTitle,Label markdownTitle, TextArea overviewBody, DashboardCtrl controller, NoteCtrl noteCtrl) {
 
         this.overviewTitle = overviewTitle;
+        this.markdownTitle = markdownTitle;
         this.overviewBody = overviewBody;
         this.controller = controller;
+        this.noteCtrl = noteCtrl;
 
         // Initialize the note title
         noteTitle = new Label();
@@ -101,24 +107,27 @@ public class NoteListItem extends ListCell<Note> {
             textField = new TextField(originalTitle);
             HBox.setHgrow(textField, Priority.ALWAYS);
 
-            textField.setOnAction(e -> {
-                item.setTitle(textField.getText());
-                noteTitle.setText(item.getTitle());
-                revertToLabel();
-            });
+            final boolean isCommited[] = {false};
 
-            textField.setOnKeyPressed(e -> {
-                if (e.getCode() == KeyCode.ESCAPE) {
-                    item.setTitle(originalTitle);
-                    noteTitle.setText(originalTitle);
-                    revertToLabel();
+            // The whole isCommited logic is needed bc otherwise when you click "ENTER" both triggers are set
+            // Pretty ugly, but can be improved later
+            textField.setOnAction(e -> {
+                if (!isCommited[0]) {
+                    isCommited[0] = true;
+                    commitTitleChange(item, textField.getText());
                 }
             });
 
             textField.focusedProperty().addListener((observable, oldValue, newValue) -> {
-                if (!newValue) {
-                    item.setTitle(textField.getText());
-                    noteTitle.setText(item.getTitle());
+                if (!newValue && !isCommited[0]) {
+                    isCommited[0] = true;
+                    commitTitleChange(item, textField.getText());
+                }
+            });
+
+            textField.setOnKeyPressed(e -> {
+                if (e.getCode() == KeyCode.ESCAPE) {
+                    isCommited[0] = true;
                     revertToLabel();
                 }
             });
@@ -130,6 +139,32 @@ public class NoteListItem extends ListCell<Note> {
         }
     }
 
+    private void commitTitleChange(Note item, String newTitle) {
+        if (item == null) return;
+        String oldTitle = item.getTitle();
+
+        // Ensure the title is unique in the current collection
+        String uniqueTitle = noteCtrl.generateUniqueTitle(controller.getAllNotes(),item, newTitle, false);
+        try {
+            item.setTitle(uniqueTitle); // Update the title of the Note
+            noteTitle.setText(uniqueTitle);
+            noteCtrl.updatePendingNotes.add(item);// Notify NoteCtrl of the change
+            noteCtrl.saveAllPendingNotes();
+        } catch (ClientErrorException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setContentText(e.getResponse().readEntity(String.class));
+            alert.showAndWait();
+
+            item.setTitle(oldTitle);
+            noteTitle.setText(oldTitle);
+        }
+
+        revertToLabel();
+    }
+
+
+
     private void revertToLabel() {
         hBox.getChildren().clear();
         Region spacer = new Region();
@@ -137,6 +172,7 @@ public class NoteListItem extends ListCell<Note> {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         overviewTitle.setText(getItem().getTitle());
+        markdownTitle.setText(getItem().getTitle());
         overviewBody.setText(getItem().getBody());
     }
 }

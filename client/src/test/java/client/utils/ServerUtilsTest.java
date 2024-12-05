@@ -120,6 +120,9 @@ class ServerUtilsTest {
         Note note2 = new Note("Note Title 2", "Note Body 2", collection);
         List<Note> notes = Arrays.asList(note1, note2);
 
+        // Update mocks to match the expected chain
+        when(targetMock.path("/api/collection/{title}")).thenReturn(targetMock);
+        when(targetMock.resolveTemplate("title", "Collection Title")).thenReturn(targetMock);
         when(builderMock.get(any(GenericType.class))).thenReturn(notes);
 
         List<Note> result = serverUtils.getNotesByCollection(collection);

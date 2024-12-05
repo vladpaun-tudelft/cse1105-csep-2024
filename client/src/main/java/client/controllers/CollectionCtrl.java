@@ -1,7 +1,9 @@
 package client.controllers;
 
+import client.scenes.DashboardCtrl;
 import client.utils.Config;
 import client.utils.ServerUtils;
+import com.google.inject.Inject;
 import commons.Collection;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
@@ -12,47 +14,113 @@ import javafx.scene.control.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 public class CollectionCtrl {
 
+    // Utilities
     private final ServerUtils server;
     private Config config;
+    private NoteCtrl noteCtrl;
+    private DashboardCtrl dashboardCtrl;
+    private SearchCtrl searchCtrl;
+
+    // References
+    private ListView collectionView;
+    private Label currentCollectionTitle;
+    private Menu collectionMenu;
+    private ToggleGroup collectionSelect;
+    private RadioMenuItem allNotesButton;
+    private MenuItem editCollectionTitle;
+    private Button deleteCollectionButton;
 
 
-    public CollectionCtrl(ServerUtils server, Config config) {
+
+    @Inject
+    public CollectionCtrl(ServerUtils server, Config config, NoteCtrl noteCtrl, SearchCtrl searchCtrl) {
         this.server = server;
         this.config = config;
+        this.noteCtrl = noteCtrl;
+        this.searchCtrl = searchCtrl;
     }
 
-    public void viewNotes(Collection currentCollection,
-                          ListView collectionView,
-                          ObservableList<Note> collectionNotes,
-                          Label currentCollectionTitle,
-                          Button deleteCollectionButton,
-                          MenuItem editCollectionTitle) {
+    public void setReferences(ListView collectionView,
+                              Label currentCollectionTitle,
+                              Menu collectionMenu,
+                              ToggleGroup collectionSelect,
+                              RadioMenuItem allNotesButton,
+                              MenuItem editCollectionTitle,
+                              Button deleteCollectionButton) {
+        this.collectionView = collectionView;
+        this.currentCollectionTitle = currentCollectionTitle;
+        this.collectionMenu = collectionMenu;
+        this.collectionSelect = collectionSelect;
+        this.allNotesButton = allNotesButton;
+        this.editCollectionTitle = editCollectionTitle;
+        this.deleteCollectionButton = deleteCollectionButton;
+    }
+    public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
+        this.dashboardCtrl = dashboardCtrl;
+    }
+    public List<Collection> setUp() {
+        collectionSelect.selectToggle(allNotesButton);
+
+        List<Collection> collections;
+        // If the default collection doesn't exist, create it
+        try {
+            if (config.readFromFile().isEmpty()) {
+                Collection defaultCollection = server.addCollection(new Collection("Default"));
+                config.writeToFile(defaultCollection);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Set up the collections menu
+        try {
+            collections = config.readFromFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (Collection c : collections) {
+            dashboardCtrl.createCollectionButton(c,collectionMenu, collectionSelect);
+        }
+        return collections;
+    }
+
+
+    public ObservableList<Note> viewNotes(Collection currentCollection, ObservableList<Note> allNotes) {
+        dashboardCtrl.setSearchIsActive(false);
+        ObservableList<Note> collectionNotes;
         if (currentCollection == null) {
-            collectionNotes = FXCollections.observableArrayList(server.getAllNotes());
+            collectionNotes = allNotes;
             currentCollectionTitle.setText("All Notes");
         } else {
-            collectionNotes = FXCollections.observableArrayList(server.getNotesByCollection(currentCollection));
+            collectionNotes = FXCollections.observableArrayList(
+                    allNotes.stream()
+                            .filter(note -> note.collection.equals(currentCollection))
+                            .collect(Collectors.toList())
+            );
             currentCollectionTitle.setText(currentCollection.title);
         }
 
         collectionView.setItems(collectionNotes);
+        collectionView.getSelectionModel().clearSelection();
 
-        boolean deleteDisabled = currentCollection == null || currentCollectionTitle.equals("Default");
+        boolean deleteDisabled = currentCollection == null || currentCollectionTitle.getText().equals("Default");
         deleteCollectionButton.setDisable(deleteDisabled);
         editCollectionTitle.setDisable(deleteDisabled);
 
         collectionView.getSelectionModel().clearSelection();
+        return collectionNotes!=null?collectionNotes : FXCollections.observableArrayList();
     }
 
-    public void deleteCollection(Collection currentCollection,
-                                 List<Collection> collections,
-                                 Menu collectionMenu,
-                                 ToggleGroup collectionSelect,
-                                 RadioMenuItem allNotesButton) throws IOException {
+    public Collection deleteCollection(Collection currentCollection,
+                                       List<Collection> collections,
+                                       ObservableList<Note> collectionNotes,
+                                       ObservableList<Note> allNotes) throws IOException {
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Delete collection");
@@ -60,10 +128,9 @@ public class CollectionCtrl {
         Optional<ButtonType> buttonType = alert.showAndWait();
 
         if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
-            List<Note> notesInCollection = server.getNotesByCollection(currentCollection);
-            //TODO check if we need to do this
-            for (Note n : notesInCollection) {
-                // noteCtrl.deleteNote(n);
+            List<Note> notesToDelete = collectionNotes.stream().toList();
+            for (Note n : notesToDelete) {
+                noteCtrl.deleteNote(n,collectionNotes,allNotes);
             }
             // delete collection from server
             server.deleteCollection(currentCollection.id);
@@ -76,7 +143,9 @@ public class CollectionCtrl {
                     collectionSelect.getSelectedToggle()
             );
             collectionSelect.selectToggle(allNotesButton);
+            return null;
         }
+        return currentCollection;
     }
 
     /**
@@ -84,16 +153,12 @@ public class CollectionCtrl {
      *
      * @throws IOException exception
      */
-    public void changeTitleInCollection(Collection currentCollection,
-                                        List<Collection> collections,
-                                        ToggleGroup collectionSelect,
-                                        Label currentCollectionTitle) throws IOException {
+    public Collection changeTitleInCollection(Collection currentCollection, List<Collection> collections) throws IOException {
 
-        // Get the collection title
-        String currentCollectionString = currentCollection.title;
+        String oldTitle = currentCollection.title;
 
         // Ask for a new title with a dialog
-        TextInputDialog dialog = new TextInputDialog(currentCollectionString);
+        TextInputDialog dialog = new TextInputDialog(oldTitle);
         dialog.setTitle("Change Collection Title");
         dialog.setContentText("Please enter the new title for the collection:");
 
@@ -114,7 +179,9 @@ public class CollectionCtrl {
                 alert.setTitle("Error");
                 alert.setContentText(e.getResponse().readEntity(String.class));
                 alert.showAndWait();
-                return;
+
+                currentCollection.title = oldTitle;
+                return currentCollection;
             }
 
             config.writeAllToFile(collections);
@@ -123,6 +190,7 @@ public class CollectionCtrl {
             ((RadioMenuItem) collectionSelect.getSelectedToggle()).setText(newTitle);
             currentCollectionTitle.setText(newTitle);
         }
+        return currentCollection;
     }
 
     /**
@@ -130,13 +198,9 @@ public class CollectionCtrl {
      *
      * @throws IOException exception
      */
-    public Collection moveNoteFromCollection(Collection currentCollection,
-                                             ListView collectionView,
-                                             List<Collection> collections) throws IOException {
-        // Get the currently selected note
-        Note currentNote = (Note) collectionView.getSelectionModel().getSelectedItem();
+    public Collection moveNoteFromCollection(Note currentNote, Collection currentCollection, List<Collection> collections) throws IOException {
         if (currentNote == null) {
-            return null;
+            return currentCollection;
         }
 
         // Ask for a new title with a dialog
@@ -194,9 +258,7 @@ public class CollectionCtrl {
         return currentCollection;
     }
 
-    public Collection addCollection(List<Collection> collections,
-                                    ToggleGroup collectionSelect,
-                                    Menu collectionMenu) throws IOException {
+    public Collection addCollection(Collection currentCollection, List<Collection> collections) throws IOException {
         Collection addedCollection;
 
         TextInputDialog dialog = new TextInputDialog();
@@ -215,22 +277,17 @@ public class CollectionCtrl {
                 alert.setTitle("Error");
                 alert.setContentText(e.getResponse().readEntity(String.class));
                 alert.showAndWait();
-                return null;
+                return currentCollection;
             }
 
             // add entry in collections menu
-            RadioMenuItem radioMenuItem = new RadioMenuItem(s);
-            radioMenuItem.setToggleGroup(collectionSelect);
-            radioMenuItem.setStyle("-fx-text-fill: #000000");
-            radioMenuItem.setOnAction(Event -> {
-                //viewNotes();
-            });
-            collectionMenu.getItems().addFirst(radioMenuItem);
+            RadioMenuItem radioMenuItem = dashboardCtrl.createCollectionButton(addedCollection, collectionMenu, collectionSelect);
             collectionSelect.selectToggle(radioMenuItem);
 
-            // Something to view the new collection
             return addedCollection;
         }
-        return null;
+        return currentCollection;
     }
+
+
 }

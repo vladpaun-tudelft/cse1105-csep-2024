@@ -182,4 +182,14 @@ public class TestCollectionRepository implements CollectionRepository {
     public Page<Collection> findAll(Pageable pageable) {
         return null;
     }
+
+    @Override
+    public Collection findByTitle(String title) {
+        for (Collection c : collections) {
+            if (c.title.equals(title)) {
+                return c;
+            }
+        }
+        return null;
+    }
 }

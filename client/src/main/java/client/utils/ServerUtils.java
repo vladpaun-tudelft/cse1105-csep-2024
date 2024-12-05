@@ -18,14 +18,10 @@ package client.utils;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 import java.net.ConnectException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import commons.Collection;
 import commons.Note;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.WebTarget;
 import org.glassfish.jersey.client.ClientConfig;
 
 import jakarta.ws.rs.ProcessingException;
