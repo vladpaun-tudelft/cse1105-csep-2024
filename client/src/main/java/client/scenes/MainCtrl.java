@@ -17,6 +17,7 @@ package client.scenes;
 
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
@@ -60,6 +61,8 @@ public class MainCtrl {
      */
     public void showDashboard() {
         primaryStage.setTitle("NetNote");
+        Image icon = new Image(getClass().getResourceAsStream("/css/icons/netnote-icon.png"));
+        primaryStage.getIcons().add(icon);
         primaryStage.setScene(dashboard);
     }
 
