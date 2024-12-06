@@ -1,5 +1,6 @@
 package client.controllers;
 
+import client.ui.DialogStyler;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
 import commons.Collection;
@@ -16,6 +17,7 @@ public class NoteCtrl {
 
     // Utilities
     private final ServerUtils server;
+    private DialogStyler dialogStyler = new DialogStyler();
 
     // References
     private ListView collectionView;
@@ -103,10 +105,12 @@ public class NoteCtrl {
                                    ObservableList<Note> collectionNotes,
                                    ObservableList<Note> allNotes) {
         if (currentNote != null) {
-
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm deletion");
-            alert.setContentText("Do you really want to delete this note?");
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.CONFIRMATION,
+                    "Confirm deletion",
+                    "Confirm deletion",
+                    "Do you really want to delete this note?"
+            );
             Optional<ButtonType> buttonType = alert.showAndWait();
 
             if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {

@@ -1,6 +1,7 @@
 package client.controllers;
 
 import client.scenes.DashboardCtrl;
+import client.ui.DialogStyler;
 import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
@@ -25,6 +26,7 @@ public class CollectionCtrl {
     private NoteCtrl noteCtrl;
     private DashboardCtrl dashboardCtrl;
     private SearchCtrl searchCtrl;
+    private DialogStyler dialogStyler = new DialogStyler();
 
     // References
     private ListView collectionView;
@@ -121,10 +123,12 @@ public class CollectionCtrl {
                                        List<Collection> collections,
                                        ObservableList<Note> collectionNotes,
                                        ObservableList<Note> allNotes) throws IOException {
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Delete collection");
-        alert.setContentText("Are you sure you want to delete this collection? All notes in the collection will be deleted as well.");
+        Alert alert = dialogStyler.createStyledAlert(
+                Alert.AlertType.CONFIRMATION,
+                "Delete collection",
+                "Delete collection",
+                "Are you sure you want to delete this collection? All notes in the collection will be deleted as well."
+        );
         Optional<ButtonType> buttonType = alert.showAndWait();
 
         if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
@@ -158,9 +162,11 @@ public class CollectionCtrl {
         String oldTitle = currentCollection.title;
 
         // Ask for a new title with a dialog
-        TextInputDialog dialog = new TextInputDialog(oldTitle);
-        dialog.setTitle("Change Collection Title");
-        dialog.setContentText("Please enter the new title for the collection:");
+        TextInputDialog dialog = dialogStyler.createStyledTextInputDialog(
+                "Change Collection Title",
+                "Change Collection Title",
+                "Please enter the new title for the collection:"
+        );
 
         Optional<String> newTitleOptional = dialog.showAndWait();
 
@@ -175,9 +181,12 @@ public class CollectionCtrl {
                 server.updateCollection(currentCollection);
 
             } catch (ClientErrorException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setContentText(e.getResponse().readEntity(String.class));
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.ERROR,
+                        "Error",
+                        "Error",
+                        e.getResponse().readEntity(String.class)
+                );
                 alert.showAndWait();
 
                 currentCollection.title = oldTitle;
@@ -204,9 +213,11 @@ public class CollectionCtrl {
         }
 
         // Ask for a new title with a dialog
-        TextInputDialog dialog = new TextInputDialog(currentCollection.title);
-        dialog.setTitle("Move Note");
-        dialog.setContentText("Please enter the title of destination collection:");
+        TextInputDialog dialog = dialogStyler.createStyledTextInputDialog(
+                "Move Note",
+                "Move Note",
+                "Please enter the title of destination collection:"
+        );
         Optional<String> destinationCollectionTitle = dialog.showAndWait();
 
         // If user provided a title of destination collection
@@ -215,18 +226,24 @@ public class CollectionCtrl {
 
             // If user provided a title that is empty
             if (destinationTitle.isEmpty()) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setContentText("A destination collection needs a title");
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.ERROR,
+                        "Error",
+                        "Error",
+                        "A destination collection needs a title"
+                );
                 alert.showAndWait();
                 return currentCollection;
             }
 
             // If user will choose the same collection
             if (destinationTitle.equals(currentCollection.title)) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Warning");
-                alert.setContentText("Cannot move the note to the same collection");
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.WARNING,
+                        "Warning",
+                        "Warning",
+                        "Cannot move the note to the same collection"
+                );
                 alert.showAndWait();
                 return currentCollection;
             }
@@ -235,9 +252,12 @@ public class CollectionCtrl {
             try {
                 destinationCollection = server.getCollectionByTitle(destinationTitle);
             } catch (ClientErrorException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setContentText(e.getResponse().readEntity(String.class));
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.ERROR,
+                        "Error",
+                        "Error",
+                        e.getResponse().readEntity(String.class)
+                );
                 alert.showAndWait();
                 return currentCollection;
             }
@@ -261,9 +281,11 @@ public class CollectionCtrl {
     public Collection addCollection(Collection currentCollection, List<Collection> collections) throws IOException {
         Collection addedCollection;
 
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("New collection");
-        dialog.setContentText("Please enter the title for your new collection");
+        TextInputDialog dialog = dialogStyler.createStyledTextInputDialog(
+                "New collection",
+                "New collection",
+                "Please enter the title for your new collection:"
+        );
         Optional<String> collectionTitle = dialog.showAndWait();
         if (collectionTitle.isPresent()) {
             String s = collectionTitle.get();
@@ -273,9 +295,12 @@ public class CollectionCtrl {
                 config.writeToFile(addedCollection);
                 collections.add(addedCollection);
             } catch (ClientErrorException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setContentText(e.getResponse().readEntity(String.class));
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.ERROR,
+                        "Error",
+                        "Error",
+                        e.getResponse().readEntity(String.class)
+                );
                 alert.showAndWait();
                 return currentCollection;
             }

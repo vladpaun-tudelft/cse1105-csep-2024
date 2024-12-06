@@ -13,6 +13,9 @@ import javafx.scene.layout.Region;
 
 public class NoteListItem extends ListCell<Note> {
 
+    // Utillities
+    private final DialogStyler dialogStyler = new DialogStyler();
+
     // References
     private Label overviewTitle;
     private Label markdownTitle;
@@ -151,9 +154,12 @@ public class NoteListItem extends ListCell<Note> {
             noteCtrl.updatePendingNotes.add(item);// Notify NoteCtrl of the change
             noteCtrl.saveAllPendingNotes();
         } catch (ClientErrorException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setContentText(e.getResponse().readEntity(String.class));
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.ERROR,
+                    "Error",
+                    "Error",
+                    e.getResponse().readEntity(String.class)
+            );
             alert.showAndWait();
 
             item.setTitle(oldTitle);
