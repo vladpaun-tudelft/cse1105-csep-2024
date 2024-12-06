@@ -67,6 +67,8 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private Button searchButton;
     @FXML
+    private Button clearSearchButton;
+    @FXML
     private TextField searchField;
     @FXML
     private Label currentCollectionTitle;
@@ -235,12 +237,15 @@ public class DashboardCtrl implements Initializable {
     public void setSearchIsActive(boolean b) {
         searchCtrl.setSearchIsActive(b, collectionNotes);
     }
+    public void clearSearch() {
+        searchCtrl.setSearchIsActive(false, collectionNotes);
+    }
 
     public void refresh() {
         noteCtrl.saveAllPendingNotes();
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
-        searchCtrl.setSearchIsActive(false, collectionNotes);
+        clearSearch();
     }
 
     // Temporary solution
