@@ -48,8 +48,6 @@ public class CollectionController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error, try again later.");
         }
-
-
     }
 
     @GetMapping("/all-notes")
@@ -63,6 +61,16 @@ public class CollectionController {
     public ResponseEntity<List<Note>> getNotesInCollection(@PathVariable String collectionTitle) {
         List<Note> notes = noteService.getNotesByCollection(collectionTitle);
         return ResponseEntity.ok(notes);
+    }
+    @GetMapping("/title/{title}")
+    public ResponseEntity<Collection> getCollectionByTitle(@PathVariable String title) {
+        Collection collection = collectionService.getCollectionByTitle(title);
+        return ResponseEntity.ok(collection);
+    }
+    @GetMapping("/id/{id}")
+    public ResponseEntity<Collection> getCollectionById(@PathVariable long id) {
+        Optional<Collection> collection = collectionService.getCollectionById(id);
+        return collection.isPresent()? ResponseEntity.ok(collection.get()) : ResponseEntity.notFound().build();
     }
 
     @GetMapping(path = {"/", ""})
@@ -116,16 +124,6 @@ public class CollectionController {
         return ResponseEntity.notFound().build();
     }
 
-    /**
-     * endpoint for reading the collection
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<Collection> getCollectionById(@PathVariable long id) {
-        Optional<Collection> collectionOptional = collectionService.findById(id);
-
-        return collectionOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-
-    }
 
 
 }

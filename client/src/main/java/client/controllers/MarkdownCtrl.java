@@ -43,7 +43,7 @@ public class MarkdownCtrl {
         return cssPath;
     }
 
-    public void initialize(WebView markdownView, Label markdownViewBlocker, TextArea noteBody) {
+    public void setReferences(WebView markdownView, Label markdownViewBlocker, TextArea noteBody) {
         this.markdownView = markdownView;
         this.markdownViewBlocker = markdownViewBlocker;
         this.noteBody = noteBody;

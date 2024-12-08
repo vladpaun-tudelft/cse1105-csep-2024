@@ -1,6 +1,7 @@
 package server.api;
 
 import commons.Note;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import server.service.CollectionService;
@@ -33,7 +34,12 @@ public class NoteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Note> updateNote(@PathVariable long id, @RequestBody Note note) {
+    public ResponseEntity<?> updateNote(@PathVariable long id, @RequestBody Note note) {
+        if (note == null || note.collection == null) {
+            return ResponseEntity.badRequest().body("Invalid request");
+        } else if (note.title.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Note title cannot be blank");
+        }
         Optional<Note> existingNote = noteService.findById(id);
         if (existingNote.isPresent()) {
             note.id = id; // Ensure the note's ID is set

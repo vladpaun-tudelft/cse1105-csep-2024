@@ -55,13 +55,6 @@ public class ServerUtils {
 				.get(Note.class);
 	}
 
-	public List<Note> getNotesInCollection(String title) {
-		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("api/collection/" + title)
-				.request(APPLICATION_JSON)
-				.get(new GenericType<List<Note>>() {});
-	}
-
 	public Note updateNote(Note note) {
 		return ClientBuilder.newClient(new ClientConfig())
 				.target(SERVER).path("api/notes/" + note.id)
@@ -77,8 +70,14 @@ public class ServerUtils {
 	}
 
 	public List<Note> getNotesByCollection(Collection collection) {
+		if (collection == null || collection.title == null || collection.title.isEmpty()) {
+			throw new IllegalArgumentException("Collection or collection title cannot be null or empty");
+		}
+
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/collection/" + collection.title)
+				.target(SERVER)
+				.path("/api/collection/{title}")
+				.resolveTemplate("title", collection.title)
 				.request(APPLICATION_JSON)
 				.get(new GenericType<List<Note>>() {});
 	}
@@ -96,6 +95,21 @@ public class ServerUtils {
 				.request(APPLICATION_JSON)
 				.get(new GenericType<List<Collection>>() {});
 	}
+
+
+	public Collection getCollectionByTitle(String title) {
+		if (title == null || title.isEmpty()) {
+			throw new IllegalArgumentException("Title cannot be null or empty");
+		}
+
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER)
+				.path("/api/collection/title/{title}")
+				.resolveTemplate("title", title)
+				.request(APPLICATION_JSON)
+				.get(Collection.class);
+	}
+
 
 	public Collection updateCollection(Collection collection) {
 		return ClientBuilder.newClient(new ClientConfig())

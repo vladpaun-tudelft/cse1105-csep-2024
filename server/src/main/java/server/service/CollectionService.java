@@ -31,4 +31,12 @@ public class CollectionService {
     public List<Collection> getAllCollections() {
         return collectionRepository.findAll();
     }
+
+    public Collection getCollectionByTitle(String title) {
+        return collectionRepository.findByTitle(title);
+    }
+
+    public Optional<Collection> getCollectionById(long id) {
+        return collectionRepository.findById(id);
+    }
 }
