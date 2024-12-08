@@ -4,6 +4,7 @@ import client.scenes.DashboardCtrl;
 import com.google.inject.Inject;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
 import lombok.Getter;
@@ -25,11 +26,11 @@ public class MarkdownCtrl {
     // Utilities
     @Setter
     private DashboardCtrl dashboardCtrl;
-    private final NoteCtrl noteCtrl;
     private final Parser parser;
     private final HtmlRenderer renderer;
 
     // References
+    private ListView collectionView;
     private WebView markdownView;
     private Label markdownViewBlocker;
     private TextArea noteBody;
@@ -39,8 +40,7 @@ public class MarkdownCtrl {
     private final String cssPath;
 
     @Inject
-    public MarkdownCtrl(NoteCtrl noteCtrl) {
-        this.noteCtrl = noteCtrl;
+    public MarkdownCtrl() {
 
         var extensions = Arrays.asList(
                 TablesExtension.create(),
@@ -58,7 +58,8 @@ public class MarkdownCtrl {
         }
     }
 
-    public void setReferences(WebView markdownView, Label markdownViewBlocker, TextArea noteBody) {
+    public void setReferences(ListView collectionView, WebView markdownView, Label markdownViewBlocker, TextArea noteBody) {
+        this.collectionView = collectionView;
         this.markdownView = markdownView;
         this.markdownViewBlocker = markdownViewBlocker;
         this.noteBody = noteBody;
@@ -74,14 +75,14 @@ public class MarkdownCtrl {
         noteBody.scrollTopProperty().addListener((_, _, _) -> scrollMarkdownView());
 
         // Add listener for clicking on references
-        /*
         markdownView.getEngine().setOnAlert(event -> {
-            String noteTitle = event.getData().replace("netnote://", "");
+            String noteTitle = event.getData();
             dashboardCtrl.getCollectionNotes().stream()
                     .filter(note -> note.title.equals(noteTitle))
-                    .findFirst().ifPresent(noteCtrl::showCurrentNote);
+                    .findFirst()
+                    .ifPresent(selectedNote -> collectionView.getSelectionModel().select(selectedNote));
 
-        }); */
+        });
     }
 
     /**
@@ -112,7 +113,7 @@ public class MarkdownCtrl {
                 );
             } else {
                 markdown = markdown.replace("[[" + reference + "]]",
-                        "<a href='netnote://" + reference + "'>" + reference + "</a>");
+                        "<a href='#' class='note-link' data-note-title='" + reference + "'>" + reference + "</a>");
             }
         }
         return markdown;
@@ -148,6 +149,15 @@ public class MarkdownCtrl {
                 """ + htmlContent + "\n" +
                 """
                     </body>
+                    <script>
+                        document.querySelectorAll('.note-link').forEach(element => {
+                            element.addEventListener('click', (event) => {
+                                event.preventDefault();
+                                const noteTitle = element.getAttribute('data-note-title');
+                                window.alert(noteTitle); // Use alert to pass the note title to Java
+                            });
+                        });
+                    </script>
                 </html>""";
 
     }

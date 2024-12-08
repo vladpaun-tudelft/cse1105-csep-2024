@@ -118,7 +118,7 @@ public class DashboardCtrl implements Initializable {
     public void initialize(URL arg0, ResourceBundle arg1) {
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
 
-        markdownCtrl.setReferences(markdownView, markdownViewBlocker, noteBody);
+        markdownCtrl.setReferences(collectionView, markdownView, markdownViewBlocker, noteBody);
         markdownCtrl.setDashboardCtrl(this);
         searchCtrl.setReferences(searchField, collectionView, noteBody);
         searchField.setOnKeyPressed(event -> {
