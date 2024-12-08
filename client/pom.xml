@@ -119,6 +119,13 @@
 				<version>3.13.0</version>
 				<configuration>
 					<release>23</release>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.36</version> <!-- Use the same version as Lombok dependency -->
+						</path>
+					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 			<plugin>
