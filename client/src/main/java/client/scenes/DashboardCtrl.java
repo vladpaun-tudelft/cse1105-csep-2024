@@ -85,6 +85,7 @@ public class DashboardCtrl implements Initializable {
     private MenuItem editCollectionTitle;
 
     // Variables
+    @Getter
     private Note currentNote = null;
     private Collection currentCollection = null;
 

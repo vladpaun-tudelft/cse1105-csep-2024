@@ -9,6 +9,12 @@ body {
     font-size: 14px;
 }
 
+.red-squiggly {
+    text-decoration: underline;
+    text-decoration-color: red;
+    text-decoration-style: wavy;
+}
+
 /* Headings */
 h1, h2, h3, h4, h5, h6 {
     color: #ffffff;
@@ -17,7 +23,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Links */
 a {
-    color: #ffffff;
+    color: lightskyblue;
     text-decoration: none;
     opacity: 0.8;
 }
