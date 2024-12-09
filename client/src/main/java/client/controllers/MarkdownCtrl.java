@@ -4,11 +4,14 @@ import client.scenes.DashboardCtrl;
 import client.services.ReferenceService;
 import com.google.inject.Inject;
 import commons.Note;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
+import javafx.util.Duration;
 import lombok.Getter;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
@@ -37,13 +40,15 @@ public class MarkdownCtrl {
     private Label markdownViewBlocker;
     private TextArea noteBody;
 
+    private ContextMenu recommendationsMenu;
+
     @Getter
     private final String cssPath;
     private final String scriptPath;
 
     @Inject
     public MarkdownCtrl() {
-        this.referenceService = new ReferenceService(dashboardCtrl);
+        this.referenceService = new ReferenceService(dashboardCtrl, noteBody, recommendationsMenu);
         var extensions = Arrays.asList(
                 TablesExtension.create(),
                 StrikethroughExtension.create()
@@ -82,7 +87,14 @@ public class MarkdownCtrl {
         updateMarkdownView("");
 
         // Add listeners for note body changes and scrolling
-        noteBody.textProperty().addListener((_, _, newValue) -> updateMarkdownView(newValue));
+        noteBody.textProperty().addListener((_, _, newValue) -> {
+            updateMarkdownView(newValue);
+            PauseTransition pause = new PauseTransition(Duration.millis(100)); // Adjust duration as needed
+            pause.setOnFinished(event -> {
+                referenceService.handleReferenceRecommendations();
+            });
+            pause.play();
+        });
         noteBody.scrollTopProperty().addListener((_, _, _) -> synchronizeScroll());
 
         // Add click listener for note links in the WebView
@@ -97,7 +109,7 @@ public class MarkdownCtrl {
 
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
         this.dashboardCtrl = dashboardCtrl;
-        this.referenceService = new ReferenceService(dashboardCtrl);
+        this.referenceService = new ReferenceService(dashboardCtrl, noteBody, recommendationsMenu);
     }
 
     /**
