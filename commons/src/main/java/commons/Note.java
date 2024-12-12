@@ -1,10 +1,13 @@
 package commons;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.util.Set;
 
 import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 
@@ -25,6 +28,10 @@ public class Note {
     @ManyToOne
     @JoinColumn(name = "collection_id", nullable = false)
     public commons.Collection collection;
+
+    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference  // required to prevent infinite recursion
+    public Set<EmbeddedFile> embeddedFiles;
 
     @SuppressWarnings("unused")
     private Note() {
