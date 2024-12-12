@@ -1,12 +1,16 @@
 package server.api;
 
+import commons.EmbeddedFile;
 import commons.Note;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import server.service.CollectionService;
+import server.service.EmbeddedFileService;
 import server.service.NoteService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,10 +19,12 @@ import java.util.Optional;
 public class NoteController {
     private final NoteService noteService;
     private final CollectionService collectionService;
+    private final EmbeddedFileService embeddedFileService;
 
-    public NoteController(NoteService noteService, CollectionService collectionService) {
+    public NoteController(NoteService noteService, CollectionService collectionService, EmbeddedFileService embeddedFileService) {
         this.noteService = noteService;
         this.collectionService = collectionService;
+        this.embeddedFileService = embeddedFileService;
     }
 
     @PostMapping(path = {"/", ""})
@@ -51,9 +57,16 @@ public class NoteController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNote(@PathVariable long id) {
-        if (noteService.findById(id).isPresent()) {
-            noteService.deleteById(id);
-            return ResponseEntity.noContent().build();
+        Optional<Note> note = noteService.findById(id);
+        if (note.isPresent()) {
+            try {
+                embeddedFileService.deleteFilesByNoteId(id);
+                noteService.deleteById(id);
+                return ResponseEntity.noContent().build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
         }
         return ResponseEntity.notFound().build();
     }
@@ -68,5 +81,51 @@ public class NoteController {
     public ResponseEntity<List<Note>> getAllNotes() {
         List<Note> notes = noteService.getAllNotes();
         return ResponseEntity.ok(notes);
+    }
+
+    @PostMapping("/{id}/files")
+    public ResponseEntity<?> uploadFile(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        Optional<Note> noteOpt = noteService.findById(id);
+        if (noteOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            EmbeddedFile savedFile = embeddedFileService.saveFile(noteOpt.get(), file);
+            return ResponseEntity.ok(savedFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error uploading file: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/files")
+    public ResponseEntity<List<EmbeddedFile>> getFiles(@PathVariable Long id) {
+        List<EmbeddedFile> files = embeddedFileService.getFilesByNoteId(id);
+        return ResponseEntity.ok(files);
+    }
+
+    @DeleteMapping("/{noteId}/files/{fileId}")
+    public ResponseEntity<Void> deleteFile(@PathVariable Long noteId, @PathVariable Long fileId) {
+        embeddedFileService.deleteFile(fileId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{noteId}/files/{fileId}/rename")
+    public ResponseEntity<EmbeddedFile> renameFile(@PathVariable Long noteId, @PathVariable Long fileId, @RequestParam String newFileName) {
+        Optional<EmbeddedFile> embeddedFileOpt = embeddedFileService.findById(fileId);
+        if (embeddedFileOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        EmbeddedFile embeddedFile = embeddedFileOpt.get();
+
+        // rename the file by updating its name in the database
+        embeddedFile.setFileName(newFileName);
+        EmbeddedFile updatedFile = embeddedFileService.save(embeddedFile);
+
+        return ResponseEntity.ok(updatedFile);
     }
 }
