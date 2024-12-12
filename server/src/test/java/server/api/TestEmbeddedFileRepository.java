@@ -8,14 +8,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.FluentQuery;
 import server.database.EmbeddedFileRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
 public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
+
+    private List<EmbeddedFile> embeddedFiles = new ArrayList<>();
+
     @Override
     public List<EmbeddedFile> findByNoteId(Long noteId) {
-        return null;
+        return embeddedFiles.stream()
+                .filter(file -> file.getNote().getId() == noteId)
+                .toList();
     }
 
     @Override
@@ -104,8 +110,9 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
     }
 
     @Override
-    public <S extends EmbeddedFile> S save(S entity) {
-        return null;
+    public EmbeddedFile save(EmbeddedFile embeddedFile) {
+        embeddedFiles.add(embeddedFile);
+        return embeddedFile;
     }
 
     @Override
@@ -114,8 +121,10 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
     }
 
     @Override
-    public Optional<EmbeddedFile> findById(Long aLong) {
-        return Optional.empty();
+    public Optional<EmbeddedFile> findById(Long id) {
+        return embeddedFiles.stream()
+                .filter(file -> file.getId().equals(id))
+                .findFirst();
     }
 
     @Override
@@ -125,7 +134,7 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
 
     @Override
     public List<EmbeddedFile> findAll() {
-        return null;
+        return embeddedFiles;
     }
 
     @Override
@@ -138,9 +147,8 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
         return 0;
     }
 
-    @Override
-    public void deleteById(Long aLong) {
-
+    public void deleteById(Long id) {
+        embeddedFiles.removeIf(file -> file.getId().equals(id));
     }
 
     @Override

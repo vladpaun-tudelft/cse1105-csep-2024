@@ -45,6 +45,10 @@ public class Note {
     }
 
     // region Getters and Setters
+    public long getId() {
+        return id;
+    }
+
     /**
      * Returns the title of this Note
      * @return Value of title
