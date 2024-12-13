@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
+
 @RestController
 @RequestMapping("/api/notes")
 public class NoteController {
@@ -83,7 +85,7 @@ public class NoteController {
         return ResponseEntity.ok(notes);
     }
 
-    @PostMapping("/{id}/files")
+    @PostMapping(path = "/{id}/files", consumes = MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadFile(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         Optional<Note> noteOpt = noteService.findById(id);
         if (noteOpt.isEmpty()) {

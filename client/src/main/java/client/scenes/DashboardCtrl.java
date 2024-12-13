@@ -1,9 +1,6 @@
 package client.scenes;
 
-import client.controllers.CollectionCtrl;
-import client.controllers.MarkdownCtrl;
-import client.controllers.NoteCtrl;
-import client.controllers.SearchCtrl;
+import client.controllers.*;
 import client.ui.NoteListItem;
 import client.utils.Config;
 import client.utils.ServerUtils;
@@ -46,6 +43,7 @@ public class DashboardCtrl implements Initializable {
     private final CollectionCtrl collectionCtrl;
     private final NoteCtrl noteCtrl;
     private final SearchCtrl searchCtrl;
+    private final FilesCtrl filesCtrl;
 
     // FXML Components
     @FXML
@@ -82,6 +80,10 @@ public class DashboardCtrl implements Initializable {
     private Button deleteCollectionButton;
     @FXML
     private MenuItem editCollectionTitle;
+    @FXML
+    private Button addFileButton;
+    @FXML
+    private ListView filesView;
 
     // Variables
     private Note currentNote = null;
@@ -102,7 +104,8 @@ public class DashboardCtrl implements Initializable {
                          MarkdownCtrl markdownCtrl,
                          CollectionCtrl collectionCtrl,
                          NoteCtrl noteCtrl,
-                         SearchCtrl searchCtrl) {
+                         SearchCtrl searchCtrl,
+                         FilesCtrl filesCtrl) {
         this.mainCtrl = mainCtrl;
         this.server = server;
         this.config = config;
@@ -110,6 +113,7 @@ public class DashboardCtrl implements Initializable {
         this.collectionCtrl = collectionCtrl;
         this.noteCtrl = noteCtrl;
         this.searchCtrl = searchCtrl;
+        this.filesCtrl = filesCtrl;
     }
 
     @SneakyThrows
@@ -151,6 +155,9 @@ public class DashboardCtrl implements Initializable {
 
         collectionNotes = collectionCtrl.viewNotes(null, allNotes);
         listViewSetup(allNotes);
+
+        filesCtrl.setRefrences(filesView);
+        filesCtrl.setDashboardCtrl(this);
 
 
         // Temporary solution
@@ -246,6 +253,10 @@ public class DashboardCtrl implements Initializable {
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
         clearSearch();
+    }
+
+    public void addFile() throws IOException {
+        filesCtrl.addFile(currentNote);
     }
 
     // Temporary solution

@@ -15,12 +15,13 @@
  */
 package client.utils;
 
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-
+import java.io.File;
+import java.io.IOException;
 import java.net.ConnectException;
 import java.util.List;
 
 import commons.Collection;
+import commons.EmbeddedFile;
 import commons.Note;
 import org.glassfish.jersey.client.ClientConfig;
 
@@ -28,6 +29,10 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+
+import static jakarta.ws.rs.core.MediaType.*;
 
 public class ServerUtils {
 
@@ -125,6 +130,15 @@ public class ServerUtils {
 				.delete();
 	}
 
+	public void addFile(Note note, File file) throws IOException {
+		FormDataMultiPart multiPart = new FormDataMultiPart();
+		multiPart.bodyPart(new FileDataBodyPart("file", file));
+
+		ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/notes/" + note.id + "/files")
+				.request(APPLICATION_JSON)
+				.post(Entity.entity(multiPart, MULTIPART_FORM_DATA_TYPE), EmbeddedFile.class);
+	}
 
 	public boolean isServerAvailable() {
 		try {

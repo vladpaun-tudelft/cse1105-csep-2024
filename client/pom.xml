@@ -90,6 +90,15 @@
 			<version>0.21.0</version>
 		</dependency>
 
+		<!-- Embedded Files -->
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-multipart</artifactId>
+			<version>4.0.0-M1</version>
+		</dependency>
+
+
+
 		<!-- test -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -109,7 +118,13 @@
 			<version>${version.mockito}</version>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>6.1.14</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>
