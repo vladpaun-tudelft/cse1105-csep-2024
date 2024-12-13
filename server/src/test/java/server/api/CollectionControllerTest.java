@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import server.service.CollectionService;
+import server.service.EmbeddedFileService;
 import server.service.NoteService;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -17,9 +18,11 @@ class CollectionControllerTest {
 
     private NoteService noteService;
     private CollectionService collectionService;
+    private EmbeddedFileService embeddedFileService;
 
     private TestNoteRepository noteRepo;
     private TestCollectionRepository collectionRepo;
+    private TestEmbeddedFileRepository embeddedFileRepository;
 
     Collection collection1, collection2;
     Note note1, note2, note3, note4;
@@ -31,8 +34,9 @@ class CollectionControllerTest {
 
         noteService = new NoteService(noteRepo);
         collectionService = new CollectionService(collectionRepo);
+        embeddedFileService = new EmbeddedFileService(embeddedFileRepository);
 
-        noteController = new NoteController(noteService,collectionService);
+        noteController = new NoteController(noteService, collectionService, embeddedFileService);
         collectionController = new CollectionController(noteService, collectionService);
 
 

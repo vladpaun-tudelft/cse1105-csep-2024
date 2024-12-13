@@ -1,11 +1,16 @@
 package server.api;
 
 import commons.Collection;
+import commons.EmbeddedFile;
 import commons.Note;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 import server.service.CollectionService;
+import server.service.EmbeddedFileService;
 import server.service.NoteService;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,22 +23,27 @@ class NoteControllerTest {
 
     private NoteService noteService;
     private CollectionService collectionService;
+    private EmbeddedFileService embeddedFileService;
 
     private TestNoteRepository noteRepo;
     private TestCollectionRepository collectionRepo;
+    private TestEmbeddedFileRepository embeddedFileRepository;
 
     Collection collection1, collection2;
     Note note1, note2, note3, note4;
+    EmbeddedFile embeddedFile;
 
     @BeforeEach
     void setUp() {
         noteRepo = new TestNoteRepository();
         collectionRepo = new TestCollectionRepository();
+        embeddedFileRepository = new TestEmbeddedFileRepository();
 
         noteService = new NoteService(noteRepo);
         collectionService = new CollectionService(collectionRepo);
+        embeddedFileService = new EmbeddedFileService(embeddedFileRepository);
 
-        noteController = new NoteController(noteService,collectionService);
+        noteController = new NoteController(noteService, collectionService, embeddedFileService);
         collectionController = new CollectionController(noteService, collectionService);
 
 
@@ -44,6 +54,9 @@ class NoteControllerTest {
         note2 = new Note("note2", "bla", collection1);
         note3 = new Note("note3", "bla", collection2);
         note4 = new Note("note4", "bla", collection2);
+
+        embeddedFile = new EmbeddedFile(note1, "file.txt", "text/plain", new byte[]{1, 2, 3, 4});
+        embeddedFile.setId(1L);
     }
 
     @Test
@@ -168,4 +181,85 @@ class NoteControllerTest {
         assertEquals(collection2, response.getBody().get(3).collection);
     }
 
+    @Test
+    public void getFilesTest() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
+        noteController.uploadFile(1L, mockFile);
+
+        var response = noteController.getFiles(1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+
+        EmbeddedFile retrievedFile = response.getBody().get(0);
+        assertEquals("test.txt", retrievedFile.getFileName());
+        assertEquals("text/plain", retrievedFile.getFileType());
+    }
+
+    @Test
+    public void getFilesForNonExistentNoteTest() {
+        var response = noteController.getFiles(999L);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    public void uploadFileTest() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
+        var response = noteController.uploadFile(1L, mockFile);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        EmbeddedFile uploadedFile = (EmbeddedFile) response.getBody();
+        assertNotNull(uploadedFile);
+        assertEquals("test.txt", uploadedFile.getFileName());
+        assertEquals("text/plain", uploadedFile.getFileType());
+    }
+
+    @Test
+    public void uploadFileNoteNotFoundTest() {
+        MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
+        var response = noteController.uploadFile(1L, mockFile);
+
+        assertEquals(ResponseEntity.notFound().build(), response);
+    }
+
+    @Test
+    public void deleteFileTest() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+        embeddedFileRepository.save(embeddedFile);
+
+        var response = noteController.deleteFile(1L, 1L);
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        assertTrue(embeddedFileRepository.findById(1L).isEmpty());
+    }
+
+    @Test
+    public void renameFileTest() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+        embeddedFileRepository.save(embeddedFile);
+
+        var response = noteController.renameFile(1L, 1L, "new_name.txt");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        EmbeddedFile renamedFile = response.getBody();
+        assertNotNull(renamedFile);
+        assertEquals("new_name.txt", renamedFile.getFileName());
+    }
+
+    @Test
+    public void renameFileNotFoundTest() {
+        var response = noteController.renameFile(1L, 1L, "new_name.txt");
+
+        assertEquals(ResponseEntity.notFound().build(), response);
+    }
 }

@@ -1,6 +1,7 @@
 package server.service;
 
 import commons.Note;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import server.database.NoteRepository;
 
@@ -23,6 +24,7 @@ public class NoteService {
         return noteRepository.findById(id);
     }
 
+    @Transactional
     public void deleteById(long id) {
         noteRepository.deleteById(id);
     }
