@@ -6,7 +6,7 @@
 }
 
 .separator:horizontal .line {
-    -fx-background-color: -main-background;
+    -fx-background-color: -main-selected;
     -fx-border-width: 0;
     -fx-pref-height: 1px;
 }
