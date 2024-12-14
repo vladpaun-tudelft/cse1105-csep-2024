@@ -6,7 +6,7 @@
 }
 
 .separator:horizontal .line {
-    -fx-background-color: -main-background;
+    -fx-background-color: -main-selected;
     -fx-border-width: 0;
     -fx-pref-height: 1px;
 }
@@ -119,53 +119,51 @@
 }
 
 /* ICONS */
-.delete_icon {
-    -fx-background-image: url("icons/trash.png");
-    -fx-background-size: 13px;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center;
-    -fx-border-color: transparent;
-    -fx-background-color: transparent;
+.icon {
+    -fx-background-size: 20px;
     -fx-pref-width: 30px;
     -fx-pref-height: 30px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
 }
-
-.delete_icon:hover {
+.icon:hover {
+    -fx-background-color: -main-selected;
+}
+.search_bar_icon {
+    -fx-background-size: 18px;
+    -fx-pref-width: 25px;
+    -fx-pref-height: 25px;
+}
+.note_list_icon {
+    -fx-background-size: 15px;
+    -fx-pref-width: 25px;
+    -fx-pref-height: 25px;
+}
+.note_list_icon:hover {
     -fx-background-color: -main-background;
 }
-.add_note {
-    -fx-background-image: url("icons/addFile.png");
-    -fx-background-size: 18px;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center;
-    -fx-border-color: transparent;
-    -fx-background-color: transparent;
+
+.edit_icon {
+    -fx-background-image: url("icons/edit_title.png");
+}
+.delete_icon {
+    -fx-background-image: url("icons/trash.png");
 }
 
+.add_note {
+    -fx-background-image: url("icons/addFile.png");
+}
 .search_icon {
     -fx-background-image: url("icons/search.png");
-    -fx-background-size: 18px;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center;
-    -fx-border-color: transparent;
-    -fx-background-color: transparent;
 }
 .clear_search_icon {
     -fx-background-image: url("icons/clear_search.png");
-    -fx-background-size: 18px;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center;
-    -fx-border-color: transparent;
-    -fx-background-color: transparent;
 }
 
 .refresh_icon {
     -fx-background-image: url("icons/refresh.png");
-    -fx-background-size: 18px;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center;
-    -fx-border-color: transparent;
-    -fx-background-color: transparent;
 }
 
 /* WebView */

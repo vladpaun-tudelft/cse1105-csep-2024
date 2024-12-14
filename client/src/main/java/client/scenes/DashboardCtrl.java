@@ -145,6 +145,7 @@ public class DashboardCtrl implements Initializable {
                 noteTitle,
                 noteTitleMD,
                 noteBody,
+                markdownView,
                 contentBlocker,
                 searchField
         );
@@ -265,7 +266,6 @@ public class DashboardCtrl implements Initializable {
             collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
         });
         radioMenuItem.setToggleGroup(collectionSelect);
-        radioMenuItem.setStyle("-fx-text-fill: #000000");
         collectionMenu.getItems().addFirst(radioMenuItem);
         return radioMenuItem;
     }
