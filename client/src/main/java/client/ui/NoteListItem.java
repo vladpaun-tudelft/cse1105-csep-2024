@@ -5,6 +5,7 @@ import client.scenes.DashboardCtrl;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
@@ -26,6 +27,7 @@ public class NoteListItem extends ListCell<Note> {
     // List cell content
     private final Label noteTitle;
     private final Button deleteButton;
+    private final Button editButton;
     private final HBox hBox;
     private TextField textField;
 
@@ -34,7 +36,8 @@ public class NoteListItem extends ListCell<Note> {
     private long lastClickTime = 0;
     private static final int DOUBLE_CLICK_TIMEFRAME = 400;
 
-    public NoteListItem(Label overviewTitle,Label markdownTitle, TextArea overviewBody, DashboardCtrl controller, NoteCtrl noteCtrl) {
+    public NoteListItem(Label overviewTitle,Label markdownTitle, TextArea overviewBody,
+                        DashboardCtrl controller, NoteCtrl noteCtrl) {
 
         this.overviewTitle = overviewTitle;
         this.markdownTitle = markdownTitle;
@@ -45,21 +48,27 @@ public class NoteListItem extends ListCell<Note> {
         // Initialize the note title
         noteTitle = new Label();
         noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-        noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(40));
+        noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(60));
         noteTitle.setWrapText(false);
         noteTitle.setMinWidth(0);
 
         // Initialize the delete button
         deleteButton = new Button();
-        deleteButton.getStyleClass().add("delete_icon");
+        deleteButton.getStyleClass().addAll("icon", "note_list_icon", "delete_icon");
+        deleteButton.setCursor(Cursor.HAND);
         deleteButton.setVisible(false);
+
+        // Initialize the edit button
+        editButton = new Button();
+        editButton.getStyleClass().addAll("icon", "note_list_icon", "edit_icon");
+        editButton.setCursor(Cursor.HAND);
+        editButton.setVisible(false);
 
         // Create layout
         hBox = new HBox(0);
         Region spacer = new Region();
-        hBox.getChildren().addAll(noteTitle, spacer, deleteButton);
+        hBox.getChildren().addAll(noteTitle, spacer, editButton, deleteButton);
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox.setHgrow(deleteButton, Priority.NEVER);
         hBox.setAlignment(Pos.CENTER_LEFT);
 
         configureEventHandlers();
@@ -68,6 +77,9 @@ public class NoteListItem extends ListCell<Note> {
     private void configureEventHandlers() {
         deleteButton.setOnAction(event -> {
             controller.deleteSelectedNote();  // getItem()
+        });
+        editButton.setOnAction(event -> {
+            startEditing();
         });
 
         hBox.setOnMouseClicked(event -> {
@@ -82,11 +94,8 @@ public class NoteListItem extends ListCell<Note> {
             Note item = getItem();
             if (item == null) return;
 
-            if (newValue) {
-                deleteButton.setVisible(true);
-            }else {
-                deleteButton.setVisible(false);
-            }
+            deleteButton.setVisible(newValue);
+            editButton.setVisible(newValue);
         });
     }
 
@@ -187,7 +196,7 @@ public class NoteListItem extends ListCell<Note> {
     private void revertToLabel() {
         hBox.getChildren().clear();
         Region spacer = new Region();
-        hBox.getChildren().addAll(noteTitle, spacer, deleteButton);
+        hBox.getChildren().addAll(noteTitle, spacer, editButton, deleteButton);
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         overviewTitle.setText(getItem().getTitle());
