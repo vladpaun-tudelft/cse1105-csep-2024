@@ -18,6 +18,7 @@ package client.utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.ArrayList;
 import java.util.List;
 
 import commons.Collection;
@@ -130,14 +131,25 @@ public class ServerUtils {
 				.delete();
 	}
 
-	public void addFile(Note note, File file) throws IOException {
+	public EmbeddedFile addFile(Note note, File file) throws IOException {
+		// Convert file to MultipartFile
 		FormDataMultiPart multiPart = new FormDataMultiPart();
 		multiPart.bodyPart(new FileDataBodyPart("file", file));
 
-		ClientBuilder.newClient(new ClientConfig())
+		return ClientBuilder.newClient(new ClientConfig())
 				.target(SERVER).path("/api/notes/" + note.id + "/files")
 				.request(APPLICATION_JSON)
 				.post(Entity.entity(multiPart, MULTIPART_FORM_DATA_TYPE), EmbeddedFile.class);
+	}
+
+	public List<EmbeddedFile> getFilesByNote(Note note) {
+		List<EmbeddedFile> result = ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/notes/" + note.id + "/files")
+				.request(APPLICATION_JSON)
+				.get(new GenericType<List<EmbeddedFile>>() {});
+		if (result == null)
+			result = new ArrayList<>();
+		return result;
 	}
 
 	public boolean isServerAvailable() {

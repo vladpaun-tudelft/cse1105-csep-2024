@@ -6,6 +6,7 @@ import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
 import commons.Collection;
+import commons.EmbeddedFile;
 import commons.Note;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,6 +14,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.layout.HBox;
 import javafx.scene.web.WebView;
 import lombok.SneakyThrows;
 
@@ -83,7 +85,9 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private Button addFileButton;
     @FXML
-    private ListView filesView;
+    private HBox filesView;
+    @FXML
+    private Label filesViewBlocker;
 
     // Variables
     private Note currentNote = null;
@@ -92,6 +96,7 @@ public class DashboardCtrl implements Initializable {
     private List<Collection> collections;
     private ObservableList<Note> allNotes;
     private ObservableList<Note> collectionNotes;
+    private List<EmbeddedFile> filesInNote;
 
     public ObservableList<Note> getAllNotes() {
         return allNotes;
@@ -156,9 +161,8 @@ public class DashboardCtrl implements Initializable {
         collectionNotes = collectionCtrl.viewNotes(null, allNotes);
         listViewSetup(allNotes);
 
-        filesCtrl.setRefrences(filesView);
         filesCtrl.setDashboardCtrl(this);
-
+        filesCtrl.setReferences(filesView);
 
         // Temporary solution
         scheduler.scheduleAtFixedRate(() -> noteCtrl.saveAllPendingNotes(),
@@ -183,10 +187,14 @@ public class DashboardCtrl implements Initializable {
             if (newValue != null) {
                 currentNote = (Note) newValue;
                 noteCtrl.showCurrentNote(currentNote);
+                filesViewBlocker.setVisible(false);
+                filesInNote = server.getFilesByNote(currentNote);
+                filesCtrl.showFiles(filesInNote);
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
+                filesViewBlocker.setVisible(true);
             }
         });
         collectionView.getSelectionModel().clearSelection();
@@ -256,7 +264,11 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void addFile() throws IOException {
-        filesCtrl.addFile(currentNote);
+        EmbeddedFile newFile = filesCtrl.addFile(currentNote);
+        if (newFile != null) {
+            filesInNote.add(newFile);
+            filesCtrl.showFiles(filesInNote);
+        }
     }
 
     // Temporary solution
