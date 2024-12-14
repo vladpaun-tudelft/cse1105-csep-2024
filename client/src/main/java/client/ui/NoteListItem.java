@@ -26,6 +26,7 @@ public class NoteListItem extends ListCell<Note> {
 
     // List cell content
     private final Label noteTitle;
+    private final Region spacer;
     private final Button deleteButton;
     private final Button editButton;
     private final HBox hBox;
@@ -48,7 +49,6 @@ public class NoteListItem extends ListCell<Note> {
         // Initialize the note title
         noteTitle = new Label();
         noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-        noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(60));
         noteTitle.setWrapText(false);
         noteTitle.setMinWidth(0);
 
@@ -56,17 +56,15 @@ public class NoteListItem extends ListCell<Note> {
         deleteButton = new Button();
         deleteButton.getStyleClass().addAll("icon", "note_list_icon", "delete_icon");
         deleteButton.setCursor(Cursor.HAND);
-        deleteButton.setVisible(false);
 
         // Initialize the edit button
         editButton = new Button();
         editButton.getStyleClass().addAll("icon", "note_list_icon", "edit_icon");
         editButton.setCursor(Cursor.HAND);
-        editButton.setVisible(false);
 
         // Create layout
         hBox = new HBox(0);
-        Region spacer = new Region();
+        spacer = new Region();
         hBox.getChildren().addAll(noteTitle, spacer, editButton, deleteButton);
         HBox.setHgrow(spacer, Priority.ALWAYS);
         hBox.setAlignment(Pos.CENTER_LEFT);
@@ -89,14 +87,6 @@ public class NoteListItem extends ListCell<Note> {
             }
             lastClickTime = currentTime;
         });
-
-        focusedProperty().addListener((observable, oldValue, newValue) -> {
-            Note item = getItem();
-            if (item == null) return;
-
-            deleteButton.setVisible(newValue);
-            editButton.setVisible(newValue);
-        });
     }
 
     @Override
@@ -108,6 +98,27 @@ public class NoteListItem extends ListCell<Note> {
             setGraphic(null);
         } else {
             noteTitle.setText(item.getTitle());
+            // Adjust layout based on selection
+            deleteButton.setVisible(isSelected());
+            editButton.setVisible(isSelected());
+
+            if (isSelected()) {
+                noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(60));
+                if (!hBox.getChildren().contains(editButton) || !hBox.getChildren().contains(deleteButton)) {
+                    if (!hBox.getChildren().contains(editButton)) {
+                        hBox.getChildren().add(editButton);
+                    }
+                    if (!hBox.getChildren().contains(deleteButton)) {
+                        hBox.getChildren().add(deleteButton);
+                    }
+                }
+            } else {
+                noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(10));
+                hBox.getChildren().remove(editButton);
+                hBox.getChildren().remove(deleteButton);
+            }
+
+            // Set the cell content
             setGraphic(hBox);
         }
     }
@@ -116,8 +127,12 @@ public class NoteListItem extends ListCell<Note> {
         Note item = getItem();
         if (item != null) {
             originalTitle = item.getTitle();
+
             textField = new TextField(originalTitle);
-            HBox.setHgrow(textField, Priority.ALWAYS);
+
+            // Set width dynamically to match the container minus 5px
+            textField.prefWidthProperty().bind(getListView().widthProperty().subtract(10));
+
 
             final boolean isCommited[] = {false};
 
@@ -195,7 +210,6 @@ public class NoteListItem extends ListCell<Note> {
 
     private void revertToLabel() {
         hBox.getChildren().clear();
-        Region spacer = new Region();
         hBox.getChildren().addAll(noteTitle, spacer, editButton, deleteButton);
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
