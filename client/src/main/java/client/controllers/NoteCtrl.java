@@ -8,6 +8,7 @@ import commons.Note;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
+import javafx.scene.web.WebView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ public class NoteCtrl {
     private Label noteTitle;
     private Label noteTitleMd;
     private TextArea noteBody;
+    private WebView markdownView;
     private Label contentBlocker;
     private TextField searchField;
 
@@ -42,6 +44,7 @@ public class NoteCtrl {
             Label noteTitle,
             Label noteTitleMd,
             TextArea noteBody,
+            WebView markdownView,
             Label contentBlocker,
             TextField searchField
     ) {
@@ -49,6 +52,7 @@ public class NoteCtrl {
         this.noteTitle = noteTitle;
         this.noteTitleMd = noteTitleMd;
         this.noteBody = noteBody;
+        this.markdownView = markdownView;
         this.contentBlocker = contentBlocker;
         this.searchField = searchField;
     }
@@ -91,8 +95,15 @@ public class NoteCtrl {
 
     public void showCurrentNote(Note selectedNote) {
         if (selectedNote == null) return;
+
         noteTitle.setText(selectedNote.title);
+        noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+        noteTitle.maxWidthProperty().bind(noteBody.widthProperty().subtract(40));
+
         noteTitleMd.setText(selectedNote.title);
+        noteTitleMd.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+        noteTitleMd.maxWidthProperty().bind(markdownView.widthProperty().subtract(40));
+
         noteBody.setText(selectedNote.body);
         contentBlocker.setVisible(false);
 

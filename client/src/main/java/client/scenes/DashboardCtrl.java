@@ -145,6 +145,7 @@ public class DashboardCtrl implements Initializable {
                 noteTitle,
                 noteTitleMD,
                 noteBody,
+                markdownView,
                 contentBlocker,
                 searchField
         );
