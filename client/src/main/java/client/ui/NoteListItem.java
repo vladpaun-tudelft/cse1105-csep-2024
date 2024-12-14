@@ -152,6 +152,9 @@ public class NoteListItem extends ListCell<Note> {
             item.setTitle(uniqueTitle); // Update the title of the Note
             noteTitle.setText(uniqueTitle);
             noteCtrl.updatePendingNotes.add(item);// Notify NoteCtrl of the change
+
+            handleReferenceTitleChange(item, oldTitle, uniqueTitle);
+
             noteCtrl.saveAllPendingNotes();
         } catch (ClientErrorException e) {
             Alert alert = dialogStyler.createStyledAlert(
@@ -169,6 +172,16 @@ public class NoteListItem extends ListCell<Note> {
         revertToLabel();
     }
 
+    // This could be done more smart by having a db table with references?
+    private void handleReferenceTitleChange(Note item, String oldTitle, String uniqueTitle) {
+        controller.getCollectionNotes().stream()
+                .filter(note -> note.collection.equals(item.collection))
+                .filter(note -> note.body.contains("[[" + oldTitle + "]]"))
+                .forEach(note -> {
+                    note.body = note.body.replace("[[" + oldTitle + "]]", "[[" + uniqueTitle + "]]");
+                    noteCtrl.updatePendingNotes.add(note);
+                });
+    }
 
 
     private void revertToLabel() {

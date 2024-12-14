@@ -17,6 +17,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.web.WebView;
+import lombok.Getter;
 import lombok.SneakyThrows;
 
 import java.io.IOException;
@@ -84,16 +85,16 @@ public class DashboardCtrl implements Initializable {
     private MenuItem editCollectionTitle;
 
     // Variables
+    @Getter
     private Note currentNote = null;
     private Collection currentCollection = null;
 
     private List<Collection> collections;
+    @Getter
     private ObservableList<Note> allNotes;
+    @Getter
     private ObservableList<Note> collectionNotes;
 
-    public ObservableList<Note> getAllNotes() {
-        return allNotes;
-    }
 
     @Inject
     public DashboardCtrl(ServerUtils server,
@@ -117,7 +118,8 @@ public class DashboardCtrl implements Initializable {
     public void initialize(URL arg0, ResourceBundle arg1) {
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
 
-        markdownCtrl.setReferences(markdownView, markdownViewBlocker, noteBody);
+        markdownCtrl.setReferences(collectionView, markdownView, markdownViewBlocker, noteBody);
+        markdownCtrl.setDashboardCtrl(this);
         searchCtrl.setReferences(searchField, collectionView, noteBody);
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {

@@ -1,33 +1,58 @@
 package client.controllers;
 
+import client.scenes.DashboardCtrl;
+import client.services.ReferenceService;
+import com.google.inject.Inject;
+import commons.Note;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
+import javafx.util.Duration;
+import lombok.Getter;
+import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.ext.gfm.tables.TablesExtension;
-import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 
 import java.net.URL;
 import java.util.Arrays;
 
+/**
+ * Handles markdown rendering, reference validation, and tooltip interactions in the WebView.
+ */
 public class MarkdownCtrl {
 
+    // Dashboard reference
+    private DashboardCtrl dashboardCtrl;
+    private ReferenceService referenceService;
+
+    // Markdown parser and renderer
+    private final Parser parser;
+    private final HtmlRenderer renderer;
+
+    // UI references
+    private ListView<Note> collectionView;
     private WebView markdownView;
     private Label markdownViewBlocker;
     private TextArea noteBody;
 
-    private final Parser parser;
-    private final HtmlRenderer renderer;
-    private final String cssPath;
+    private ContextMenu recommendationsMenu;
 
+    @Getter
+    private final String cssPath;
+    private final String scriptPath;
+
+    @Inject
     public MarkdownCtrl() {
+        this.referenceService = new ReferenceService(dashboardCtrl, noteBody, recommendationsMenu);
         var extensions = Arrays.asList(
                 TablesExtension.create(),
                 StrikethroughExtension.create()
         );
-
         parser = Parser.builder().extensions(extensions).build();
         renderer = HtmlRenderer.builder().extensions(extensions).build();
 
@@ -37,37 +62,71 @@ public class MarkdownCtrl {
         } else {
             throw new RuntimeException("Markdown CSS file not found.");
         }
+
+        URL scriptUrl = getClass().getResource("/script/referenceHandler.js");
+        if (scriptUrl != null) {
+            scriptPath = scriptUrl.toExternalForm();
+        } else {
+            throw new RuntimeException("Reference javascript file not found.");
+        }
     }
 
-    public String getCssPath() {
-        return cssPath;
-    }
-
-    public void setReferences(WebView markdownView, Label markdownViewBlocker, TextArea noteBody) {
+    /**
+     * Sets UI component references and initializes markdown rendering.
+     */
+    public void setReferences(ListView<Note> collectionView, WebView markdownView,
+                              Label markdownViewBlocker, TextArea noteBody) {
+        this.collectionView = collectionView;
         this.markdownView = markdownView;
         this.markdownViewBlocker = markdownViewBlocker;
         this.noteBody = noteBody;
 
         this.markdownView.getEngine().setJavaScriptEnabled(true);
 
-        updateMarkdownView(""); // Initialize view
+        // Initialize the WebView
+        updateMarkdownView("");
 
-        // Add listener for text changes to update markdown view and content blocker
-        noteBody.textProperty().addListener((observable, oldValue, newValue) -> {
+        // Add listeners for note body changes and scrolling
+        noteBody.textProperty().addListener((_, _, newValue) -> {
             updateMarkdownView(newValue);
+            PauseTransition pause = new PauseTransition(Duration.millis(100)); // Adjust duration as needed
+            pause.setOnFinished(event -> {
+                referenceService.handleReferenceRecommendations();
+            });
+            pause.play();
         });
+        noteBody.scrollTopProperty().addListener((_, _, _) -> synchronizeScroll());
 
-        // Add listener for synchronized scrolling
-        noteBody.scrollTopProperty().addListener((observable, oldValue, newValue) -> {
-            scrollMarkdownView();
+        // Add click listener for note links in the WebView
+        markdownView.getEngine().setOnAlert(event -> {
+            String noteTitle = event.getData();
+            dashboardCtrl.getCollectionNotes().stream()
+                    .filter(note -> note.title.equals(noteTitle))
+                    .findFirst()
+                    .ifPresent(selectedNote -> collectionView.getSelectionModel().select(selectedNote));
+        });
+    }
+
+    public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
+        this.dashboardCtrl = dashboardCtrl;
+        this.referenceService = new ReferenceService(dashboardCtrl, noteBody, recommendationsMenu);
+    }
+
+    /**
+     * Updates the markdown view with validated and rendered content.
+     */
+    private void updateMarkdownView(String markdown) {
+        String validatedContent = referenceService.validateAndReplaceReferences(markdown);
+        String renderedHtml = convertMarkdownToHtml(validatedContent);
+
+        Platform.runLater(() -> {
+            markdownView.getEngine().loadContent(renderedHtml, "text/html");
+            markdownViewBlocker.setVisible(markdown == null || markdown.isEmpty());
         });
     }
 
     /**
-     * Converts a markdown string to an HTML string with the appropriate CSS included.
-     *
-     * @param markdown the markdown content
-     * @return the HTML representation of the markdown
+     * Converts markdown content to HTML, applying CSS and JavaScript for tooltips and interactivity.
      */
     private String convertMarkdownToHtml(String markdown) {
         String htmlContent = markdown == null || markdown.isEmpty() ? "" : renderer.render(parser.parse(markdown));
@@ -76,50 +135,31 @@ public class MarkdownCtrl {
                 <!DOCTYPE html>
                 <html>
                     <head>
-                        <link rel='stylesheet' type='text/css' href='""" + cssPath + "'>\n" +
+                        <link rel='stylesheet' type='text/css' href='""" + cssPath + "'>" +
                 """
                     </head>
                     <body>
-                """ + htmlContent + "\n" +
+                """ + htmlContent  +
                 """
-                    </body>
-                </html>""";
-
+                    <div id="tooltip" class="tooltip"></div>
+                </body>
+                <script src='""" + scriptPath + "'></script>" +
+                """
+            </html>""";
     }
-
     /**
-     * Updates the WebView with the rendered markdown.
-     *
-     * @param markdown the markdown content
+     * Synchronizes scrolling between the note body and markdown view.
      */
-    private void updateMarkdownView(String markdown) {
-        String renderedHtml = convertMarkdownToHtml(markdown);
-        Platform.runLater(() -> {
-            markdownView.getEngine().loadContent(renderedHtml, "text/html");
-            markdownViewBlocker.setVisible(markdown == null || markdown.isEmpty());
-        });
-    }
-
-    /**
-     * Forces the markdown view to scroll to a fixed percentage for now
-     */
-    // TODO: Make this smarter
-    public void scrollMarkdownView() {
+    private void synchronizeScroll() {
         double percentage = computeScrollPercentage(noteBody);
         Platform.runLater(() -> markdownView.getEngine().executeScript(
                 "document.body.scrollTop = document.body.scrollHeight * " + percentage + ";"
         ));
     }
-    /**
-     * Gets the current scroll% in the note body
-     * @param noteBody the note body
-     * @return the scroll%
-     */
+
     private double computeScrollPercentage(TextArea noteBody) {
         double scrollTop = noteBody.getScrollTop();
-        // Use the Skin API to get the height of the content
         double contentHeight = noteBody.lookup(".content").getBoundsInLocal().getHeight();
-
         double viewportHeight = noteBody.getHeight();
         return scrollTop / (contentHeight - viewportHeight);
     }
