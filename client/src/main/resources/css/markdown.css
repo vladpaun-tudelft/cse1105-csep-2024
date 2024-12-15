@@ -9,6 +9,28 @@ body {
     font-size: 14px;
 }
 
+.red-squiggly {
+    text-decoration: underline;
+    text-decoration-color: red;
+    text-decoration-style: wavy;
+}
+
+.tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: normal; /* Allow wrapping */
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    max-width: 300px; /* Limit tooltip width */
+    word-wrap: break-word; /* Ensure long words wrap */
+}
+
 /* Headings */
 h1, h2, h3, h4, h5, h6 {
     color: #ffffff;
@@ -17,7 +39,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Links */
 a {
-    color: #ffffff;
+    color: lightskyblue;
     text-decoration: none;
     opacity: 0.8;
 }
