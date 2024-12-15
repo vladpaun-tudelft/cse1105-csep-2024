@@ -16,7 +16,11 @@ import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,9 +58,28 @@ public class FilesCtrl {
         fileChooser.setTitle("Upload file");
         File uploadedFile = fileChooser.showOpenDialog(null);
         if (uploadedFile != null) {
+            if (!checkFileName(currentNote, uploadedFile.getName())) {
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        "File error",
+                        "File error",
+                        "A file with this name already exists!"
+                );
+                alert.showAndWait();
+                return null;
+            }
             return serverUtils.addFile(currentNote, uploadedFile);
         }
         return null;
+    }
+
+    /**
+     * Checks if a file with the name fileName already exists for the current note
+     */
+    public boolean checkFileName(Note currentNote, String fileName) {
+        List<EmbeddedFile> files = serverUtils.getFilesByNote(currentNote);
+        List<EmbeddedFile> filteredFiles = files.stream().filter(e -> e.getFileName().equals(fileName)).toList();
+        return filteredFiles.isEmpty();
     }
 
     public void showFiles(Note currentNote) {
@@ -77,6 +100,9 @@ public class FilesCtrl {
 
         Label fileName = new Label(file.getFileName());
         fileName.getStyleClass().add("file-view-label");
+        fileName.setOnMouseReleased(event -> {
+            downloadFile(currentNote, file);
+        });
 
         Button editButton = new Button();
         editButton.getStyleClass().add("file-view-edit-button");
@@ -114,10 +140,47 @@ public class FilesCtrl {
                 "Rename file",
                 "Please enter the new title for the file:"
         );
-        Optional<String> collectionTitle = dialog.showAndWait();
-        if (collectionTitle.isPresent()) {
-            serverUtils.renameFile(currentNote, file, collectionTitle.get());
+        Optional<String> fileName = dialog.showAndWait();
+        if (fileName.isPresent()) {
+            if (!checkFileName(currentNote, fileName.get())) {
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        "File error",
+                        "File error",
+                        "A file with this name already exists!"
+                );
+                alert.showAndWait();
+                return;
+            }
+            serverUtils.renameFile(currentNote, file, fileName.get());
             showFiles(currentNote);
+        }
+    }
+
+    public void downloadFile(Note currentNote, EmbeddedFile embeddedFile) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save file");
+        fileChooser.setInitialFileName(embeddedFile.getFileName());
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter(embeddedFile.getFileType() + " files", "*." + embeddedFile.getFileType())
+        );
+
+        File fileToSave = fileChooser.showSaveDialog(null);
+
+        if (fileToSave != null) {
+            try (FileOutputStream fos = new FileOutputStream(fileToSave)) {
+                fos.write(embeddedFile.getFileContent());
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        "Save file error",
+                        "Save file error",
+                        "The file could not be saved"
+                );
+                alert.showAndWait();
+            }
         }
     }
 }

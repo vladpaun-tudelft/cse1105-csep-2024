@@ -262,6 +262,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void addFile() throws IOException {
+        noteCtrl.saveAllPendingNotes();
         EmbeddedFile newFile = filesCtrl.addFile(currentNote);
         if (newFile != null) {
             filesCtrl.showFiles(currentNote);
