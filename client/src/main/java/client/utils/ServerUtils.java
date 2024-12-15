@@ -142,6 +142,21 @@ public class ServerUtils {
 				.post(Entity.entity(multiPart, MULTIPART_FORM_DATA_TYPE), EmbeddedFile.class);
 	}
 
+	public void deleteFile(Note note, EmbeddedFile file) {
+		ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("api/notes/" + note.id + "/files/" + file.getId())
+				.request(APPLICATION_JSON)
+				.delete();
+	}
+
+	public EmbeddedFile renameFile(Note note, EmbeddedFile file, String newFileName) {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("api/notes/" + note.id + "/files/" + file.getId() + "/rename")
+				.queryParam("newFileName", newFileName)
+				.request(APPLICATION_JSON)
+				.put(Entity.entity(file, APPLICATION_JSON), EmbeddedFile.class);
+	}
+
 	public List<EmbeddedFile> getFilesByNote(Note note) {
 		List<EmbeddedFile> result = ClientBuilder.newClient(new ClientConfig())
 				.target(SERVER).path("/api/notes/" + note.id + "/files")

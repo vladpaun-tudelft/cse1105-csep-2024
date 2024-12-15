@@ -176,7 +176,7 @@
                                  <cursor>
                                     <Cursor fx:constant="HAND" />
                                  </cursor></Button>
-                              <ScrollPane layoutX="55.0" layoutY="525.0" prefHeight="40.0" prefWidth="212.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0">
+                              <ScrollPane layoutX="55.0" layoutY="525.0" prefHeight="40.0" prefWidth="212.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="67.0">
                                  <content>
                                     <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
                                  </content>

@@ -96,7 +96,6 @@ public class DashboardCtrl implements Initializable {
     private List<Collection> collections;
     private ObservableList<Note> allNotes;
     private ObservableList<Note> collectionNotes;
-    private List<EmbeddedFile> filesInNote;
 
     public ObservableList<Note> getAllNotes() {
         return allNotes;
@@ -188,8 +187,7 @@ public class DashboardCtrl implements Initializable {
                 currentNote = (Note) newValue;
                 noteCtrl.showCurrentNote(currentNote);
                 filesViewBlocker.setVisible(false);
-                filesInNote = server.getFilesByNote(currentNote);
-                filesCtrl.showFiles(filesInNote);
+                filesCtrl.showFiles(currentNote);
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
@@ -266,9 +264,12 @@ public class DashboardCtrl implements Initializable {
     public void addFile() throws IOException {
         EmbeddedFile newFile = filesCtrl.addFile(currentNote);
         if (newFile != null) {
-            filesInNote.add(newFile);
-            filesCtrl.showFiles(filesInNote);
+            filesCtrl.showFiles(currentNote);
         }
+    }
+
+    public Note getCurrentNote() {
+        return currentNote;
     }
 
     // Temporary solution

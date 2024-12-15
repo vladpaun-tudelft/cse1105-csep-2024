@@ -1,15 +1,14 @@
 package client.controllers;
 
 import client.scenes.DashboardCtrl;
+import client.ui.DialogStyler;
 import client.utils.ServerUtils;
 import commons.EmbeddedFile;
 import commons.Note;
 import jakarta.inject.Inject;
 import javafx.collections.FXCollections;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.event.Event;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -19,6 +18,7 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 
 public class FilesCtrl {
@@ -26,6 +26,7 @@ public class FilesCtrl {
     private DashboardCtrl dashboardCtrl;
 
     private HBox filesView;
+    private DialogStyler dialogStyler = new DialogStyler();
 
     @Inject
     public FilesCtrl(ServerUtils serverUtils) {
@@ -58,17 +59,18 @@ public class FilesCtrl {
         return null;
     }
 
-    public void showFiles(List<EmbeddedFile> filesInNote) {
+    public void showFiles(Note currentNote) {
+        List<EmbeddedFile> filesInNote = serverUtils.getFilesByNote(currentNote);
         filesView.getChildren().clear();
         for (EmbeddedFile file : filesInNote) {
             filesView.getChildren().add(
-                    createFileEntry(file)
+                    createFileEntry(currentNote, file)
             );
         }
         filesView.getChildren().add(new Region());
     }
 
-    public HBox createFileEntry(EmbeddedFile file) {
+    public HBox createFileEntry(Note currentNote, EmbeddedFile file) {
         HBox entry = new HBox();
         entry.getStyleClass().add("file-view-entry");
         entry.setSpacing(5);
@@ -78,12 +80,44 @@ public class FilesCtrl {
 
         Button editButton = new Button();
         editButton.getStyleClass().add("file-view-edit-button");
+        editButton.setOnAction(event -> {
+            renameFile(currentNote, file);
+        });
 
         Button deleteButton = new Button();
         deleteButton.getStyleClass().add("file-view-delete-button");
+        deleteButton.setOnAction(event -> {
+            deleteFile(currentNote, file);
+        });
 
         entry.getChildren().addAll(fileName, editButton, deleteButton);
-
         return entry;
+    }
+
+    public void deleteFile(Note currentNote, EmbeddedFile file) {
+        Alert alert = dialogStyler.createStyledAlert(
+                Alert.AlertType.CONFIRMATION,
+                "Confirm deletion",
+                "Confirm deletion",
+                "Are you sure you want to delete this file?"
+        );
+        Optional<ButtonType> buttonType = alert.showAndWait();
+        if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)){
+            serverUtils.deleteFile(currentNote, file);
+            showFiles(currentNote);
+        }
+    }
+
+    public void renameFile(Note currentNote, EmbeddedFile file) {
+        TextInputDialog dialog = dialogStyler.createStyledTextInputDialog(
+                "Rename file",
+                "Rename file",
+                "Please enter the new title for the file:"
+        );
+        Optional<String> collectionTitle = dialog.showAndWait();
+        if (collectionTitle.isPresent()) {
+            serverUtils.renameFile(currentNote, file, collectionTitle.get());
+            showFiles(currentNote);
+        }
     }
 }
