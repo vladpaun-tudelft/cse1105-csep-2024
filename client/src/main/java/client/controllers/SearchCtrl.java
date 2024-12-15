@@ -88,7 +88,6 @@ public class SearchCtrl {
     private void updateCollectionView(ObservableList<Note> notes) {
         collectionView.setItems(notes);
         collectionView.getSelectionModel().clearSelection();
-        noteBody.clear();
     }
 
     /**
