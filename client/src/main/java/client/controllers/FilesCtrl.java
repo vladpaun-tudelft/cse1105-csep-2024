@@ -6,21 +6,14 @@ import client.utils.ServerUtils;
 import commons.EmbeddedFile;
 import commons.Note;
 import jakarta.inject.Inject;
-import javafx.collections.FXCollections;
-import javafx.event.Event;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 

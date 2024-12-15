@@ -26,14 +26,6 @@
 			<version>3.1.0</version>
 		</dependency>
 
-		<!-- Embedded files -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.18.2</version>
-		</dependency>
-
-
 		<!-- test -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -69,30 +61,6 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 			<version>6.1.14</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.18.2</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.18.2</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.18.2</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.18.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
