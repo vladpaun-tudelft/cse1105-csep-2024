@@ -83,6 +83,8 @@ public class FilesCtrl {
     }
 
     public void showFiles(Note currentNote) {
+        if (currentNote == null)
+            return;
         List<EmbeddedFile> filesInNote = serverUtils.getFilesByNote(currentNote);
         filesView.getChildren().clear();
         for (EmbeddedFile file : filesInNote) {

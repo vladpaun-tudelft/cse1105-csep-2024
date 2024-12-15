@@ -3,6 +3,7 @@ package server.api;
 import commons.EmbeddedFile;
 import commons.Note;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,8 +11,10 @@ import server.service.CollectionService;
 import server.service.EmbeddedFileService;
 import server.service.NoteService;
 
+import javax.print.attribute.standard.Media;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
@@ -101,6 +104,18 @@ public class NoteController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error uploading file: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/{noteId}/files/{fileName}")
+    public ResponseEntity<byte[]> getFileByName(@PathVariable Long noteId, @PathVariable String fileName) {
+        List<EmbeddedFile> files = embeddedFileService.getFilesByNoteId(noteId);
+        files = files.stream().filter(e -> Objects.equals(e.getFileName(), fileName)).toList();
+        if (files.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(files.getFirst().getFileType()))
+                .body(files.getFirst().getFileContent());
     }
 
     @GetMapping("/{id}/files")

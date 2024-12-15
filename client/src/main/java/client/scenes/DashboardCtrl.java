@@ -188,6 +188,7 @@ public class DashboardCtrl implements Initializable {
                 noteCtrl.showCurrentNote(currentNote);
                 filesViewBlocker.setVisible(false);
                 filesCtrl.showFiles(currentNote);
+                markdownCtrl.setCurrentNote(currentNote);
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
@@ -258,11 +259,12 @@ public class DashboardCtrl implements Initializable {
         noteCtrl.saveAllPendingNotes();
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+        filesCtrl.showFiles(currentNote);
         clearSearch();
     }
 
     public void addFile() throws IOException {
-        noteCtrl.saveAllPendingNotes();
+        // noteCtrl.saveAllPendingNotes();
         EmbeddedFile newFile = filesCtrl.addFile(currentNote);
         if (newFile != null) {
             filesCtrl.showFiles(currentNote);

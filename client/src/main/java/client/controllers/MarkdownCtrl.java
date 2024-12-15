@@ -1,5 +1,6 @@
 package client.controllers;
 
+import commons.Note;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -11,6 +12,8 @@ import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MarkdownCtrl {
 
@@ -21,6 +24,8 @@ public class MarkdownCtrl {
     private final Parser parser;
     private final HtmlRenderer renderer;
     private final String cssPath;
+
+    private Note currentNote;
 
     public MarkdownCtrl() {
         var extensions = Arrays.asList(
@@ -37,6 +42,11 @@ public class MarkdownCtrl {
         } else {
             throw new RuntimeException("Markdown CSS file not found.");
         }
+    }
+
+
+    public void setCurrentNote(Note currentNote) {
+        this.currentNote = currentNote;
     }
 
     public String getCssPath() {
@@ -70,6 +80,7 @@ public class MarkdownCtrl {
      * @return the HTML representation of the markdown
      */
     private String convertMarkdownToHtml(String markdown) {
+        markdown = convertFileNameToURL(markdown);
         String htmlContent = markdown == null || markdown.isEmpty() ? "" : renderer.render(parser.parse(markdown));
 
         return """
@@ -85,6 +96,33 @@ public class MarkdownCtrl {
                     </body>
                 </html>""";
 
+    }
+
+    private String convertFileNameToURL(String markdown) {
+        if (currentNote == null) {
+            return markdown;
+        }
+        String regex = "!\\[([^)]+)]\\(([^)]+)\\)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(markdown);
+
+        StringBuilder result = new StringBuilder();
+        int lastEnd = 0;
+
+        while(matcher.find()) {
+            result.append(markdown, lastEnd, matcher.start());
+            String altText = matcher.group(1);
+            String fileName = matcher.group(2);
+
+            String fileURL = String.format("http://localhost:8080/api/notes/" + currentNote.getId() + "/files/" + fileName);
+
+            result.append(String.format("![%s](%s)", altText, fileURL));
+
+            lastEnd = matcher.end();
+        }
+
+        result.append(markdown.substring(lastEnd));
+        return result.toString();
     }
 
     /**
