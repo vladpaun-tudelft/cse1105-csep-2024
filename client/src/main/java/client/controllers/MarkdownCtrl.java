@@ -2,13 +2,13 @@ package client.controllers;
 
 import client.scenes.DashboardCtrl;
 import client.services.ReferenceService;
+import client.ui.DialogStyler;
 import com.google.inject.Inject;
 import commons.Note;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
-import javafx.scene.control.ContextMenu;
+import javafx.scene.control.*;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
@@ -18,6 +18,10 @@ import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 
@@ -29,6 +33,7 @@ public class MarkdownCtrl {
     // Dashboard reference
     private DashboardCtrl dashboardCtrl;
     private ReferenceService referenceService;
+    private DialogStyler dialogStyler = new DialogStyler();
 
     // Markdown parser and renderer
     private final Parser parser;
@@ -97,13 +102,21 @@ public class MarkdownCtrl {
         });
         noteBody.scrollTopProperty().addListener((_, _, _) -> synchronizeScroll());
 
-        // Add click listener for note links in the WebView
+        // Handle javascript alerts from all `<a>` tags in the WebView
         markdownView.getEngine().setOnAlert(event -> {
-            String noteTitle = event.getData();
-            dashboardCtrl.getCollectionNotes().stream()
-                    .filter(note -> note.title.equals(noteTitle))
-                    .findFirst()
-                    .ifPresent(selectedNote -> collectionView.getSelectionModel().select(selectedNote));
+            String url = event.getData();
+
+            if (url.startsWith("note://")) {
+                // Handle internal note links
+                String noteTitle = url.substring("note://".length());
+                dashboardCtrl.getCollectionNotes().stream()
+                        .filter(note -> note.title.equals(noteTitle))
+                        .findFirst()
+                        .ifPresent(selectedNote -> collectionView.getSelectionModel().select(selectedNote));
+            } else {
+                // Handle external urls
+                openUrlInBrowser(url);
+            }
         });
     }
 
@@ -162,5 +175,22 @@ public class MarkdownCtrl {
         double contentHeight = noteBody.lookup(".content").getBoundsInLocal().getHeight();
         double viewportHeight = noteBody.getHeight();
         return scrollTop / (contentHeight - viewportHeight);
+    }
+
+    private void openUrlInBrowser(String url) {
+        if (Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            try {
+                desktop.browse(new URI(url));
+            } catch (IOException | URISyntaxException e) {
+                Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, "Error Opening URL",
+                        "Failed to open the URL: " + url, "Please check the URL format (missing protocol) or your connection");
+                alert.showAndWait();
+            }
+        } else {
+            Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, "Desktop Not Supported",
+                    "Unable to open the URL", "Desktop is not supported on this platform.");
+            alert.showAndWait();
+        }
     }
 }

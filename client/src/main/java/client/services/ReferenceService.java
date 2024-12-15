@@ -71,10 +71,12 @@ public class ReferenceService {
     private String replaceReferenceWithLink(String markdown, String reference, Note referredNote) {
         String previewText = generatePreviewText(referredNote);
         String collectionName = referredNote.collection.title;
+        String noteUrl = "note://" + reference;
+
         return markdown.replace("[[" + reference + "]]",
-                String.format("<a href='#' class='note-link' data-note-title='%s' " +
+                String.format("<a href='%s' class='note-link' data-note-title='%s' " +
                                 "data-note-collection='%s' data-note-preview='%s'>%s</a>",
-                        reference, collectionName, previewText, reference)
+                        noteUrl, reference, collectionName, previewText, reference)
         );
     }
 

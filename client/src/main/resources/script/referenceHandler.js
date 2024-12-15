@@ -8,12 +8,15 @@ document.querySelectorAll('.note-link').forEach(element => {
         positionTooltip(event);
     });
     element.addEventListener('mouseout', hideTooltip);
+});
+
+document.querySelectorAll('a').forEach(element => {
     element.addEventListener('click', (event) => {
         event.preventDefault();
-        const noteTitle = element.getAttribute('data-note-title');
-        window.alert(noteTitle);
-    });
-});
+        const href = element.getAttribute('href');
+        window.alert(href);
+    })
+})
 
 function showTooltip(event, element) {
     const noteTitle = element.getAttribute('data-note-title');
