@@ -51,6 +51,17 @@ public class FilesCtrl {
         fileChooser.setTitle("Upload file");
         File uploadedFile = fileChooser.showOpenDialog(null);
         if (uploadedFile != null) {
+            if (uploadedFile.isDirectory()) {
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        "File error",
+                        "File error",
+                        "Directories cannot be uploaded!"
+                );
+                alert.showAndWait();
+                return null;
+            }
+
             if (!checkFileName(currentNote, uploadedFile.getName())) {
                 Alert alert = dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,
@@ -61,7 +72,9 @@ public class FilesCtrl {
                 alert.showAndWait();
                 return null;
             }
-            return serverUtils.addFile(currentNote, uploadedFile);
+            EmbeddedFile e = serverUtils.addFile(currentNote, uploadedFile);
+            currentNote.getEmbeddedFiles().add(e);
+            showFiles(currentNote);
         }
         return null;
     }
@@ -124,6 +137,7 @@ public class FilesCtrl {
         );
         Optional<ButtonType> buttonType = alert.showAndWait();
         if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)){
+            currentNote.getEmbeddedFiles().remove(file);
             serverUtils.deleteFile(currentNote, file);
             showFiles(currentNote);
         }
@@ -147,7 +161,9 @@ public class FilesCtrl {
                 alert.showAndWait();
                 return;
             }
-            serverUtils.renameFile(currentNote, file, fileName.get());
+            currentNote.getEmbeddedFiles().remove(file);
+            EmbeddedFile e = serverUtils.renameFile(currentNote, file, fileName.get());
+            currentNote.getEmbeddedFiles().add(e);
             showFiles(currentNote);
         }
     }

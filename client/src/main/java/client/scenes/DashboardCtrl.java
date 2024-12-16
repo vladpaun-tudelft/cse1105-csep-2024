@@ -192,6 +192,7 @@ public class DashboardCtrl implements Initializable {
                 filesViewBlocker.setVisible(false);
                 filesCtrl.showFiles(currentNote);
                 markdownCtrl.setCurrentNote(currentNote);
+                markdownCtrl.updateMarkdownView(currentNote.getBody());
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);

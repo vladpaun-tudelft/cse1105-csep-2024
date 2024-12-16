@@ -142,7 +142,7 @@ public class MarkdownCtrl {
     /**
      * Updates the markdown view with validated and rendered content.
      */
-    private void updateMarkdownView(String markdown) {
+    public void updateMarkdownView(String markdown) {
         String validatedContent = referenceService.validateAndReplaceReferences(markdown);
         String renderedHtml = convertMarkdownToHtml(validatedContent);
 
