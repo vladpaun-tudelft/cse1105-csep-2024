@@ -113,12 +113,14 @@ public class FilesCtrl {
         });
 
         Button editButton = new Button();
+        editButton.getStyleClass().add("icon");
         editButton.getStyleClass().add("file-view-edit-button");
         editButton.setOnAction(event -> {
             renameFile(currentNote, file);
         });
 
         Button deleteButton = new Button();
+        deleteButton.getStyleClass().add("icon");
         deleteButton.getStyleClass().add("file-view-delete-button");
         deleteButton.setOnAction(event -> {
             deleteFile(currentNote, file);

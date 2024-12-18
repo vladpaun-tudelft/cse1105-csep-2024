@@ -265,10 +265,8 @@
 .file-view-edit-button {
     -fx-background-image: url("icons/edit.png");
     -fx-background-size: 18px;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center;
-    -fx-border-color: transparent;
-    -fx-background-color: transparent;
+    -fx-pref-height: 18px;
+    -fx-pref-width: 18px;
     -fx-cursor: hand;
 }
 
@@ -279,10 +277,8 @@
 .file-view-delete-button {
     -fx-background-image: url("icons/trash.png");
     -fx-background-size: 18px;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center;
-    -fx-border-color: transparent;
-    -fx-background-color: transparent;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
     -fx-cursor: hand;
 }
 

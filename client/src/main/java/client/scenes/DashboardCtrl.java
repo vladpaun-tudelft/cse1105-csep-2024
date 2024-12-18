@@ -155,8 +155,10 @@ public class DashboardCtrl implements Initializable {
                 noteBody,
                 markdownView,
                 contentBlocker,
-                searchField
+                searchField,
+                filesViewBlocker
         );
+        noteCtrl.setDashboardCtrl(this);
 
         collections = collectionCtrl.setUp();
 
@@ -189,10 +191,6 @@ public class DashboardCtrl implements Initializable {
             if (newValue != null) {
                 currentNote = (Note) newValue;
                 noteCtrl.showCurrentNote(currentNote);
-                filesViewBlocker.setVisible(false);
-                filesCtrl.showFiles(currentNote);
-                markdownCtrl.setCurrentNote(currentNote);
-                markdownCtrl.updateMarkdownView(currentNote.getBody());
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
@@ -202,6 +200,14 @@ public class DashboardCtrl implements Initializable {
         });
         collectionView.getSelectionModel().clearSelection();
 
+    }
+
+    public FilesCtrl getFilesCtrl() {
+        return this.filesCtrl;
+    }
+
+    public MarkdownCtrl getMarkdownCtrl() {
+        return this.markdownCtrl;
     }
 
     public void addNote() {
