@@ -210,6 +210,10 @@ public class DashboardCtrl implements Initializable {
         return this.markdownCtrl;
     }
 
+    public NoteCtrl getNoteCtrl() {
+        return this.noteCtrl;
+    }
+
     public void addNote() {
         setSearchIsActive(false);
         noteCtrl.addNote(currentCollection,

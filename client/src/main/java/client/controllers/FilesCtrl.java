@@ -166,8 +166,18 @@ public class FilesCtrl {
             currentNote.getEmbeddedFiles().remove(file);
             EmbeddedFile e = serverUtils.renameFile(currentNote, file, fileName.get());
             currentNote.getEmbeddedFiles().add(e);
+            persistFileName(currentNote, file.getFileName(), fileName.get());
             showFiles(currentNote);
         }
+    }
+
+    public void persistFileName(Note currentNote, String oldName, String newName) {
+        String body = currentNote.getBody();
+        String regex = "\\!\\[(.*?)\\]\\(" + java.util.regex.Pattern.quote(oldName) + "\\)";
+        String replacement = "![$1](" + newName + ")";
+        String newBody = body.replaceAll(regex, replacement);
+        currentNote.setBody(newBody);
+        dashboardCtrl.getNoteCtrl().showCurrentNote(currentNote);
     }
 
     public void downloadFile(Note currentNote, EmbeddedFile embeddedFile) {
