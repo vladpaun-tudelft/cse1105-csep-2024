@@ -1,25 +1,27 @@
 package client.scenes;
 
-import client.controllers.CollectionCtrl;
-import client.controllers.MarkdownCtrl;
-import client.controllers.NoteCtrl;
-import client.controllers.SearchCtrl;
+import client.controllers.*;
 import client.ui.NoteListItem;
 import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
 import commons.Collection;
+import commons.EmbeddedFile;
 import commons.Note;
+import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.layout.HBox;
 import javafx.scene.web.WebView;
+import javafx.util.Duration;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
+import javax.swing.filechooser.FileView;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -47,6 +49,7 @@ public class DashboardCtrl implements Initializable {
     private final CollectionCtrl collectionCtrl;
     private final NoteCtrl noteCtrl;
     private final SearchCtrl searchCtrl;
+    private final FilesCtrl filesCtrl;
 
     // FXML Components
     @FXML
@@ -72,23 +75,35 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private TextField searchField;
     @FXML
-    private Label currentCollectionTitle;
+    private MenuButton currentCollectionTitle;
     @FXML
     private Menu collectionMenu;
     @FXML
-    private RadioMenuItem allNotesButton;
+    private MenuItem allNotesButton;
     @FXML
     private ToggleGroup collectionSelect;
     @FXML
     private Button deleteCollectionButton;
     @FXML
     private MenuItem editCollectionTitle;
+    @FXML
+    private MenuButton moveNotesButton;
+    @FXML
+    private Button addFileButton;
+    @FXML
+    private HBox filesView;
+    @FXML
+    private Label filesViewBlocker;
+
 
     // Variables
     @Getter
     private Note currentNote = null;
+    @Getter
     private Collection currentCollection = null;
-
+    @Getter
+    private Collection destinationCollection = null;
+    @Getter
     private List<Collection> collections;
     @Getter
     private ObservableList<Note> allNotes;
@@ -103,7 +118,8 @@ public class DashboardCtrl implements Initializable {
                          MarkdownCtrl markdownCtrl,
                          CollectionCtrl collectionCtrl,
                          NoteCtrl noteCtrl,
-                         SearchCtrl searchCtrl) {
+                         SearchCtrl searchCtrl,
+                         FilesCtrl filesCtrl) {
         this.mainCtrl = mainCtrl;
         this.server = server;
         this.config = config;
@@ -111,6 +127,7 @@ public class DashboardCtrl implements Initializable {
         this.collectionCtrl = collectionCtrl;
         this.noteCtrl = noteCtrl;
         this.searchCtrl = searchCtrl;
+        this.filesCtrl = filesCtrl;
     }
 
     @SneakyThrows
@@ -126,7 +143,8 @@ public class DashboardCtrl implements Initializable {
                 case ENTER -> {
                     search();
                 }
-                default -> {}
+                default -> {
+                }
             }
         });
 
@@ -136,7 +154,8 @@ public class DashboardCtrl implements Initializable {
                 collectionSelect,
                 allNotesButton,
                 editCollectionTitle,
-                deleteCollectionButton
+                deleteCollectionButton,
+                moveNotesButton
         );
         collectionCtrl.setDashboardCtrl(this);
 
@@ -147,14 +166,27 @@ public class DashboardCtrl implements Initializable {
                 noteBody,
                 markdownView,
                 contentBlocker,
-                searchField
+                searchField,
+                filesViewBlocker,
+                moveNotesButton
         );
+        noteCtrl.setDashboardCtrl(this);
 
         collections = collectionCtrl.setUp();
+        collectionCtrl.initializeDropoutCollectionLabel();
+
+
+        moveNotesButton.disableProperty().bind(
+                collectionView.getSelectionModel().selectedItemProperty().isNull()
+        );
+
+        collectionCtrl.moveNotesInitialization();
 
         collectionNotes = collectionCtrl.viewNotes(null, allNotes);
         listViewSetup(allNotes);
 
+        filesCtrl.setDashboardCtrl(this);
+        filesCtrl.setReferences(filesView);
 
         // Temporary solution
         scheduler.scheduleAtFixedRate(() -> noteCtrl.saveAllPendingNotes(),
@@ -178,15 +210,31 @@ public class DashboardCtrl implements Initializable {
         collectionView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 currentNote = (Note) newValue;
+                moveNotesButton.setText(currentNote.collection.title);
                 noteCtrl.showCurrentNote(currentNote);
+                filesViewBlocker.setVisible(true);
+                markdownViewBlocker.setVisible(false);
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
+                moveNotesButton.setText("Move Note");
             }
         });
         collectionView.getSelectionModel().clearSelection();
 
+    }
+
+    public FilesCtrl getFilesCtrl() {
+        return this.filesCtrl;
+    }
+
+    public MarkdownCtrl getMarkdownCtrl() {
+        return this.markdownCtrl;
+    }
+
+    public NoteCtrl getNoteCtrl() {
+        return this.noteCtrl;
     }
 
     public void addNote() {
@@ -204,7 +252,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void moveNoteFromCollection() throws IOException {
-        currentCollection = collectionCtrl.moveNoteFromCollection(currentNote, currentCollection, collections);
+        currentCollection = collectionCtrl.moveNoteFromCollection(currentNote, currentCollection, destinationCollection);
         collectionCtrl.viewNotes(currentCollection, allNotes);
     }
 
@@ -215,7 +263,7 @@ public class DashboardCtrl implements Initializable {
 
     public void deleteCollection() throws IOException {
         currentCollection = collectionCtrl.deleteCollection(currentCollection, collections,
-                collectionNotes,allNotes);
+                collectionNotes, allNotes);
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
     }
 
@@ -248,7 +296,21 @@ public class DashboardCtrl implements Initializable {
         noteCtrl.saveAllPendingNotes();
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+        filesCtrl.showFiles(currentNote);
         clearSearch();
+    }
+
+    public void addFile() throws IOException {
+        // Make sure notes are saved on the server
+        noteCtrl.saveAllPendingNotes();
+        EmbeddedFile newFile = filesCtrl.addFile(currentNote);
+        if (newFile != null) {
+            filesCtrl.showFiles(currentNote);
+        }
+    }
+
+    public Note getCurrentNote() {
+        return currentNote;
     }
 
     // Temporary solution
@@ -268,5 +330,18 @@ public class DashboardCtrl implements Initializable {
         radioMenuItem.setToggleGroup(collectionSelect);
         collectionMenu.getItems().addFirst(radioMenuItem);
         return radioMenuItem;
+    }
+
+    public void updateMarkDown() {
+        noteBody.textProperty().addListener((observable, oldValue, newValue) -> {
+            markdownCtrl.updateMarkdownView(newValue);
+            PauseTransition pause = new PauseTransition(Duration.millis(100));
+            pause.setOnFinished(event -> {
+                markdownCtrl.getReferenceService().handleReferenceRecommendations();
+            });
+            pause.play();
+        });
+
+
     }
 }

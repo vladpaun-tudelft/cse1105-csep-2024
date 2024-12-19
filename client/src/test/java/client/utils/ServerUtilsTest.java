@@ -1,6 +1,7 @@
 package client.utils;
 
 import commons.Collection;
+import commons.EmbeddedFile;
 import commons.Note;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -8,12 +9,15 @@ import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +47,7 @@ class ServerUtilsTest {
         when(ClientBuilder.newClient(any())).thenReturn(clientMock);
         when(clientMock.target(anyString())).thenReturn(targetMock);
         when(targetMock.path(anyString())).thenReturn(targetMock);
+        when(targetMock.queryParam(anyString(), any())).thenReturn(targetMock);
         when(targetMock.request(anyString())).thenReturn(builderMock);
     }
 
@@ -176,6 +181,49 @@ class ServerUtilsTest {
         serverUtils.deleteCollection(1L);
 
         verify(builderMock).delete();
+    }
+
+    @Test
+    void addFile() throws IOException {
+        Note note = new Note("Note", "Body", new Collection("Collection"));
+        File file = mock(File.class);
+        when(file.getName()).thenReturn("file.txt");
+        when(file.exists()).thenReturn(true);
+        when(file.length()).thenReturn(1024L);
+
+        EmbeddedFile expected = new EmbeddedFile(note, "file.txt", "text/plain", new byte[0]);
+        when(builderMock.post(any(), eq(EmbeddedFile.class))).thenReturn(expected);
+        EmbeddedFile result = serverUtils.addFile(note, file);
+
+        assertNotNull(result);
+        assertEquals(expected.getFileName(), result.getFileName());
+        assertEquals(expected.getFileType(), result.getFileType());
+        verify(builderMock).post(any(), eq(EmbeddedFile.class));
+    }
+
+    @Test
+    void deleteFile() {
+        Note note = new Note("Note", "Body", new Collection("Collection"));
+        EmbeddedFile file = new EmbeddedFile(note, "file.txt", "text/plain", new byte[0]);
+
+        serverUtils.deleteFile(note, file);
+
+        verify(builderMock).delete();
+    }
+
+    @Test
+    void renameFile() {
+        Note note = new Note("Note", "Body", new Collection("Collection"));
+        EmbeddedFile file = new EmbeddedFile(note, "file.txt", "text/plain", new byte[0]);
+
+        EmbeddedFile expected = new EmbeddedFile(note, "renamedFile.txt", "text/plain", new byte[0]);
+        when(builderMock.put(any(), eq(EmbeddedFile.class))).thenReturn(expected);
+
+        EmbeddedFile result = serverUtils.renameFile(note, file, "renamedFile.txt");
+
+        assertNotNull(result);
+        assertEquals(expected, result);
+        verify(builderMock).put(any(), eq(EmbeddedFile.class));
     }
 
     @Test

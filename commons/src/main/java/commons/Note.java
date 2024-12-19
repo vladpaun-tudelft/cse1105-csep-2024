@@ -1,14 +1,26 @@
 package commons;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 
 @Entity
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id",
+        scope = Note.class
+)
+
 public class Note {
 
     @Id
@@ -26,10 +38,10 @@ public class Note {
     @JoinColumn(name = "collection_id", nullable = false)
     public commons.Collection collection;
 
-//    Needs to be fixed when UI for embedded files are done
-//    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JsonManagedReference  // required to prevent infinite recursion
-//    public List<EmbeddedFile> embeddedFiles;
+    // Needs to be fixed when UI for embedded files are done
+    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference  // required to prevent infinite recursion
+    public List<EmbeddedFile> embeddedFiles;
 
     @SuppressWarnings("unused")
     private Note() {
@@ -40,6 +52,7 @@ public class Note {
         this.title = title;
         this.body = body;
         this.collection = collection;
+        this.embeddedFiles = new ArrayList<>();
     }
 
     // region Getters and Setters
@@ -78,6 +91,22 @@ public class Note {
     public void setBody(String body) {
         this.body = body;
     }
+
+    /**
+     * @return The list of embedded files for this note
+     */
+    public List<EmbeddedFile> getEmbeddedFiles() {
+        return embeddedFiles;
+    }
+
+    /**
+     * Sets the embedded files list of this note
+     * @param embeddedFiles The list of embedded files
+     */
+    public void setEmbeddedFiles(List<EmbeddedFile> embeddedFiles) {
+        this.embeddedFiles = embeddedFiles;
+    }
+
     // endregion
 
     /**

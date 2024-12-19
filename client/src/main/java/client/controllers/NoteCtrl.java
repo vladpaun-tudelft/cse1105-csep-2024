@@ -1,5 +1,6 @@
 package client.controllers;
 
+import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
@@ -20,6 +21,9 @@ public class NoteCtrl {
     private final ServerUtils server;
     private DialogStyler dialogStyler = new DialogStyler();
 
+    // Dashboard reference
+    private DashboardCtrl dashboardCtrl;
+
     // References
     private ListView collectionView;
     private Label noteTitle;
@@ -28,6 +32,8 @@ public class NoteCtrl {
     private WebView markdownView;
     private Label contentBlocker;
     private TextField searchField;
+    private Label filesViewBlocker;
+    private MenuButton moveNotesButton;
 
     // Variables
     public List<Note> createPendingNotes = new ArrayList<>();
@@ -39,6 +45,10 @@ public class NoteCtrl {
         this.server = server;
     }
 
+    public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
+        this.dashboardCtrl = dashboardCtrl;
+    }
+
     public void setReferences(
             ListView collectionView,
             Label noteTitle,
@@ -46,7 +56,9 @@ public class NoteCtrl {
             TextArea noteBody,
             WebView markdownView,
             Label contentBlocker,
-            TextField searchField
+            TextField searchField,
+            Label filesViewBlocker,
+            MenuButton moveNotesButton
     ) {
         this.collectionView = collectionView;
         this.noteTitle = noteTitle;
@@ -55,6 +67,8 @@ public class NoteCtrl {
         this.markdownView = markdownView;
         this.contentBlocker = contentBlocker;
         this.searchField = searchField;
+        this.filesViewBlocker = filesViewBlocker;
+        this.moveNotesButton = moveNotesButton;
     }
 
     public void addNote(Collection currentCollection,
@@ -98,14 +112,20 @@ public class NoteCtrl {
 
         noteTitle.setText(selectedNote.title);
         noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-        noteTitle.maxWidthProperty().bind(noteBody.widthProperty().subtract(40));
+        // Here, the +45 to be changed with +5 when we remove the trash icons
+        noteTitle.maxWidthProperty().bind(noteBody.widthProperty() .subtract(moveNotesButton.widthProperty()) .subtract(45));
 
         noteTitleMd.setText(selectedNote.title);
         noteTitleMd.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+        // Again, here, when the trash icons are removed, we can remove the subtract, or make it like 5px
         noteTitleMd.maxWidthProperty().bind(markdownView.widthProperty().subtract(40));
 
         noteBody.setText(selectedNote.body);
         contentBlocker.setVisible(false);
+        filesViewBlocker.setVisible(false);
+        dashboardCtrl.getFilesCtrl().showFiles(selectedNote);
+        dashboardCtrl.getMarkdownCtrl().setCurrentNote(selectedNote);
+        dashboardCtrl.getMarkdownCtrl().updateMarkdownView(selectedNote.getBody());
 
         if (!searchField.isFocused()) {
             Platform.runLater(() -> noteBody.requestFocus());
@@ -197,4 +217,5 @@ public class NoteCtrl {
                 .filter(note -> isGlobal || (note.collection.equals(newNote.collection)))
                 .anyMatch(note -> note != newNote && note.getTitle().equals(title));
     }
+
 }
