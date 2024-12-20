@@ -218,7 +218,7 @@
                                     <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
                                  </content>
                               </ScrollPane>
-                              <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" />
+                              <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                                     </children>
                                 </AnchorPane>
                             </content>
