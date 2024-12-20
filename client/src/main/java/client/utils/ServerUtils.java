@@ -15,12 +15,14 @@
  */
 package client.utils;
 
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-
+import java.io.File;
+import java.io.IOException;
 import java.net.ConnectException;
+import java.util.ArrayList;
 import java.util.List;
 
 import commons.Collection;
+import commons.EmbeddedFile;
 import commons.Note;
 import org.glassfish.jersey.client.ClientConfig;
 
@@ -28,6 +30,10 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+
+import static jakarta.ws.rs.core.MediaType.*;
 
 public class ServerUtils {
 
@@ -125,6 +131,41 @@ public class ServerUtils {
 				.delete();
 	}
 
+	public EmbeddedFile addFile(Note note, File file) throws IOException {
+		// Convert file to MultipartFile
+		FormDataMultiPart multiPart = new FormDataMultiPart();
+		multiPart.bodyPart(new FileDataBodyPart("file", file));
+
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/notes/" + note.id + "/files")
+				.request(APPLICATION_JSON)
+				.post(Entity.entity(multiPart, MULTIPART_FORM_DATA_TYPE), EmbeddedFile.class);
+	}
+
+	public void deleteFile(Note note, EmbeddedFile file) {
+		ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("api/notes/" + note.id + "/files/" + file.getId())
+				.request(APPLICATION_JSON)
+				.delete();
+	}
+
+	public EmbeddedFile renameFile(Note note, EmbeddedFile file, String newFileName) {
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("api/notes/" + note.id + "/files/" + file.getId() + "/rename")
+				.queryParam("newFileName", newFileName)
+				.request(APPLICATION_JSON)
+				.put(Entity.entity(file, APPLICATION_JSON), EmbeddedFile.class);
+	}
+
+	public List<EmbeddedFile> getFilesByNote(Note note) {
+		List<EmbeddedFile> result = ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/notes/" + note.id + "/files")
+				.request(APPLICATION_JSON)
+				.get(new GenericType<List<EmbeddedFile>>() {});
+		if (result == null)
+			result = new ArrayList<>();
+		return result;
+	}
 
 	public boolean isServerAvailable() {
 		try {

@@ -3,7 +3,6 @@ package commons;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Objects;
 
 @Entity
@@ -83,13 +82,14 @@ public class EmbeddedFile {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EmbeddedFile that = (EmbeddedFile) o;
-        return Objects.equals(id, that.id) && Objects.equals(note, that.note) && Objects.equals(fileName, that.fileName) && Objects.equals(fileType, that.fileType) && Arrays.equals(fileContent, that.fileContent) && Objects.equals(uploadedAt, that.uploadedAt);
+        return Objects.equals(id, that.id) /*&& Objects.equals(note, that.note) && Objects.equals(fileName, that.fileName) && Objects.equals(fileType, that.fileType) && Arrays.equals(fileContent, that.fileContent) && Objects.equals(uploadedAt, that.uploadedAt)*/;
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, note, fileName, fileType, uploadedAt);
+        /* int result = Objects.hash(id, note, fileName, fileType, uploadedAt);
         result = 31 * result + Arrays.hashCode(fileContent);
-        return result;
+        return result; */
+        return Objects.hash(id);
     }
 }

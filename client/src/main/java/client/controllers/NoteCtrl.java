@@ -1,5 +1,6 @@
 package client.controllers;
 
+import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
@@ -20,6 +21,9 @@ public class NoteCtrl {
     private final ServerUtils server;
     private DialogStyler dialogStyler = new DialogStyler();
 
+    // Dashboard reference
+    private DashboardCtrl dashboardCtrl;
+
     // References
     private ListView collectionView;
     private Label noteTitle;
@@ -28,6 +32,7 @@ public class NoteCtrl {
     private WebView markdownView;
     private Label contentBlocker;
     private TextField searchField;
+    private Label filesViewBlocker;
 
     // Variables
     public List<Note> createPendingNotes = new ArrayList<>();
@@ -39,6 +44,10 @@ public class NoteCtrl {
         this.server = server;
     }
 
+    public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
+        this.dashboardCtrl = dashboardCtrl;
+    }
+
     public void setReferences(
             ListView collectionView,
             Label noteTitle,
@@ -46,7 +55,8 @@ public class NoteCtrl {
             TextArea noteBody,
             WebView markdownView,
             Label contentBlocker,
-            TextField searchField
+            TextField searchField,
+            Label filesViewBlocker
     ) {
         this.collectionView = collectionView;
         this.noteTitle = noteTitle;
@@ -55,6 +65,7 @@ public class NoteCtrl {
         this.markdownView = markdownView;
         this.contentBlocker = contentBlocker;
         this.searchField = searchField;
+        this.filesViewBlocker = filesViewBlocker;
     }
 
     public void addNote(Collection currentCollection,
@@ -106,6 +117,10 @@ public class NoteCtrl {
 
         noteBody.setText(selectedNote.body);
         contentBlocker.setVisible(false);
+        filesViewBlocker.setVisible(false);
+        dashboardCtrl.getFilesCtrl().showFiles(selectedNote);
+        dashboardCtrl.getMarkdownCtrl().setCurrentNote(selectedNote);
+        dashboardCtrl.getMarkdownCtrl().updateMarkdownView(selectedNote.getBody());
 
         if (!searchField.isFocused()) {
             Platform.runLater(() -> noteBody.requestFocus());

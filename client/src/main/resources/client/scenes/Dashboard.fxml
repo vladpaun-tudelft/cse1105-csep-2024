@@ -48,10 +48,12 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
 
 <VBox fx:id="root" prefHeight="600.0" prefWidth="900.0" stylesheets="@../../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
@@ -173,7 +175,7 @@
                             <content>
                                 <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" styleClass="background-element">
                                     <children>
-                                        <TextArea fx:id="noteBody" layoutY="39.0" onKeyReleased="#onBodyChanged" prefHeight="529.0" prefWidth="332.0" styleClass="background-element" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0">
+                                        <TextArea fx:id="noteBody" layoutX="4.0" layoutY="47.0" onKeyReleased="#onBodyChanged" prefHeight="480.0" prefWidth="329.0" styleClass="background-element" wrapText="true" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="3.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="46.0">
                                             <font>
                                                 <Font size="14.0" />
                                             </font></TextArea>
@@ -185,7 +187,7 @@
                                                 <Color red="0.624" green="0.624" blue="0.624" fx:id="x2" />
                                             </textFill>
                                         </Label>
-                                        <Label fx:id="contentBlocker" alignment="CENTER" text="No note selected" textAlignment="CENTER" textFill="#7e7e7e" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                        <Label fx:id="contentBlocker" alignment="CENTER" layoutX="3.0" layoutY="3.0" prefHeight="571.0" prefWidth="331.0" text="No note selected" textAlignment="CENTER" textFill="#7e7e7e" AnchorPane.bottomAnchor="-2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
                                             <font>
                                                 <Font name="System Italic" size="12.0" />
                                             </font>
@@ -206,6 +208,17 @@
                                     <String fx:value="icon" />
                                  </styleClass>
                                         </Button>
+                              <Text fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Files:" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
+                              <Button fx:id="addFileButton" layoutX="280.0" layoutY="531.0" mnemonicParsing="false" onAction="#addFile" text="Add" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0">
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor></Button>
+                              <ScrollPane layoutX="55.0" layoutY="525.0" prefHeight="40.0" prefWidth="212.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="67.0">
+                                 <content>
+                                    <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
+                                 </content>
+                              </ScrollPane>
+                              <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" />
                                     </children>
                                 </AnchorPane>
                             </content>

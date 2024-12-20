@@ -24,6 +24,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Handles markdown rendering, reference validation, and tooltip interactions in the WebView.
@@ -46,6 +48,10 @@ public class MarkdownCtrl {
     private TextArea noteBody;
 
     private ContextMenu recommendationsMenu;
+
+
+    private Note currentNote;
+
 
     @Getter
     private final String cssPath;
@@ -74,6 +80,14 @@ public class MarkdownCtrl {
         } else {
             throw new RuntimeException("Reference javascript file not found.");
         }
+    }
+
+    public void setCurrentNote(Note currentNote) {
+        this.currentNote = currentNote;
+    }
+
+    public String getCssPath() {
+        return cssPath;
     }
 
     /**
@@ -128,7 +142,7 @@ public class MarkdownCtrl {
     /**
      * Updates the markdown view with validated and rendered content.
      */
-    private void updateMarkdownView(String markdown) {
+    public void updateMarkdownView(String markdown) {
         String validatedContent = referenceService.validateAndReplaceReferences(markdown);
         String renderedHtml = convertMarkdownToHtml(validatedContent);
 
@@ -142,6 +156,7 @@ public class MarkdownCtrl {
      * Converts markdown content to HTML, applying CSS and JavaScript for tooltips and interactivity.
      */
     private String convertMarkdownToHtml(String markdown) {
+        markdown = convertFileNameToURL(markdown);
         String htmlContent = markdown == null || markdown.isEmpty() ? "" : renderer.render(parser.parse(markdown));
 
         return """
@@ -160,6 +175,34 @@ public class MarkdownCtrl {
                 """
             </html>""";
     }
+
+    private String convertFileNameToURL(String markdown) {
+        if (currentNote == null) {
+            return markdown;
+        }
+        String regex = "!\\[([^)]+)]\\(([^)]+)\\)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(markdown);
+
+        StringBuilder result = new StringBuilder();
+        int lastEnd = 0;
+
+        while(matcher.find()) {
+            result.append(markdown, lastEnd, matcher.start());
+            String altText = matcher.group(1);
+            String fileName = matcher.group(2);
+
+            String fileURL = String.format("http://localhost:8080/api/notes/" + currentNote.getId() + "/files/" + fileName);
+
+            result.append(String.format("![%s](%s)", altText, fileURL));
+
+            lastEnd = matcher.end();
+        }
+
+        result.append(markdown.substring(lastEnd));
+        return result.toString();
+    }
+
     /**
      * Synchronizes scrolling between the note body and markdown view.
      */
