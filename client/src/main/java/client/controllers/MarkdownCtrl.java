@@ -192,7 +192,15 @@ public class MarkdownCtrl {
             String altText = matcher.group(1);
             String fileName = matcher.group(2);
 
-            String fileURL = String.format("http://localhost:8080/api/notes/" + currentNote.getId() + "/files/" + fileName);
+            URI uri = null;
+            try {
+                uri = new URI(null, null, fileName, null);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+            String encodedFileName = uri.toASCIIString();
+
+            String fileURL = "http://localhost:8080/api/notes/" + currentNote.getId() + "/files/" + encodedFileName;
 
             result.append(String.format("![%s](%s)", altText, fileURL));
 
