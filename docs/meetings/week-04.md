@@ -49,6 +49,7 @@
 - Question round: Does anyone have anything to add before the meeting closes? (2 min)
 - Closure (1 min)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 # Minutes
@@ -92,3 +93,46 @@ Dhruvan:
 
 
 >>>>>>> 8a694f735ccd6db107e60ca68a65d41155ef9462
+=======
+>>>>>>> f8209f8 (Added agenda for week 04)
+
+# Minutes
+CRITIQUE:
+- Koen did not pass the knockout criteria
+- More merge requests should be issued for an excellent rating
+- More talking in merge requests
+- Testing has improved, keep it up!!
+- More standardized Issues
+- Overall advice: be more consistent
+- Add time estimates and change them to more realistically reflect the current estimates
+- Include time to think into the time estimates
+
+### What did we do
+- Embedded images, almost done (new Entity blob)
+- Linking notes
+- Changing collections frontend
+
+### What are we going to do
+- More, smaller, faster MR's
+- Shortcuts at the and
+- Multiserver
+
+Vlad:
+- Multiserver
+- Automated chain synchronization
+
+Bartosz:
+- Menu's
+- Automated chain synchronization
+
+Dinu:
+- Embedded Files
+
+Koen:
+- Tags implementation
+- New stage for collection handling
+
+Dhruvan:
+- New stage for collection handling
+
+

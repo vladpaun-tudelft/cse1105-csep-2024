@@ -167,7 +167,13 @@ public class CollectionCtrl {
         ObservableList<Collection> collections = FXCollections.observableArrayList(dashboardCtrl.getCollections());
         listViewSetupForCollections(collectionListView, collections);
 
-        CustomMenuItem scrollableCollectionsItem = new CustomMenuItem(collectionListView, false);
+            CustomMenuItem scrollableCollectionsItem = new CustomMenuItem(collectionListView, false);
+            MenuItem currentCollectionItem = new MenuItem();
+
+
+            contextMenu.getItems().addAll(addCollectionItem, editCollectionTitle, allNotesButton, separator1,
+                    currentCollectionItem, separator2, scrollableCollectionsItem);
+
 
 
         Collection currentCollection = dashboardCtrl.getCurrentCollection();
@@ -395,7 +401,6 @@ public class CollectionCtrl {
         currentNote.collection = destinationCollection;
         noteCtrl.updatePendingNotes.add(currentNote);
         noteCtrl.saveAllPendingNotes();
-        dashboardCtrl.updateMarkDown();
 
 
 

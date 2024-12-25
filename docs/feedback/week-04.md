@@ -48,6 +48,16 @@ Feedback:
 #### Potentially Shippable Product
 
 Quick Summary: Good
+*TA Instructions:*
+Please consider the following dimensions in your assessment:
+
+- Did the team present the current state of their application?
+- Was the application *potentially shippable*, i.e., all presented changes were merged into main?
+- Was there progress compared to last week?
+- Is the team on a good track to create a working application until project end?
+
+Quick Summary: Insufficient/Sufficient/Good/Excellent
+Quick Summary: Good
 
 Feedback: 
 
@@ -56,6 +66,12 @@ Feedback:
 - The application was potentially shippable.
 - The team made progress compared to last week.
 - The team is on a good track to create a working application with most extra features implemented until project end.
+- Not all showed features were merged to main
+- The team presented the current state of the application.
+- The application was potentially shippable.
+- The team made progress compared to last week.
+- The team is on a good track to create a working application with most extra features implemented until project end.
+- 
 
 
 #### Work Contribution/Distribution in the Team

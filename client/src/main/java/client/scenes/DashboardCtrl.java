@@ -8,7 +8,6 @@ import com.google.inject.Inject;
 import commons.Collection;
 import commons.EmbeddedFile;
 import commons.Note;
-import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -17,11 +16,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.web.WebView;
-import javafx.util.Duration;
 import lombok.Getter;
 import lombok.SneakyThrows;
-
-import javax.swing.filechooser.FileView;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -104,6 +100,8 @@ public class DashboardCtrl implements Initializable {
     @Getter
     private Collection destinationCollection = null;
     @Getter
+    private Collection destinationCollection = null;
+    @Getter
     private List<Collection> collections;
     @Getter
     private ObservableList<Note> allNotes;
@@ -134,7 +132,6 @@ public class DashboardCtrl implements Initializable {
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
-
         markdownCtrl.setReferences(collectionView, markdownView, markdownViewBlocker, noteBody);
         markdownCtrl.setDashboardCtrl(this);
         searchCtrl.setReferences(searchField, collectionView, noteBody);
@@ -173,7 +170,14 @@ public class DashboardCtrl implements Initializable {
         noteCtrl.setDashboardCtrl(this);
 
         collections = collectionCtrl.setUp();
-        collectionCtrl.initializeDropoutCollectionLabel();
+       collectionCtrl.initializeDropoutCollectionLabel();
+
+
+        moveNotesButton.disableProperty().bind(
+                collectionView.getSelectionModel().selectedItemProperty().isNull()
+        );
+
+        collectionCtrl.moveNotesInitialization();
 
 
         moveNotesButton.disableProperty().bind(
@@ -212,13 +216,13 @@ public class DashboardCtrl implements Initializable {
                 currentNote = (Note) newValue;
                 moveNotesButton.setText(currentNote.collection.title);
                 noteCtrl.showCurrentNote(currentNote);
-                filesViewBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(false);
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
                 moveNotesButton.setText("Move Note");
+                filesViewBlocker.setVisible(true);
             }
         });
         collectionView.getSelectionModel().clearSelection();
@@ -332,16 +336,4 @@ public class DashboardCtrl implements Initializable {
         return radioMenuItem;
     }
 
-    public void updateMarkDown() {
-        noteBody.textProperty().addListener((observable, oldValue, newValue) -> {
-            markdownCtrl.updateMarkdownView(newValue);
-            PauseTransition pause = new PauseTransition(Duration.millis(100));
-            pause.setOnFinished(event -> {
-                markdownCtrl.getReferenceService().handleReferenceRecommendations();
-            });
-            pause.play();
-        });
-
-
-    }
 }

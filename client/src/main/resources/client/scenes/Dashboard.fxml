@@ -221,6 +221,17 @@
                                     <String fx:value="icon" />
                                  </styleClass>
                                         </Button>
+                                        <Text fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Files:" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
+                                        <Button fx:id="addFileButton" layoutX="280.0" layoutY="531.0" mnemonicParsing="false" onAction="#addFile" text="Add" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0">
+                                            <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                            </cursor></Button>
+                                        <ScrollPane layoutX="55.0" layoutY="525.0" prefHeight="40.0" prefWidth="212.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="67.0">
+                                            <content>
+                                                <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
+                                            </content>
+                                        </ScrollPane>
+                                        <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                               <MenuButton fx:id="moveNotesButton" alignment="CENTER" layoutX="176.66666666666669" layoutY="8.666666666666666" mnemonicParsing="false" styleClass="current-collection-menuButton" text="Move Note" textFill="WHITE" AnchorPane.rightAnchor="45.0" AnchorPane.topAnchor="5.0">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
@@ -236,6 +247,17 @@
                                     <CustomMenuItem mnemonicParsing="false" text="List of Collections" />
                                  </items>
                               </MenuButton>
+                              <Text fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Files:" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
+                              <Button fx:id="addFileButton" layoutX="280.0" layoutY="531.0" mnemonicParsing="false" onAction="#addFile" text="Add" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0">
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor></Button>
+                              <ScrollPane layoutX="55.0" layoutY="525.0" prefHeight="40.0" prefWidth="212.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="67.0">
+                                 <content>
+                                    <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
+                                 </content>
+                              </ScrollPane>
+                              <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                                     </children>
                                 </AnchorPane>
                             </content>

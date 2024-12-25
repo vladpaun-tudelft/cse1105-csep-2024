@@ -86,6 +86,11 @@ public class MarkdownCtrl {
         this.currentNote = currentNote;
     }
 
+
+    public void setCurrentNote(Note currentNote) {
+        this.currentNote = currentNote;
+    }
+
     public String getCssPath() {
         return cssPath;
     }
@@ -243,9 +248,5 @@ public class MarkdownCtrl {
                     "Unable to open the URL", "Desktop is not supported on this platform.");
             alert.showAndWait();
         }
-    }
-
-    public ReferenceService getReferenceService() {
-        return referenceService;
     }
 }

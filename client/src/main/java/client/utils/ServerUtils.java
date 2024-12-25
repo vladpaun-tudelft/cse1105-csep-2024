@@ -167,6 +167,16 @@ public class ServerUtils {
 		return result;
 	}
 
+	public List<EmbeddedFile> getFilesByNote(Note note) {
+		List<EmbeddedFile> result = ClientBuilder.newClient(new ClientConfig())
+				.target(SERVER).path("/api/notes/" + note.id + "/files")
+				.request(APPLICATION_JSON)
+				.get(new GenericType<List<EmbeddedFile>>() {});
+		if (result == null)
+			result = new ArrayList<>();
+		return result;
+	}
+
 	public boolean isServerAvailable() {
 		try {
 			ClientBuilder.newClient(new ClientConfig()) //
