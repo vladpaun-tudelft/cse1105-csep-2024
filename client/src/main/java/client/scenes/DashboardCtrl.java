@@ -254,7 +254,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void moveNoteFromCollection() throws IOException {
-        currentCollection = collectionCtrl.moveNoteFromCollection(currentNote, currentCollection, destinationCollection);
+        currentCollection = collectionCtrl.moveNoteFromCollection(currentNote, currentCollection, collections);
         collectionCtrl.viewNotes(currentCollection, allNotes);
     }
 

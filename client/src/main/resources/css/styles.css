@@ -427,3 +427,54 @@
 .file-view-delete-button:hover {
     -fx-background-color: transparent;
 }
+
+/* Styles for embedded files */
+.scroll-pane .viewport {
+    -fx-background-color: -main-background;
+}
+
+.file-view {
+    -fx-background-color: -main-background;
+}
+
+.file-view-entry {
+    -fx-background-color: -main-foreground;
+    -fx-padding: 0 10px 0 10px;
+    -fx-min-height: 27px;
+    -fx-pref-height: 27px;
+    -fx-max-height: 27px;
+    -fx-alignment: center;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+}
+
+.file-view-label {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-underline: true;
+    -fx-cursor: hand;
+}
+
+.file-view-edit-button {
+    -fx-background-image: url("icons/edit.png");
+    -fx-background-size: 18px;
+    -fx-pref-height: 18px;
+    -fx-pref-width: 18px;
+    -fx-cursor: hand;
+}
+
+.file-view-edit-button:hover {
+    -fx-background-color: transparent;
+}
+
+.file-view-delete-button {
+    -fx-background-image: url("icons/trash.png");
+    -fx-background-size: 18px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+    -fx-cursor: hand;
+}
+
+.file-view-delete-button:hover {
+    -fx-background-color: transparent;
+}
