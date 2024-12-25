@@ -86,11 +86,6 @@ public class MarkdownCtrl {
         this.currentNote = currentNote;
     }
 
-
-    public void setCurrentNote(Note currentNote) {
-        this.currentNote = currentNote;
-    }
-
     public String getCssPath() {
         return cssPath;
     }

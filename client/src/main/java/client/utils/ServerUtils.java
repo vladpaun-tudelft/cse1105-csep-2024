@@ -15,25 +15,25 @@
  */
 package client.utils;
 
+import commons.Collection;
+import commons.EmbeddedFile;
+import commons.Note;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.GenericType;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 
-import commons.Collection;
-import commons.EmbeddedFile;
-import commons.Note;
-import org.glassfish.jersey.client.ClientConfig;
-
-import jakarta.ws.rs.ProcessingException;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.GenericType;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
-
-import static jakarta.ws.rs.core.MediaType.*;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.MediaType.MULTIPART_FORM_DATA_TYPE;
 
 public class ServerUtils {
 
@@ -155,16 +155,6 @@ public class ServerUtils {
 				.queryParam("newFileName", newFileName)
 				.request(APPLICATION_JSON)
 				.put(Entity.entity(file, APPLICATION_JSON), EmbeddedFile.class);
-	}
-
-	public List<EmbeddedFile> getFilesByNote(Note note) {
-		List<EmbeddedFile> result = ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/notes/" + note.id + "/files")
-				.request(APPLICATION_JSON)
-				.get(new GenericType<List<EmbeddedFile>>() {});
-		if (result == null)
-			result = new ArrayList<>();
-		return result;
 	}
 
 	public List<EmbeddedFile> getFilesByNote(Note note) {

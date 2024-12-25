@@ -100,8 +100,6 @@ public class DashboardCtrl implements Initializable {
     @Getter
     private Collection destinationCollection = null;
     @Getter
-    private Collection destinationCollection = null;
-    @Getter
     private List<Collection> collections;
     @Getter
     private ObservableList<Note> allNotes;
