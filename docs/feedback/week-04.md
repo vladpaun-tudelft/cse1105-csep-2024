@@ -1,6 +1,6 @@
 # Meeting
 
-#### Agenda 
+#### Agenda
 
 Quick Summary: Excellent
 
@@ -15,7 +15,7 @@ Feedback:
 
 Quick Summary: Sufficient
 
-Feedback: 
+Feedback:
 
 - The notes have been merged into the agenda file
 - The notes are complete but a bit confusing to read without context
@@ -26,7 +26,7 @@ Feedback:
 
 Quick Summary: Excellent
 
-Feedback: 
+Feedback:
 
 - The chairman started the meeting well.
 - The chairman made sure that all topics were covered for an appropriate amount of time.
@@ -36,7 +36,7 @@ Feedback:
 
 Quick Summary: Excellent
 
-Feedback: 
+Feedback:
 
 - The atmosphere in the meeting was comfortable and constructive.
 - Everyone was listened to and ideas/comments/questions were taken into account.
@@ -48,7 +48,7 @@ Feedback:
 
 Quick Summary: Good
 
-Feedback: 
+Feedback:
 
 - Not all showed features were merged to main
 - The team presented the current state of the application.
@@ -61,7 +61,7 @@ Feedback:
 
 Quick Summary: Good
 
-Feedback: 
+Feedback:
 
 - Good reflection on the team's work Contribution
 - The team discussed the action list of last week

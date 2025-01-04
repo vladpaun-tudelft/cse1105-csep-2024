@@ -30,12 +30,14 @@ public class CollectionCtrl {
 
     // References
     private ListView collectionView;
-    private Label currentCollectionTitle;
+    private MenuButton currentCollectionTitle;
     private Menu collectionMenu;
     private ToggleGroup collectionSelect;
-    private RadioMenuItem allNotesButton;
+    private MenuItem allNotesButton;
     private MenuItem editCollectionTitle;
     private Button deleteCollectionButton;
+    private MenuButton moveNotesButton;
+
 
 
 
@@ -47,13 +49,15 @@ public class CollectionCtrl {
         this.searchCtrl = searchCtrl;
     }
 
+
     public void setReferences(ListView collectionView,
-                              Label currentCollectionTitle,
+                              MenuButton currentCollectionTitle,
                               Menu collectionMenu,
                               ToggleGroup collectionSelect,
-                              RadioMenuItem allNotesButton,
+                              MenuItem allNotesButton,
                               MenuItem editCollectionTitle,
-                              Button deleteCollectionButton) {
+                              Button deleteCollectionButton,
+                              MenuButton moveNotesButton) {
         this.collectionView = collectionView;
         this.currentCollectionTitle = currentCollectionTitle;
         this.collectionMenu = collectionMenu;
@@ -61,12 +65,180 @@ public class CollectionCtrl {
         this.allNotesButton = allNotesButton;
         this.editCollectionTitle = editCollectionTitle;
         this.deleteCollectionButton = deleteCollectionButton;
+        this.moveNotesButton = moveNotesButton;
     }
+    /**
+     * method used for selecting and switching the collection
+     *
+     * @param listView    listview
+     * @param collections collections
+     */
+
+    private void listViewSetupForCollections(
+            ListView<Collection> listView,
+            ObservableList<Collection> collections
+    ) {
+        listViewDisplayOnlyTitles(listView, collections);
+
+        //switching to collection
+        listView.setOnMouseClicked(event -> {
+            Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
+            for (Toggle toggle : collectionSelect.getToggles()) {
+                if (toggle instanceof RadioMenuItem) {
+                    RadioMenuItem item = (RadioMenuItem) toggle;
+                    if (item.getText().equals(selectedCollection.title)) {
+                        collectionSelect.selectToggle(item);
+                        item.fire();
+                        currentCollectionTitle.hide();
+                        break;
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * method that displays only collection titles in listview
+     *
+     * @param listView    listview
+     * @param collections collections
+     */
+    private void listViewDisplayOnlyTitles(ListView<Collection> listView, ObservableList<Collection> collections) {
+        ObservableList<Collection> filteredCollections = collections.filtered(collection -> !collection.equals(dashboardCtrl.getCurrentCollection()));
+
+        listView.setItems(filteredCollections);
+        listView.setFixedCellSize(35);
+        listView.getStyleClass().add("collection-list-view");
+        listView.setFocusTraversable(false);
+        int maxVisibleItems = 6;
+        listView.setPrefHeight(Math.min(maxVisibleItems, filteredCollections.size()) * listView.getFixedCellSize() + 2);
+        listView.setCellFactory(p -> new ListCell<>() {
+            @Override
+            protected void updateItem(Collection filteredCollection, boolean empty) {
+                super.updateItem(filteredCollection, empty);
+                if (empty || filteredCollection == null) {
+                    setText(null);
+                } else {
+                    setText(filteredCollection.title);
+                }
+            }
+        });
+    }
+
+    /**
+     * a method used to move notes from listview
+     *
+     * @param listView    listview
+     * @param collections collections
+     */
+    private void listViewSetupForMovingNotes(
+            ListView<Collection> listView,
+            ObservableList<Collection> collections
+    ) {
+        listViewDisplayOnlyTitles(listView, collections);
+        //switching to collection
+        listView.setOnMouseClicked(event -> {
+            Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
+            for (Toggle toggle : collectionSelect.getToggles()) {
+                if (toggle instanceof RadioMenuItem) {
+                    RadioMenuItem item = (RadioMenuItem) toggle;
+                    if (item.getText().equals(selectedCollection.title)) {
+                        try {
+                            moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        collectionSelect.selectToggle(item);
+                        item.fire();
+                        moveNotesButton.hide();
+                        break;
+                    }
+                }
+            }
+        });
+    }
+    /**
+     * dropout menu for collections + for moving notes
+     */
+    public void initializeDropoutCollectionLabel() {
+
+
+        ListView<Collection> collectionListView = new ListView<>();
+        ObservableList<Collection> collections = FXCollections.observableArrayList(dashboardCtrl.getCollections());
+        listViewSetupForCollections(collectionListView, collections);
+
+        CustomMenuItem scrollableCollectionsItem = new CustomMenuItem(collectionListView, false);
+
+
+        Collection currentCollection = dashboardCtrl.getCurrentCollection();
+
+        Label dynamicLabel = new Label();
+        if (currentCollection != null && currentCollection.title != null) {
+            dynamicLabel.setText("Current: " + currentCollection.title);
+        } else {
+            dynamicLabel.setText("No collection selected");
+        }
+        dynamicLabel.getStyleClass().add("current-collection-label");
+
+        CustomMenuItem dynamicLabelItem = new CustomMenuItem(dynamicLabel, false);
+        currentCollectionTitle.getItems().set(4, dynamicLabelItem);
+        currentCollectionTitle.getItems().set(6, scrollableCollectionsItem);
+        currentCollectionTitle.setOnHidden(event -> {
+            initializeDropoutCollectionLabel();
+        });
+        currentCollectionTitle.setOnShowing(event -> {
+            initializeDropoutCollectionLabel();
+        });
+
+    }
+
+    public void moveNotesInitialization() {
+
+
+        ListView<Collection> collectionListView2 = new ListView<>();
+        ObservableList<Collection> collections = FXCollections.observableArrayList(dashboardCtrl.getCollections());
+        listViewSetupForMovingNotes(collectionListView2, collections);
+        CustomMenuItem scrollableCollectionsItem2 = new CustomMenuItem(collectionListView2, false);
+        Collection currentCollectionForNote = null;
+        if (dashboardCtrl.getCurrentNote() != null) {
+            currentCollectionForNote = dashboardCtrl.getCurrentNote().collection;
+        }
+
+        Label dynamicLabel = new Label();
+        Label pickNoteDestination = new Label();
+
+        if (currentCollectionForNote != null && currentCollectionForNote.title != null) {
+            dynamicLabel.setText("Assigned to: " + currentCollectionForNote.title);
+        } else {
+            dynamicLabel.setText("No collection assigned");
+        }
+        dynamicLabel.getStyleClass().add("current-collection-label");
+        pickNoteDestination.getStyleClass().add("pick-note-destination");
+        CustomMenuItem dynamicLabelItem = new CustomMenuItem(dynamicLabel, false);
+
+        pickNoteDestination.setText("Pick Note Destination");
+        CustomMenuItem pickNoteDestinationItem = new CustomMenuItem(pickNoteDestination, false);
+        moveNotesButton.getItems().set(0, dynamicLabelItem);
+        moveNotesButton.getItems().set(2, pickNoteDestinationItem);
+        moveNotesButton.getItems().set(3, scrollableCollectionsItem2);
+        moveNotesButton.setOnHidden(event -> {
+            moveNotesInitialization();
+        });
+        moveNotesButton.setOnShowing(event -> {
+            moveNotesInitialization();
+        });
+
+
+    }
+
+
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
         this.dashboardCtrl = dashboardCtrl;
     }
     public List<Collection> setUp() {
-        collectionSelect.selectToggle(allNotesButton);
+
+        //is this necessary if allNotesButton is menu Item is menu Item?
+        //collectionSelect.selectToggle( allNotesButton);
 
         List<Collection> collections;
         // If the default collection doesn't exist, create it
@@ -111,7 +283,7 @@ public class CollectionCtrl {
         collectionView.setItems(collectionNotes);
         collectionView.getSelectionModel().clearSelection();
 
-        boolean deleteDisabled = currentCollection == null || currentCollectionTitle.getText().equals("Default");
+        boolean deleteDisabled = (currentCollection == null || currentCollectionTitle.getText().equals("Default"));
         deleteCollectionButton.setDisable(deleteDisabled);
         editCollectionTitle.setDisable(deleteDisabled);
 
@@ -146,7 +318,11 @@ public class CollectionCtrl {
             collectionMenu.getItems().remove(
                     collectionSelect.getSelectedToggle()
             );
-            collectionSelect.selectToggle(allNotesButton);
+
+
+
+
+
             return null;
         }
         return currentCollection;
@@ -159,6 +335,9 @@ public class CollectionCtrl {
      */
     public Collection changeTitleInCollection(Collection currentCollection, List<Collection> collections) throws IOException {
 
+        if (currentCollection == null || currentCollectionTitle.getText().equals("Default")) {
+            return null;
+        }
         String oldTitle = currentCollection.title;
 
         // Ask for a new title with a dialog
@@ -207,76 +386,21 @@ public class CollectionCtrl {
      *
      * @throws IOException exception
      */
-    public Collection moveNoteFromCollection(Note currentNote, Collection currentCollection, List<Collection> collections) throws IOException {
+    public Collection moveNoteFromCollection(Note currentNote, Collection currentCollection,
+                                             Collection destinationCollection) throws IOException {
         if (currentNote == null) {
             return currentCollection;
         }
 
-        // Ask for a new title with a dialog
-        TextInputDialog dialog = dialogStyler.createStyledTextInputDialog(
-                "Move Note",
-                "Move Note",
-                "Please enter the title of destination collection:"
-        );
-        Optional<String> destinationCollectionTitle = dialog.showAndWait();
+        currentNote.collection = destinationCollection;
+        noteCtrl.updatePendingNotes.add(currentNote);
+        noteCtrl.saveAllPendingNotes();
 
-        // If user provided a title of destination collection
-        if (destinationCollectionTitle.isPresent()) {
-            String destinationTitle = destinationCollectionTitle.get().trim();
 
-            // If user provided a title that is empty
-            if (destinationTitle.isEmpty()) {
-                Alert alert = dialogStyler.createStyledAlert(
-                        Alert.AlertType.ERROR,
-                        "Error",
-                        "Error",
-                        "A destination collection needs a title"
-                );
-                alert.showAndWait();
-                return currentCollection;
-            }
 
-            // If user will choose the same collection
-            if (destinationTitle.equals(currentCollection.title)) {
-                Alert alert = dialogStyler.createStyledAlert(
-                        Alert.AlertType.WARNING,
-                        "Warning",
-                        "Warning",
-                        "Cannot move the note to the same collection"
-                );
-                alert.showAndWait();
-                return currentCollection;
-            }
-
-            Collection destinationCollection;
-            try {
-                destinationCollection = server.getCollectionByTitle(destinationTitle);
-            } catch (ClientErrorException e) {
-                Alert alert = dialogStyler.createStyledAlert(
-                        Alert.AlertType.ERROR,
-                        "Error",
-                        "Error",
-                        e.getResponse().readEntity(String.class)
-                );
-                alert.showAndWait();
-                return currentCollection;
-            }
-
-            //Move the note from previous collection to the new collection
-            currentCollection.notes.remove(currentNote);
-            destinationCollection.notes.add(currentNote);
-
-            // Update the note in server (we changed its collection)
-            currentNote.collection = destinationCollection;
-            server.updateNote(currentNote);
-
-            // Save collections locally
-            config.writeAllToFile(collections);
-
-            return destinationCollection;
-        }
-        return currentCollection;
+        return destinationCollection;
     }
+
 
     public Collection addCollection(Collection currentCollection, List<Collection> collections) throws IOException {
         Collection addedCollection;

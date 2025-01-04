@@ -37,7 +37,7 @@ public class NoteListItem extends ListCell<Note> {
     private long lastClickTime = 0;
     private static final int DOUBLE_CLICK_TIMEFRAME = 400;
 
-    public NoteListItem(Label overviewTitle,Label markdownTitle, TextArea overviewBody,
+    public NoteListItem(Label overviewTitle, Label markdownTitle, TextArea overviewBody,
                         DashboardCtrl controller, NoteCtrl noteCtrl) {
 
         this.overviewTitle = overviewTitle;
@@ -48,7 +48,7 @@ public class NoteListItem extends ListCell<Note> {
 
         // Initialize the note title
         noteTitle = new Label();
-        noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+        noteTitle.setTextOverrun(OverrunStyle.ELLIPSIS);
         noteTitle.setWrapText(false);
         noteTitle.setMinWidth(0);
 

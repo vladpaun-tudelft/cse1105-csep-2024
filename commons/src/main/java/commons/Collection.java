@@ -12,12 +12,13 @@ import java.util.Set;
 
 import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 
+@Entity
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id",
         scope = Collection.class
 )
-@Entity
+
 public class Collection {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

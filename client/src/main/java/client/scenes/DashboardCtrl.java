@@ -18,7 +18,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.web.WebView;
 import lombok.Getter;
 import lombok.SneakyThrows;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -72,11 +71,11 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private TextField searchField;
     @FXML
-    private Label currentCollectionTitle;
+    private MenuButton currentCollectionTitle;
     @FXML
     private Menu collectionMenu;
     @FXML
-    private RadioMenuItem allNotesButton;
+    private MenuItem allNotesButton;
     @FXML
     private ToggleGroup collectionSelect;
     @FXML
@@ -84,17 +83,23 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private MenuItem editCollectionTitle;
     @FXML
+    private MenuButton moveNotesButton;
+    @FXML
     private Button addFileButton;
     @FXML
     private HBox filesView;
     @FXML
     private Label filesViewBlocker;
 
+
     // Variables
     @Getter
     private Note currentNote = null;
+    @Getter
     private Collection currentCollection = null;
-
+    @Getter
+    private Collection destinationCollection = null;
+    @Getter
     private List<Collection> collections;
     @Getter
     private ObservableList<Note> allNotes;
@@ -125,7 +130,6 @@ public class DashboardCtrl implements Initializable {
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
-
         markdownCtrl.setReferences(collectionView, markdownView, markdownViewBlocker, noteBody);
         markdownCtrl.setDashboardCtrl(this);
         searchCtrl.setReferences(searchField, collectionView, noteBody);
@@ -134,7 +138,8 @@ public class DashboardCtrl implements Initializable {
                 case ENTER -> {
                     search();
                 }
-                default -> {}
+                default -> {
+                }
             }
         });
 
@@ -144,7 +149,8 @@ public class DashboardCtrl implements Initializable {
                 collectionSelect,
                 allNotesButton,
                 editCollectionTitle,
-                deleteCollectionButton
+                deleteCollectionButton,
+                moveNotesButton
         );
         collectionCtrl.setDashboardCtrl(this);
 
@@ -156,11 +162,27 @@ public class DashboardCtrl implements Initializable {
                 markdownView,
                 contentBlocker,
                 searchField,
-                filesViewBlocker
+                filesViewBlocker,
+                moveNotesButton
         );
         noteCtrl.setDashboardCtrl(this);
 
         collections = collectionCtrl.setUp();
+       collectionCtrl.initializeDropoutCollectionLabel();
+
+
+        moveNotesButton.disableProperty().bind(
+                collectionView.getSelectionModel().selectedItemProperty().isNull()
+        );
+
+        collectionCtrl.moveNotesInitialization();
+
+
+        moveNotesButton.disableProperty().bind(
+                collectionView.getSelectionModel().selectedItemProperty().isNull()
+        );
+
+        collectionCtrl.moveNotesInitialization();
 
         collectionNotes = collectionCtrl.viewNotes(null, allNotes);
         listViewSetup(allNotes);
@@ -190,11 +212,14 @@ public class DashboardCtrl implements Initializable {
         collectionView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 currentNote = (Note) newValue;
+                moveNotesButton.setText(currentNote.collection.title);
                 noteCtrl.showCurrentNote(currentNote);
+                markdownViewBlocker.setVisible(false);
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
+                moveNotesButton.setText("Move Note");
                 filesViewBlocker.setVisible(true);
             }
         });
@@ -229,7 +254,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void moveNoteFromCollection() throws IOException {
-        currentCollection = collectionCtrl.moveNoteFromCollection(currentNote, currentCollection, collections);
+        currentCollection = collectionCtrl.moveNoteFromCollection(currentNote, currentCollection, destinationCollection);
         collectionCtrl.viewNotes(currentCollection, allNotes);
     }
 
@@ -240,7 +265,7 @@ public class DashboardCtrl implements Initializable {
 
     public void deleteCollection() throws IOException {
         currentCollection = collectionCtrl.deleteCollection(currentCollection, collections,
-                collectionNotes,allNotes);
+                collectionNotes, allNotes);
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
     }
 
@@ -308,4 +333,5 @@ public class DashboardCtrl implements Initializable {
         collectionMenu.getItems().addFirst(radioMenuItem);
         return radioMenuItem;
     }
+
 }
