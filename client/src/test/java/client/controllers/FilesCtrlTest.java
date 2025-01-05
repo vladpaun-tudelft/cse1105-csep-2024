@@ -132,27 +132,22 @@ public class FilesCtrlTest {
         FilesCtrl filesCtrlSpy = spy(filesCtrl);
         doReturn(new HBox()).when(filesCtrlSpy).createFileEntry(any(Note.class), any(EmbeddedFile.class));
 
-        // Mock HBox and its children list
         filesView = mock(HBox.class);
         ObservableList<Node> mockChildren = mock(ObservableList.class);
         when(filesView.getChildren()).thenReturn(mockChildren);  // mock getChildren method
 
-        // Inject the mock filesView into FilesCtrl
         filesCtrlSpy.setReferences(filesView);
 
-        // Mock serverUtils to return files
         when(serverUtils.getFilesByNote(sampleNote)).thenReturn(List.of(sampleFile));
 
-        // Mock createFileEntry to bypass actual implementation
         doReturn(new HBox()).when(filesCtrlSpy).createFileEntry(sampleNote, sampleFile);
 
-        // Call the method under test
         filesCtrlSpy.showFiles(sampleNote);
 
-        // Verify that the children list of filesView is modified correctly
-        verify(filesView, times(3)).getChildren();  // Verify getChildren() is called
-        verify(filesView.getChildren(), times(1)).clear();  // Verify clear() is called
-        verify(filesView.getChildren(), times(2)).add(any());  // Verify add() is called
+
+        verify(filesView, times(3)).getChildren();
+        verify(filesView.getChildren(), times(1)).clear();
+        verify(filesView.getChildren(), times(2)).add(any());
     }
 
 
