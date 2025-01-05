@@ -20,14 +20,16 @@ import java.util.Optional;
 
 public class FilesCtrl {
     private final ServerUtils serverUtils;
+    private FileChooser fileChooser;
     private DashboardCtrl dashboardCtrl;
 
     private HBox filesView;
     private DialogStyler dialogStyler = new DialogStyler();
 
     @Inject
-    public FilesCtrl(ServerUtils serverUtils) {
+    public FilesCtrl(ServerUtils serverUtils, FileChooser fileChooser) {
         this.serverUtils = serverUtils;
+        this.fileChooser = fileChooser;
     }
 
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
@@ -38,16 +40,27 @@ public class FilesCtrl {
         this.filesView = filesView;
     }
 
+    // for testing purposes
+    public void setFileChooser(FileChooser fileChooser) {
+        this.fileChooser = fileChooser;
+    }
+
+    public void setDialogStyler(DialogStyler dialogStyler) {
+        this.dialogStyler = dialogStyler;
+    }
+
     public EmbeddedFile addFile(Note currentNote) throws IOException {
         if (currentNote == null) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Error");
-            alert.setContentText("You don't have a note selected!");
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    "Error",
+                    "Error",
+                    "You don't have a note selected!"
+            );
             alert.showAndWait();
             return null;
         }
 
-        FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Upload file");
         File uploadedFile = fileChooser.showOpenDialog(null);
         if (uploadedFile != null) {
@@ -75,6 +88,7 @@ public class FilesCtrl {
             EmbeddedFile e = serverUtils.addFile(currentNote, uploadedFile);
             currentNote.getEmbeddedFiles().add(e);
             showFiles(currentNote);
+            return e;
         }
         return null;
     }
@@ -181,7 +195,6 @@ public class FilesCtrl {
     }
 
     public void downloadFile(Note currentNote, EmbeddedFile embeddedFile) {
-        FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save file");
         fileChooser.setInitialFileName(embeddedFile.getFileName());
         fileChooser.getExtensionFilters().add(
