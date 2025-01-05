@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.controllers.*;
 import client.ui.NoteListItem;
+import client.ui.NoteTreeItem;
 import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
@@ -60,6 +61,8 @@ public class DashboardCtrl implements Initializable {
     private Label noteTitle;
     @FXML
     public ListView collectionView;
+    @FXML
+    public TreeView allNotesView;
     @FXML
     private Button addButton;
     @FXML
@@ -144,6 +147,7 @@ public class DashboardCtrl implements Initializable {
         });
 
         collectionCtrl.setReferences(collectionView,
+                allNotesView,
                 currentCollectionTitle,
                 collectionMenu,
                 collectionSelect,
@@ -156,6 +160,7 @@ public class DashboardCtrl implements Initializable {
 
         noteCtrl.setReferences(
                 collectionView,
+                allNotesView,
                 noteTitle,
                 noteTitleMD,
                 noteBody,
@@ -186,6 +191,8 @@ public class DashboardCtrl implements Initializable {
 
         collectionNotes = collectionCtrl.viewNotes(null, allNotes);
         listViewSetup(allNotes);
+        treeViewSetup();
+
 
         filesCtrl.setDashboardCtrl(this);
         filesCtrl.setReferences(filesView);
@@ -223,9 +230,55 @@ public class DashboardCtrl implements Initializable {
                 filesViewBlocker.setVisible(true);
             }
         });
+
         collectionView.getSelectionModel().clearSelection();
 
     }
+
+    public void treeViewSetup() {
+        // Create a virtual root item (you can use this if you don't want the root to be visible)
+        TreeItem<Note> virtualRoot = new TreeItem<>(null);
+        virtualRoot.setExpanded(true); // Optional: if you want the root to be expanded by default
+
+        // Populate TreeView with TreeItems for each Note
+        for (Collection collection : collections) {
+            TreeItem<Note> collectionItem = new TreeItem<>(new Note(collection.title, null, collection));
+            List<Note> collectionNotes = allNotes.stream().filter(n -> n.collection.equals(collection)).toList();
+            if(collectionNotes.size() > 0) {
+                for(Note note : collectionNotes) {
+                    TreeItem<Note> noteItem = new TreeItem<>(note);
+                    collectionItem.getChildren().add(noteItem);
+                }
+                virtualRoot.getChildren().add(collectionItem);
+                collectionItem.setExpanded(true);
+
+            }
+        }
+
+        allNotesView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && ((TreeItem)newValue).isLeaf()) {
+                currentNote = (Note)((TreeItem)newValue).getValue();
+                moveNotesButton.setText(currentNote.collection.title);
+                noteCtrl.showCurrentNote(currentNote);
+                markdownViewBlocker.setVisible(false);
+            } else {
+                // Show content blockers when no item is selected
+                contentBlocker.setVisible(true);
+                markdownViewBlocker.setVisible(true);
+                moveNotesButton.setText("Move Note");
+                filesViewBlocker.setVisible(true);
+            }
+        });
+
+        // Set the virtual root as the root of the TreeView
+        allNotesView.setRoot(virtualRoot);
+        allNotesView.setShowRoot(false); // To hide the root item if it's just a container
+
+        // Set custom TreeCell factory for NoteTreeItem
+        allNotesView.setCellFactory(param -> new NoteTreeItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl));
+
+    }
+
 
     public FilesCtrl getFilesCtrl() {
         return this.filesCtrl;

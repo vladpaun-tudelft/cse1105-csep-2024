@@ -4,6 +4,7 @@ import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
+import com.sun.source.tree.Tree;
 import commons.Collection;
 import commons.Note;
 import javafx.application.Platform;
@@ -26,6 +27,7 @@ public class NoteCtrl {
 
     // References
     private ListView collectionView;
+    private TreeView treeView;
     private Label noteTitle;
     private Label noteTitleMd;
     private TextArea noteBody;
@@ -51,6 +53,7 @@ public class NoteCtrl {
 
     public void setReferences(
             ListView collectionView,
+            TreeView treeView,
             Label noteTitle,
             Label noteTitleMd,
             TextArea noteBody,
@@ -61,6 +64,7 @@ public class NoteCtrl {
             MenuButton moveNotesButton
     ) {
         this.collectionView = collectionView;
+        this.treeView = treeView;
         this.noteTitle = noteTitle;
         this.noteTitleMd = noteTitleMd;
         this.noteBody = noteBody;
@@ -94,6 +98,7 @@ public class NoteCtrl {
             collectionNotes.add(newNote);
         }
 
+
         // Add the new note to a list of notes pending being sent to the server
         createPendingNotes.add(newNote);
 
@@ -101,10 +106,16 @@ public class NoteCtrl {
         collectionView.getFocusModel().focus(collectionNotes.size() - 1);
         collectionView.edit(collectionNotes.size() - 1);
 
+        treeView.getSelectionModel().select(new TreeItem<Note>(newNote));
+
         noteTitle.setText(newTitle);
         noteTitleMd.setText(newTitle);
 
         noteBody.setText("");
+
+        dashboardCtrl.treeViewSetup();
+
+
     }
 
     public void showCurrentNote(Note selectedNote) {
@@ -149,6 +160,7 @@ public class NoteCtrl {
                 collectionView.getSelectionModel().clearSelection();
                 noteBody.clear();
             }
+            dashboardCtrl.treeViewSetup();
         }
     }
 

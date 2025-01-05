@@ -30,6 +30,7 @@ public class CollectionCtrl {
 
     // References
     private ListView collectionView;
+    private TreeView treeView;
     private MenuButton currentCollectionTitle;
     private Menu collectionMenu;
     private ToggleGroup collectionSelect;
@@ -51,6 +52,7 @@ public class CollectionCtrl {
 
 
     public void setReferences(ListView collectionView,
+                              TreeView treeView,
                               MenuButton currentCollectionTitle,
                               Menu collectionMenu,
                               ToggleGroup collectionSelect,
@@ -59,6 +61,7 @@ public class CollectionCtrl {
                               Button deleteCollectionButton,
                               MenuButton moveNotesButton) {
         this.collectionView = collectionView;
+        this.treeView = treeView;
         this.currentCollectionTitle = currentCollectionTitle;
         this.collectionMenu = collectionMenu;
         this.collectionSelect = collectionSelect;
@@ -271,6 +274,9 @@ public class CollectionCtrl {
         if (currentCollection == null) {
             collectionNotes = allNotes;
             currentCollectionTitle.setText("All Notes");
+            collectionView.setVisible(false);
+            treeView.setVisible(true);
+            dashboardCtrl.treeViewSetup();
         } else {
             collectionNotes = FXCollections.observableArrayList(
                     allNotes.stream()
@@ -278,6 +284,8 @@ public class CollectionCtrl {
                             .collect(Collectors.toList())
             );
             currentCollectionTitle.setText(currentCollection.title);
+            collectionView.setVisible(true);
+            treeView.setVisible(false);
         }
 
         collectionView.setItems(collectionNotes);
