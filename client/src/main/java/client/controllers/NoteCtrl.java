@@ -4,7 +4,6 @@ import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
-import com.sun.source.tree.Tree;
 import commons.Collection;
 import commons.Note;
 import javafx.application.Platform;
