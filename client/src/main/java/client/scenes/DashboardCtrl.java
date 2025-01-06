@@ -182,6 +182,7 @@ public class DashboardCtrl implements Initializable {
                         .and(allNotesView.getSelectionModel().selectedItemProperty().isNull()
                                 .or(Bindings.createBooleanBinding(() -> {
                                     TreeItem<Note> selectedItem = (TreeItem<Note>)allNotesView.getSelectionModel().getSelectedItem();
+                                    if(selectedItem!=null)System.out.println(selectedItem.isLeaf());
                                     return selectedItem == null || !selectedItem.isLeaf(); // Disable if no selection OR not a leaf
                                 }, allNotesView.getSelectionModel().selectedItemProperty())))
 
@@ -263,6 +264,7 @@ public class DashboardCtrl implements Initializable {
                 moveNotesButton.setText(currentNote.collection.title);
                 noteCtrl.showCurrentNote(currentNote);
                 markdownViewBlocker.setVisible(false);
+                allNotesView.getFocusModel().focus(0);
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);

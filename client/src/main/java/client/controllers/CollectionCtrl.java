@@ -10,7 +10,11 @@ import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.List;
@@ -397,6 +401,28 @@ public class CollectionCtrl {
             currentCollectionTitle.setText(newTitle);
         }
         return currentCollection;
+    }
+
+    public void editCollections() {
+        try {
+            // Load the FXML file
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/client/scenes/EditCollections.fxml"));
+            Parent root = fxmlLoader.load();
+
+            // Create a new stage for the popup window
+            Stage stage = new Stage();
+            stage.setTitle("Edit Collections");
+
+            // Set the scene with the loaded FXML root
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+
+            // Show the new window
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle the exception as needed
+        }
     }
 
     /**

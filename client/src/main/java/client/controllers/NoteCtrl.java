@@ -93,24 +93,27 @@ public class NoteCtrl {
         newNote.id = this.tempNoteId--;
         allNotes.add(newNote);
 
-        if (currentCollection != null) {
-            collectionNotes.add(newNote);
-        }
+
 
         // Add the new note to a list of notes pending being sent to the server
         createPendingNotes.add(newNote);
 
-        collectionView.getSelectionModel().select(collectionNotes.size() - 1);
-        collectionView.getFocusModel().focus(collectionNotes.size() - 1);
-        collectionView.edit(collectionNotes.size() - 1);
+        if (currentCollection != null) {
+            collectionNotes.add(newNote);
+            collectionView.getSelectionModel().select(collectionNotes.size() - 1);
+            collectionView.getFocusModel().focus(collectionNotes.size() - 1);
+            collectionView.edit(collectionNotes.size() - 1);
+        }else {
+            dashboardCtrl.treeViewSetup();
+            dashboardCtrl.selectNoteInTreeView(newNote);
+        }
 
         noteTitle.setText(newTitle);
         noteTitleMd.setText(newTitle);
 
         noteBody.setText("");
 
-        dashboardCtrl.treeViewSetup();
-        dashboardCtrl.selectNoteInTreeView(newNote);
+
     }
 
     public void showCurrentNote(Note selectedNote) {
