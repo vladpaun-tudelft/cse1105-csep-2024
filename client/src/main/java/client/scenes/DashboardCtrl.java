@@ -179,11 +179,12 @@ public class DashboardCtrl implements Initializable {
 
         moveNotesButton.disableProperty().bind(
                 collectionView.getSelectionModel().selectedItemProperty().isNull()
-                        .and(allNotesView.getSelectionModel().selectedItemProperty().isNull())
-                        .or(Bindings.createBooleanBinding(() -> {
-                            TreeItem<Note> selectedItem = (TreeItem<Note>)allNotesView.getSelectionModel().getSelectedItem();
-                            return selectedItem == null || !selectedItem.isLeaf(); // Disable if no selection OR not a leaf
-                        }, allNotesView.getSelectionModel().selectedItemProperty()))
+                        .and(allNotesView.getSelectionModel().selectedItemProperty().isNull()
+                                .or(Bindings.createBooleanBinding(() -> {
+                                    TreeItem<Note> selectedItem = (TreeItem<Note>)allNotesView.getSelectionModel().getSelectedItem();
+                                    return selectedItem == null || !selectedItem.isLeaf(); // Disable if no selection OR not a leaf
+                                }, allNotesView.getSelectionModel().selectedItemProperty())))
+
         );
 
         collectionCtrl.moveNotesInitialization();

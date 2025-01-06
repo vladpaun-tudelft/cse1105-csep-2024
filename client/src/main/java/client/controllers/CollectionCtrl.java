@@ -153,7 +153,10 @@ public class CollectionCtrl {
                             throw new RuntimeException(e);
                         }
                         collectionSelect.selectToggle(item);
-                        if(dashboardCtrl.getCurrentCollection() != null )item.fire();   // If not in all note view
+                        if(dashboardCtrl.getCurrentCollection() != null ) {
+                            item.fire();   // If not in all note view
+                            dashboardCtrl.collectionView.getSelectionModel().select(currentNote);
+                        }
                         else {
                             dashboardCtrl.treeViewSetup();                             // else update all note view
                             dashboardCtrl.selectNoteInTreeView(currentNote);
