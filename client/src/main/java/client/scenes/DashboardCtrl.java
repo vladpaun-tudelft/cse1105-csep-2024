@@ -9,6 +9,7 @@ import com.google.inject.Inject;
 import commons.Collection;
 import commons.EmbeddedFile;
 import commons.Note;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -178,14 +179,14 @@ public class DashboardCtrl implements Initializable {
 
         moveNotesButton.disableProperty().bind(
                 collectionView.getSelectionModel().selectedItemProperty().isNull()
+                        .and(allNotesView.getSelectionModel().selectedItemProperty().isNull())
+                        .or(Bindings.createBooleanBinding(() -> {
+                            TreeItem<Note> selectedItem = (TreeItem<Note>)allNotesView.getSelectionModel().getSelectedItem();
+                            return selectedItem == null || !selectedItem.isLeaf(); // Disable if no selection OR not a leaf
+                        }, allNotesView.getSelectionModel().selectedItemProperty()))
         );
 
         collectionCtrl.moveNotesInitialization();
-
-
-        moveNotesButton.disableProperty().bind(
-                collectionView.getSelectionModel().selectedItemProperty().isNull()
-        );
 
         collectionCtrl.moveNotesInitialization();
 

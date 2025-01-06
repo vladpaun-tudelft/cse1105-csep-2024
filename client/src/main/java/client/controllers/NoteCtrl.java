@@ -97,7 +97,6 @@ public class NoteCtrl {
             collectionNotes.add(newNote);
         }
 
-
         // Add the new note to a list of notes pending being sent to the server
         createPendingNotes.add(newNote);
 

@@ -277,6 +277,7 @@ public class CollectionCtrl {
             collectionView.setVisible(false);
             treeView.setVisible(true);
             dashboardCtrl.treeViewSetup();
+            collectionView.getSelectionModel().clearSelection();
         } else {
             collectionNotes = FXCollections.observableArrayList(
                     allNotes.stream()
@@ -286,6 +287,7 @@ public class CollectionCtrl {
             currentCollectionTitle.setText(currentCollection.title);
             collectionView.setVisible(true);
             treeView.setVisible(false);
+            treeView.getSelectionModel().clearSelection();
         }
 
         collectionView.setItems(collectionNotes);
