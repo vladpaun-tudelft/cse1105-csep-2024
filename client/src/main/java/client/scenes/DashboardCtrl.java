@@ -280,6 +280,32 @@ public class DashboardCtrl implements Initializable {
 
     }
 
+    public void selectNoteInTreeView(Note targetNote) {
+        // Call the helper method to find and select the item
+        TreeItem<Note> itemToSelect = findItem(allNotesView.getRoot(), targetNote);
+        if (itemToSelect != null) {
+            // Select the TreeItem
+            allNotesView.getSelectionModel().select(itemToSelect);
+            System.out.println("hey!");
+        }
+    }
+
+    private TreeItem<Note> findItem(TreeItem<Note> currentItem, Note targetNote) {
+        // Check if the current item matches the target note
+        if (currentItem.getValue() != null && currentItem.getValue().equals(targetNote)) {
+            return currentItem; // Found the matching item
+        }
+
+        // Recursively check children of the current item
+        for (TreeItem<Note> child : currentItem.getChildren()) {
+            TreeItem<Note> result = findItem(child, targetNote);
+            if (result != null) {
+                return result; // Found in child subtree
+            }
+        }
+
+        return null; // If no match is found
+    }
 
     public FilesCtrl getFilesCtrl() {
         return this.filesCtrl;
@@ -307,11 +333,6 @@ public class DashboardCtrl implements Initializable {
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
     }
 
-    public void moveNoteFromCollection() throws IOException {
-        currentCollection = collectionCtrl.moveNoteFromCollection(currentNote, currentCollection, destinationCollection);
-        collectionCtrl.viewNotes(currentCollection, allNotes);
-    }
-
     public void changeTitleInCollection() throws IOException {
         currentCollection = collectionCtrl.changeTitleInCollection(currentCollection, collections);
 
@@ -326,7 +347,6 @@ public class DashboardCtrl implements Initializable {
     public void viewAllNotes() {
         currentCollection = null;
         collectionNotes = collectionCtrl.viewNotes(null, allNotes);
-
     }
 
     @FXML

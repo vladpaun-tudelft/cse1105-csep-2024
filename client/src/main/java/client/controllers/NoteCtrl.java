@@ -104,16 +104,13 @@ public class NoteCtrl {
         collectionView.getFocusModel().focus(collectionNotes.size() - 1);
         collectionView.edit(collectionNotes.size() - 1);
 
-        treeView.getSelectionModel().select(new TreeItem<Note>(newNote));
-
         noteTitle.setText(newTitle);
         noteTitleMd.setText(newTitle);
 
         noteBody.setText("");
 
         dashboardCtrl.treeViewSetup();
-
-
+        dashboardCtrl.selectNoteInTreeView(newNote);
     }
 
     public void showCurrentNote(Note selectedNote) {

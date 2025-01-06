@@ -146,13 +146,18 @@ public class CollectionCtrl {
                 if (toggle instanceof RadioMenuItem) {
                     RadioMenuItem item = (RadioMenuItem) toggle;
                     if (item.getText().equals(selectedCollection.title)) {
+                        Note currentNote = dashboardCtrl.getCurrentNote();
                         try {
-                            moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
+                            moveNoteFromCollection(currentNote, dashboardCtrl.getCurrentCollection(), selectedCollection);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
                         collectionSelect.selectToggle(item);
-                        item.fire();
+                        if(dashboardCtrl.getCurrentCollection() != null )item.fire();   // If not in all note view
+                        else {
+                            dashboardCtrl.treeViewSetup();                             // else update all note view
+                            dashboardCtrl.selectNoteInTreeView(currentNote);
+                        }
                         moveNotesButton.hide();
                         break;
                     }
@@ -405,8 +410,6 @@ public class CollectionCtrl {
         currentNote.collection = destinationCollection;
         noteCtrl.updatePendingNotes.add(currentNote);
         noteCtrl.saveAllPendingNotes();
-
-
 
         return destinationCollection;
     }
