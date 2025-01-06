@@ -287,7 +287,6 @@ public class DashboardCtrl implements Initializable {
         if (itemToSelect != null) {
             // Select the TreeItem
             allNotesView.getSelectionModel().select(itemToSelect);
-            System.out.println("hey!");
         }
     }
 
