@@ -119,7 +119,11 @@ public class CollectionCtrl {
                 if (empty || filteredCollection == null) {
                     setText(null);
                 } else {
-                    setText(filteredCollection.title);
+                    Label label = new Label(filteredCollection.title);
+                    label.maxWidthProperty().bind(listView.widthProperty().subtract(10)); // Set maximum width in pixels
+                    label.setTextOverrun(OverrunStyle.ELLIPSIS); // Set overrun to ellipsis
+                    label.setStyle("-fx-text-fill: white;"); // Set text color to white
+                    setGraphic(label);
                 }
             }
         });
@@ -227,6 +231,10 @@ public class CollectionCtrl {
         moveNotesButton.setOnShowing(event -> {
             moveNotesInitialization();
         });
+
+        moveNotesButton.maxWidthProperty().bind(
+                dashboardCtrl.getNoteBody().widthProperty().divide(2).subtract(40)
+        );
 
 
     }

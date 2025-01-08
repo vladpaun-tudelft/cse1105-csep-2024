@@ -51,7 +51,7 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private Label contentBlocker;
     @FXML
-    private TextArea noteBody;
+    @Getter private TextArea noteBody;
     @FXML
     private WebView markdownView;
     @FXML
