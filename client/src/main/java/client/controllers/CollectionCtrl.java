@@ -228,6 +228,10 @@ public class CollectionCtrl {
             moveNotesInitialization();
         });
 
+        moveNotesButton.maxWidthProperty().bind(
+                dashboardCtrl.getNoteBody().widthProperty().divide(2).subtract(40)
+        );
+
 
     }
 
