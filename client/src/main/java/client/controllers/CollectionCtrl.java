@@ -162,11 +162,7 @@ public class CollectionCtrl {
                     RadioMenuItem item = (RadioMenuItem) toggle;
                     if (item.getText().equals(selectedCollection.title)) {
                         Note currentNote = dashboardCtrl.getCurrentNote();
-                        try {
-                            moveNoteFromCollection(currentNote, dashboardCtrl.getCurrentCollection(), selectedCollection);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
+                        moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
                         collectionSelect.selectToggle(item);
                         if(dashboardCtrl.getCurrentCollection() != null ) {
                             item.fire();   // If not in all note view
