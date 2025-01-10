@@ -73,7 +73,7 @@
                         </RadioMenuItem>
                   <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem fx:id="addCollectionButton1" mnemonicParsing="false" onAction="#addCollection" text="Add collection" />
-                        <MenuItem fx:id="editCollectionTitle1" mnemonicParsing="false" onAction="#changeTitleInCollection" text="Edit collection" />
+                        <MenuItem fx:id="editCollectionTitle1" mnemonicParsing="false" onAction="#openEditCollections" text="Edit collections" />
                     </items>
                 </Menu>
             </menus>
@@ -136,7 +136,7 @@
 
                           <items>
                         <MenuItem fx:id="addCollectionButton" mnemonicParsing="false" onAction="#addCollection" text="Add collection" />
-                        <MenuItem fx:id="editCollectionTitle" mnemonicParsing="false" onAction="#changeTitleInCollection" text="Edit collection" />
+                        <MenuItem fx:id="editCollectionTitle" mnemonicParsing="false" onAction="#openEditCollections" text="Edit collections" />
                         <MenuItem fx:id="allNotesButton" mnemonicParsing="false" onAction="#viewAllNotes" text="Show all notes" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <CustomMenuItem mnemonicParsing="false" styleClass="current-collection-menuButton" text="Collection Title" />

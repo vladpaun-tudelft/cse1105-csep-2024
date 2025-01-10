@@ -39,6 +39,9 @@ public class CollectionController {
         if (collection.title == null || collection.title.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("A collection needs a title.");
         }
+        if (collection.serverURL == null || collection.serverURL.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("A collection needs a serverURL.");
+        }
         //duplicated titles or different errors
         try {
             Collection createdCollection = collectionService.save(collection);
@@ -110,6 +113,9 @@ public class CollectionController {
             //handling the empty collection title
             if (updatedCollection.title == null || updatedCollection.title.isBlank()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("A collection needs a title.");
+            }
+            if (updatedCollection.serverURL == null || updatedCollection.serverURL.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("A collection needs a serverURL.");
             }
             //handling duplication of titles or different errors
             try {

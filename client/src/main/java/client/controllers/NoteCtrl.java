@@ -169,7 +169,7 @@ public class NoteCtrl {
             createPendingNotes.remove(currentNote);
         } else {
             updatePendingNotes.remove(currentNote);
-            server.deleteNote(currentNote.id);
+            server.deleteNote(currentNote);
         }
         collectionNotes.remove(currentNote);
         allNotes.remove(currentNote);
@@ -222,7 +222,7 @@ public class NoteCtrl {
     /**
      * Checks if the given title is already used in the collection, excluding the current note.
      */
-    private boolean isTitleDuplicate(ObservableList<Note> allNotes, Note newNote, String title, boolean isGlobal) {
+    public boolean isTitleDuplicate(ObservableList<Note> allNotes, Note newNote, String title, boolean isGlobal) {
         return allNotes.stream()
                 .filter(note -> isGlobal || (note.collection.equals(newNote.collection)))
                 .anyMatch(note -> note != newNote && note.getTitle().equals(title));

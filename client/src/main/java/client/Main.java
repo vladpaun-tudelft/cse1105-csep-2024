@@ -40,7 +40,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) throws Exception {
 
 		var serverUtils = INJECTOR.getInstance(ServerUtils.class);
-		if (!serverUtils.isServerAvailable()) {
+		if (!serverUtils.isServerAvailable("http://localhost:8080/")) {
 			var msg = "Server needs to be started before the client, but it does not seem to be available. Shutting down.";
 			System.err.println(msg);
 			return;

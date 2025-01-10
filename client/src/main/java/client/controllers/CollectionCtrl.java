@@ -1,28 +1,35 @@
 package client.controllers;
 
+import client.MyFXML;
+import client.MyModule;
 import client.scenes.DashboardCtrl;
+import client.scenes.EditCollectionsCtrl;
 import client.ui.DialogStyler;
 import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import commons.Collection;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.google.inject.Guice.createInjector;
 
 
 public class CollectionCtrl {
+
+    private static final Injector INJECTOR = createInjector(new MyModule());
+    private static final MyFXML FXML = new MyFXML(INJECTOR);
 
     // Utilities
     private final ServerUtils server;
@@ -126,7 +133,11 @@ public class CollectionCtrl {
                 if (empty || filteredCollection == null) {
                     setText(null);
                 } else {
-                    setText(filteredCollection.title);
+                    Label label = new Label(filteredCollection.title);
+                    label.maxWidthProperty().bind(listView.widthProperty().subtract(10)); // Set maximum width in pixels
+                    label.setTextOverrun(OverrunStyle.ELLIPSIS); // Set overrun to ellipsis
+                    label.setStyle("-fx-text-fill: white;"); // Set text color to white
+                    setGraphic(label);
                 }
             }
         });
@@ -243,6 +254,10 @@ public class CollectionCtrl {
             moveNotesInitialization();
         });
 
+        moveNotesButton.maxWidthProperty().bind(
+                dashboardCtrl.getNoteBody().widthProperty().divide(2).subtract(40)
+        );
+
 
     }
 
@@ -257,24 +272,17 @@ public class CollectionCtrl {
 
         List<Collection> collections;
         // If the default collection doesn't exist, create it
-        try {
-            if (config.readFromFile().isEmpty()) {
-                Collection defaultCollection = server.addCollection(new Collection("Default"));
-                config.writeToFile(defaultCollection);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        //TODO: This logic needs to be changed
+        if (config.readFromFile().isEmpty()) {
+            Collection defaultCollection = server.addCollection(new Collection("Default", "http://localhost:8080/"));
+            config.writeToFile(defaultCollection);
         }
 
         // Set up the collections menu
-        try {
-            collections = config.readFromFile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        collections = config.readFromFile();
 
         for (Collection c : collections) {
-            dashboardCtrl.createCollectionButton(c,collectionMenu, collectionSelect);
+            dashboardCtrl.createCollectionButton(c, collectionMenu, collectionSelect);
         }
         return collections;
     }
@@ -305,102 +313,44 @@ public class CollectionCtrl {
         collectionView.setItems(collectionNotes);
         collectionView.getSelectionModel().clearSelection();
 
-        boolean deleteDisabled = (currentCollection == null || currentCollectionTitle.getText().equals("Default"));
-        deleteCollectionButton.setDisable(deleteDisabled);
-        editCollectionTitle.setDisable(deleteDisabled);
+        deleteCollectionButton.setDisable(currentCollection == null);
 
         collectionView.getSelectionModel().clearSelection();
         return collectionNotes!=null?collectionNotes : FXCollections.observableArrayList();
     }
 
+
     public Collection deleteCollection(Collection currentCollection,
                                        List<Collection> collections,
                                        ObservableList<Note> collectionNotes,
-                                       ObservableList<Note> allNotes) throws IOException {
-        Alert alert = dialogStyler.createStyledAlert(
+                                       ObservableList<Note> allNotes)
+    {
+        if (!showDeleteConfirmation()) return currentCollection;
+
+        List<Note> notesToDelete = collectionNotes.stream().toList();
+        for (Note n : notesToDelete) {
+            noteCtrl.deleteNote(n,collectionNotes,allNotes);
+        }
+        // delete collection from server
+        server.deleteCollection(currentCollection);
+        // delete collection from config file
+        collections.remove(currentCollection);
+
+        config.writeAllToFile(collections);
+        // delete collection from collections menu
+        collectionMenu.getItems().remove(
+                collectionSelect.getSelectedToggle()
+        );
+        return null;
+    }
+
+    private boolean showDeleteConfirmation() {
+        return dialogStyler.createStyledAlert(
                 Alert.AlertType.CONFIRMATION,
                 "Delete collection",
                 "Delete collection",
                 "Are you sure you want to delete this collection? All notes in the collection will be deleted as well."
-        );
-        Optional<ButtonType> buttonType = alert.showAndWait();
-
-        if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
-            List<Note> notesToDelete = collectionNotes.stream().toList();
-            for (Note n : notesToDelete) {
-                noteCtrl.deleteNote(n,collectionNotes,allNotes);
-            }
-            // delete collection from server
-            server.deleteCollection(currentCollection.id);
-            // delete collection from config file
-            collections.remove(currentCollection);
-
-            config.writeAllToFile(collections);
-            // delete collection from collections menu
-            collectionMenu.getItems().remove(
-                    collectionSelect.getSelectedToggle()
-            );
-
-
-
-
-
-            return null;
-        }
-        return currentCollection;
-    }
-
-    /**
-     * Method that will change the title in collection
-     *
-     * @throws IOException exception
-     */
-    public Collection changeTitleInCollection(Collection currentCollection, List<Collection> collections) throws IOException {
-
-        if (currentCollection == null || currentCollectionTitle.getText().equals("Default")) {
-            return null;
-        }
-        String oldTitle = currentCollection.title;
-
-        // Ask for a new title with a dialog
-        TextInputDialog dialog = dialogStyler.createStyledTextInputDialog(
-                "Change Collection Title",
-                "Change Collection Title",
-                "Please enter the new title for the collection:"
-        );
-
-        Optional<String> newTitleOptional = dialog.showAndWait();
-
-        // If we get a title
-        if (newTitleOptional.isPresent()) {
-            String newTitle = newTitleOptional.get().trim();
-
-            try {
-                // Update the collection's title
-                currentCollection.title = newTitle;
-                // Update the collection on the server
-                server.updateCollection(currentCollection);
-
-            } catch (ClientErrorException e) {
-                Alert alert = dialogStyler.createStyledAlert(
-                        Alert.AlertType.ERROR,
-                        "Error",
-                        "Error",
-                        e.getResponse().readEntity(String.class)
-                );
-                alert.showAndWait();
-
-                currentCollection.title = oldTitle;
-                return currentCollection;
-            }
-
-            config.writeAllToFile(collections);
-
-            // update the menu item
-            ((RadioMenuItem) collectionSelect.getSelectedToggle()).setText(newTitle);
-            currentCollectionTitle.setText(newTitle);
-        }
-        return currentCollection;
+        ).showAndWait().filter(b -> b == ButtonType.OK).isPresent();
     }
 
     public void editCollections() {
@@ -427,16 +377,16 @@ public class CollectionCtrl {
 
     /**
      * A method used to move note from one collection to the other
-     *
-     * @throws IOException exception
      */
     public Collection moveNoteFromCollection(Note currentNote, Collection currentCollection,
-                                             Collection destinationCollection) throws IOException {
+                                             Collection destinationCollection){
         if (currentNote == null) {
             return currentCollection;
         }
-
         currentNote.collection = destinationCollection;
+        if(noteCtrl.isTitleDuplicate(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false)){
+            currentNote.setTitle(noteCtrl.generateUniqueTitle(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false));
+        }
         noteCtrl.updatePendingNotes.add(currentNote);
         noteCtrl.saveAllPendingNotes();
 
@@ -444,41 +394,82 @@ public class CollectionCtrl {
     }
 
 
-    public Collection addCollection(Collection currentCollection, List<Collection> collections) throws IOException {
-        Collection addedCollection;
-
-        TextInputDialog dialog = dialogStyler.createStyledTextInputDialog(
-                "New collection",
-                "New collection",
-                "Please enter the title for your new collection:"
-        );
-        Optional<String> collectionTitle = dialog.showAndWait();
-        if (collectionTitle.isPresent()) {
-            String s = collectionTitle.get();
-
-            try {
-                addedCollection = server.addCollection(new Collection(s));
-                config.writeToFile(addedCollection);
-                collections.add(addedCollection);
-            } catch (ClientErrorException e) {
-                Alert alert = dialogStyler.createStyledAlert(
-                        Alert.AlertType.ERROR,
-                        "Error",
-                        "Error",
-                        e.getResponse().readEntity(String.class)
-                );
-                alert.showAndWait();
-                return currentCollection;
-            }
-
-            // add entry in collections menu
-            RadioMenuItem radioMenuItem = dashboardCtrl.createCollectionButton(addedCollection, collectionMenu, collectionSelect);
-            collectionSelect.selectToggle(radioMenuItem);
-
-            return addedCollection;
-        }
-        return currentCollection;
+    public void updateCollection(Collection collection, List<Collection> collections) {
+        server.updateCollection(collection);
+        config.writeAllToFile(collections);
     }
+
+    public Collection addInputtedCollection(Collection inputtedCollection, Collection currentCollection, List<Collection> collections) {
+        Collection addedCollection;
+        try {
+            addedCollection = server.addCollection(inputtedCollection);
+            if (addedCollection == null) return currentCollection;
+            config.writeToFile(addedCollection);
+            collections.add(addedCollection);
+        } catch (ClientErrorException e) {
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.ERROR,
+                    "Error",
+                    "Error",
+                    e.getResponse().readEntity(String.class)
+            );
+            alert.showAndWait();
+            return currentCollection;
+        }
+
+        // add entry in collections menu
+        RadioMenuItem radioMenuItem = dashboardCtrl.createCollectionButton(addedCollection, collectionMenu, collectionSelect);
+        collectionSelect.selectToggle(radioMenuItem);
+
+        return addedCollection;
+    }
+
+    public void addCollection(){
+        var editCollections = FXML.load(EditCollectionsCtrl.class, "client", "scenes", "EditCollections.fxml");
+
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL); // Block interaction with main window
+        popupStage.initStyle(StageStyle.TRANSPARENT); // Make window transparent
+        popupStage.setTitle("Popup Window");
+
+        Scene scene = new Scene(editCollections.getValue());
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT); // Transparent scene
+
+        popupStage.setScene(scene);
+        popupStage.getScene().getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+
+        // Set the stage in controller for dragging
+        EditCollectionsCtrl controller = (EditCollectionsCtrl) editCollections.getKey();
+        controller.setReferences(popupStage, this, dashboardCtrl, server, noteCtrl, config, dialogStyler);
+        controller.setCollectionList(dashboardCtrl.getCollections());
+        controller.addCollection();
+
+        popupStage.showAndWait();
+
+    }
+
+    public void editCollections() {
+        var editCollections = FXML.load(EditCollectionsCtrl.class, "client", "scenes", "EditCollections.fxml");
+
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL); // Block interaction with main window
+        popupStage.initStyle(StageStyle.TRANSPARENT); // Make window transparent
+        popupStage.setTitle("Popup Window");
+
+        Scene scene = new Scene(editCollections.getValue());
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT); // Transparent scene
+
+        popupStage.setScene(scene);
+        popupStage.getScene().getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+
+        // Set the stage in controller for dragging
+        EditCollectionsCtrl controller = (EditCollectionsCtrl) editCollections.getKey();
+        controller.setReferences(popupStage, this, dashboardCtrl, server, noteCtrl, config, dialogStyler);
+        controller.setCollectionList(dashboardCtrl.getCollections());
+
+        popupStage.showAndWait();
+    }
+
 
 
 }

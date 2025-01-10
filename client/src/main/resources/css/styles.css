@@ -173,6 +173,9 @@
 .delete_icon {
     -fx-background-image: url("icons/trash.png");
 }
+.close_program_icon{
+    -fx-background-image: url("icons/cross.png");
+}
 
 .add_note {
     -fx-background-image: url("icons/addFile.png");
@@ -499,4 +502,36 @@
 
 .file-view-delete-button:hover {
     -fx-background-color: transparent;
+}
+
+.popup-hbox {
+    -fx-background-radius: 4px 4px 0 0;
+    -fx-border-radius: 4px 4px 0 0 ;
+}
+
+.popup-button:hover{
+    -fx-background-color: #C42B1C;
+}
+
+.delete-button:hover{
+    -fx-background-color: #553C3B;
+}
+
+.popup-label {
+    -fx-background-radius: 4px 0 0 0;
+    -fx-border-radius:  4px 0 0 0;
+}
+
+
+.popup-root {
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-border-width: 1px;
+    -fx-border-color: #161619;
+    -fx-background-color: #161619;
+    /*-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 5); !* Soft shadow *!*/
+}
+.popup-textfield{
+    -fx-background-color: #161619;
+    -fx-text-fill: white;
 }
