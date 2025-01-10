@@ -47,6 +47,28 @@
     -fx-padding: 3px;
 }
 
+/* TREE VIEW */
+.tree-view .text-field {
+    -fx-background-color: -main-background;
+    -fx-border-width: 0;
+}
+.tree-view .tree-cell:selected {
+    -fx-background-color: -main-selected;
+}
+.tree-view {
+    -fx-background-color: -main-foreground;
+    -fx-hbar-policy: never;
+    -fx-pref-height: 75px;
+}
+.tree-view .tree-cell {
+    -fx-background-color: -main-foreground; /* Default background */
+    -fx-border-radius: 10;
+    -fx-padding: 5 3;
+}
+.tree-cell > .tree-disclosure-node > .arrow  {
+    -fx-background-color: white;
+}
+
 /* Content view styles */
 .content-view {
     -fx-border-color: -main-background;

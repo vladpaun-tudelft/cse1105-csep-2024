@@ -2,12 +2,15 @@ package client.scenes;
 
 import client.controllers.*;
 import client.ui.NoteListItem;
+import client.ui.NoteTreeItem;
 import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
 import commons.Collection;
 import commons.EmbeddedFile;
 import commons.Note;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -61,11 +64,13 @@ public class DashboardCtrl implements Initializable {
     @FXML
     public ListView collectionView;
     @FXML
+    public TreeView allNotesView;
+    @FXML
     private Button addButton;
     @FXML
     private Label noteTitleMD;
     @FXML
-    private Button searchButton;
+    private Button deleteButton;
     @FXML
     private Button clearSearchButton;
     @FXML
@@ -130,9 +135,9 @@ public class DashboardCtrl implements Initializable {
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
-        markdownCtrl.setReferences(collectionView, markdownView, markdownViewBlocker, noteBody);
+        markdownCtrl.setReferences(collectionView, allNotesView, markdownView, markdownViewBlocker, noteBody);
         markdownCtrl.setDashboardCtrl(this);
-        searchCtrl.setReferences(searchField, collectionView, noteBody);
+        searchCtrl.setReferences(searchField, collectionView, allNotesView, noteBody);
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
                 case ENTER -> {
@@ -144,6 +149,7 @@ public class DashboardCtrl implements Initializable {
         });
 
         collectionCtrl.setReferences(collectionView,
+                allNotesView,
                 currentCollectionTitle,
                 collectionMenu,
                 collectionSelect,
@@ -156,6 +162,7 @@ public class DashboardCtrl implements Initializable {
 
         noteCtrl.setReferences(
                 collectionView,
+                allNotesView,
                 noteTitle,
                 noteTitleMD,
                 noteBody,
@@ -171,21 +178,25 @@ public class DashboardCtrl implements Initializable {
        collectionCtrl.initializeDropoutCollectionLabel();
 
 
-        moveNotesButton.disableProperty().bind(
-                collectionView.getSelectionModel().selectedItemProperty().isNull()
-        );
+        BooleanBinding isNoteSelected = collectionView.getSelectionModel().selectedItemProperty().isNull()
+                .and(allNotesView.getSelectionModel().selectedItemProperty().isNull()
+                        .or(Bindings.createBooleanBinding(() -> {
+                            TreeItem<Note> selectedItem = (TreeItem<Note>) allNotesView.getSelectionModel().getSelectedItem();
+                            return selectedItem == null || !selectedItem.isLeaf(); // Disable if no selection OR not a leaf
+                        }, allNotesView.getSelectionModel().selectedItemProperty())));
+
+        moveNotesButton.disableProperty().bind(isNoteSelected);
+        deleteButton.disableProperty().bind(isNoteSelected);
+
 
         collectionCtrl.moveNotesInitialization();
-
-
-        moveNotesButton.disableProperty().bind(
-                collectionView.getSelectionModel().selectedItemProperty().isNull()
-        );
 
         collectionCtrl.moveNotesInitialization();
 
         collectionNotes = collectionCtrl.viewNotes(null, allNotes);
         listViewSetup(allNotes);
+        treeViewSetup();
+
 
         filesCtrl.setDashboardCtrl(this);
         filesCtrl.setReferences(filesView);
@@ -223,8 +234,80 @@ public class DashboardCtrl implements Initializable {
                 filesViewBlocker.setVisible(true);
             }
         });
+
         collectionView.getSelectionModel().clearSelection();
 
+    }
+
+    public void treeViewSetup() {
+        // Create a virtual root item (you can use this if you don't want the root to be visible)
+        TreeItem<Note> virtualRoot = new TreeItem<>(null);
+        virtualRoot.setExpanded(true); // Optional: if you want the root to be expanded by default
+
+        // Populate TreeView with TreeItems for each Note
+        for (Collection collection : collections) {
+            TreeItem<Note> collectionItem = new TreeItem<>(new Note(collection.title, null, collection));
+            List<Note> collectionNotes = allNotes.stream().filter(n -> n.collection.equals(collection)).toList();
+            if(collectionNotes.size() > 0) {
+                for(Note note : collectionNotes) {
+                    TreeItem<Note> noteItem = new TreeItem<>(note);
+                    collectionItem.getChildren().add(noteItem);
+                }
+                virtualRoot.getChildren().add(collectionItem);
+                collectionItem.setExpanded(true);
+
+            }
+        }
+
+        allNotesView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null && ((TreeItem)newValue).isLeaf()) {
+                currentNote = (Note)((TreeItem)newValue).getValue();
+                moveNotesButton.setText(currentNote.collection.title);
+                noteCtrl.showCurrentNote(currentNote);
+                markdownViewBlocker.setVisible(false);
+                allNotesView.getFocusModel().focus(0);
+            } else {
+                // Show content blockers when no item is selected
+                contentBlocker.setVisible(true);
+                markdownViewBlocker.setVisible(true);
+                moveNotesButton.setText("Move Note");
+                filesViewBlocker.setVisible(true);
+            }
+        });
+
+        // Set the virtual root as the root of the TreeView
+        allNotesView.setRoot(virtualRoot);
+        allNotesView.setShowRoot(false); // To hide the root item if it's just a container
+
+        // Set custom TreeCell factory for NoteTreeItem
+        allNotesView.setCellFactory(param -> new NoteTreeItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl));
+
+    }
+
+    public void selectNoteInTreeView(Note targetNote) {
+        // Call the helper method to find and select the item
+        TreeItem<Note> itemToSelect = findItem(allNotesView.getRoot(), targetNote);
+        if (itemToSelect != null) {
+            // Select the TreeItem
+            allNotesView.getSelectionModel().select(itemToSelect);
+        }
+    }
+
+    private TreeItem<Note> findItem(TreeItem<Note> currentItem, Note targetNote) {
+        // Check if the current item matches the target note
+        if (currentItem.getValue() != null && currentItem.getValue().equals(targetNote)) {
+            return currentItem; // Found the matching item
+        }
+
+        // Recursively check children of the current item
+        for (TreeItem<Note> child : currentItem.getChildren()) {
+            TreeItem<Note> result = findItem(child, targetNote);
+            if (result != null) {
+                return result; // Found in child subtree
+            }
+        }
+
+        return null; // If no match is found
     }
 
     public FilesCtrl getFilesCtrl() {
@@ -271,7 +354,6 @@ public class DashboardCtrl implements Initializable {
     public void viewAllNotes() {
         currentCollection = null;
         collectionNotes = collectionCtrl.viewNotes(null, allNotes);
-
     }
 
     @FXML
@@ -285,12 +367,15 @@ public class DashboardCtrl implements Initializable {
 
     public void search() {
         searchCtrl.search(collectionNotes);
+        searchCtrl.searchInTreeView(allNotesView, allNotes, collections);
     }
     public void setSearchIsActive(boolean b) {
         searchCtrl.setSearchIsActive(b, collectionNotes);
     }
     public void clearSearch() {
         searchCtrl.setSearchIsActive(false, collectionNotes);
+        searchCtrl.resetSearch(allNotes);
+        treeViewSetup();
     }
 
     public void refresh() {

@@ -50,6 +50,7 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
@@ -91,6 +92,7 @@
                         <Cursor fx:constant="HAND" />
                      </cursor></Button>
                         <ListView fx:id="collectionView" layoutX="3.0" layoutY="74.0" prefHeight="465.0" prefWidth="220.0" AnchorPane.bottomAnchor="33.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="73.0" />
+                  <TreeView fx:id="allNotesView" layoutX="10.0" layoutY="296.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="33.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="73.0" />
                   <AnchorPane prefHeight="25.0" prefWidth="160.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="36.0">
                      <children>
                               <TextField fx:id="searchField" onKeyTyped="#search" prefHeight="25.0" promptText="Search..." style="-fx-background-color: #1E1F22;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="50.0">
@@ -233,7 +235,7 @@
                                     <children>
                                         <Label fx:id="noteTitleMD" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" text="Note title" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
                                             <font>
-                                                <Font size="18.0" fx:id="x11" />
+                                                <Font name="System Bold" size="18.0" fx:id="x11" />
                                             </font>
                                             <textFill>
                                                 <Color red="0.624" green="0.624" blue="0.624" fx:id="x21" />
@@ -249,18 +251,6 @@
                                                 <String fx:value="content-blocker" />
                                             </styleClass>
                                         </Label>
-                                        <Button fx:id="deleteButton_md" layoutX="295.0" layoutY="3.0" mnemonicParsing="false" onAction="#deleteSelectedNote" textFill="#b93838" underline="true" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
-                                            <font>
-                                                <Font size="12.0" />
-                                            </font>
-                                            <cursor>
-                                                <Cursor fx:constant="HAND" />
-                                            </cursor>
-                                 <styleClass>
-                                    <String fx:value="delete_icon" />
-                                    <String fx:value="icon" />
-                                 </styleClass>
-                                        </Button>
                                     </children>
                                 </AnchorPane>
                             </content>

@@ -43,6 +43,7 @@ public class MarkdownCtrl {
 
     // UI references
     private ListView<Note> collectionView;
+    private TreeView<Note> treeView;
     private WebView markdownView;
     private Label markdownViewBlocker;
     private TextArea noteBody;
@@ -93,9 +94,10 @@ public class MarkdownCtrl {
     /**
      * Sets UI component references and initializes markdown rendering.
      */
-    public void setReferences(ListView<Note> collectionView, WebView markdownView,
+    public void setReferences(ListView<Note> collectionView, TreeView<Note> treeView, WebView markdownView,
                               Label markdownViewBlocker, TextArea noteBody) {
         this.collectionView = collectionView;
+        this.treeView = treeView;
         this.markdownView = markdownView;
         this.markdownViewBlocker = markdownViewBlocker;
         this.noteBody = noteBody;
@@ -126,7 +128,10 @@ public class MarkdownCtrl {
                 dashboardCtrl.getCollectionNotes().stream()
                         .filter(note -> note.title.equals(noteTitle))
                         .findFirst()
-                        .ifPresent(selectedNote -> collectionView.getSelectionModel().select(selectedNote));
+                        .ifPresent(selectedNote -> {
+                            collectionView.getSelectionModel().select(selectedNote);
+                            dashboardCtrl.selectNoteInTreeView(selectedNote);
+                        });
             } else {
                 // Handle external urls
                 openUrlInBrowser(url);

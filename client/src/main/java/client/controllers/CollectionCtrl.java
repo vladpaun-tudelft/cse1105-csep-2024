@@ -41,6 +41,7 @@ public class CollectionCtrl {
 
     // References
     private ListView collectionView;
+    private TreeView treeView;
     private MenuButton currentCollectionTitle;
     private Menu collectionMenu;
     private ToggleGroup collectionSelect;
@@ -62,6 +63,7 @@ public class CollectionCtrl {
 
 
     public void setReferences(ListView collectionView,
+                              TreeView treeView,
                               MenuButton currentCollectionTitle,
                               Menu collectionMenu,
                               ToggleGroup collectionSelect,
@@ -70,6 +72,7 @@ public class CollectionCtrl {
                               Button deleteCollectionButton,
                               MenuButton moveNotesButton) {
         this.collectionView = collectionView;
+        this.treeView = treeView;
         this.currentCollectionTitle = currentCollectionTitle;
         this.collectionMenu = collectionMenu;
         this.collectionSelect = collectionSelect;
@@ -158,9 +161,17 @@ public class CollectionCtrl {
                 if (toggle instanceof RadioMenuItem) {
                     RadioMenuItem item = (RadioMenuItem) toggle;
                     if (item.getText().equals(selectedCollection.title)) {
+                        Note currentNote = dashboardCtrl.getCurrentNote();
                         moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
                         collectionSelect.selectToggle(item);
-                        item.fire();
+                        if(dashboardCtrl.getCurrentCollection() != null ) {
+                            item.fire();   // If not in all note view
+                            dashboardCtrl.collectionView.getSelectionModel().select(currentNote);
+                        }
+                        else {
+                            dashboardCtrl.treeViewSetup();                             // else update all note view
+                            dashboardCtrl.selectNoteInTreeView(currentNote);
+                        }
                         moveNotesButton.hide();
                         break;
                     }
@@ -279,6 +290,10 @@ public class CollectionCtrl {
         if (currentCollection == null) {
             collectionNotes = allNotes;
             currentCollectionTitle.setText("All Notes");
+            collectionView.setVisible(false);
+            treeView.setVisible(true);
+            dashboardCtrl.treeViewSetup();
+            collectionView.getSelectionModel().clearSelection();
         } else {
             collectionNotes = FXCollections.observableArrayList(
                     allNotes.stream()
@@ -286,6 +301,9 @@ public class CollectionCtrl {
                             .collect(Collectors.toList())
             );
             currentCollectionTitle.setText(currentCollection.title);
+            collectionView.setVisible(true);
+            treeView.setVisible(false);
+            treeView.getSelectionModel().clearSelection();
         }
 
         collectionView.setItems(collectionNotes);

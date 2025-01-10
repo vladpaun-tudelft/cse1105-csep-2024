@@ -247,6 +247,8 @@ public class ReferenceService {
 
         noteBody.setText(textBefore + noteTitle + textAfter);
         noteBody.positionCaret((textBefore + noteTitle + "]]").length());
+        dashboardCtrl.getNoteCtrl().onBodyChanged(dashboardCtrl.getCurrentNote());
+
     }
 
     private Optional<int[]> findBrackets(String text, int caretPosition) {
