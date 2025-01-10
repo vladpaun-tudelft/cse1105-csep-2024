@@ -235,7 +235,7 @@
                                     <children>
                                         <Label fx:id="noteTitleMD" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" text="Note title" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
                                             <font>
-                                                <Font size="18.0" fx:id="x11" />
+                                                <Font name="System Bold" size="18.0" fx:id="x11" />
                                             </font>
                                             <textFill>
                                                 <Color red="0.624" green="0.624" blue="0.624" fx:id="x21" />
@@ -251,18 +251,6 @@
                                                 <String fx:value="content-blocker" />
                                             </styleClass>
                                         </Label>
-                                        <Button fx:id="deleteButton_md" layoutX="295.0" layoutY="3.0" mnemonicParsing="false" onAction="#deleteSelectedNote" textFill="#b93838" underline="true" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
-                                            <font>
-                                                <Font size="12.0" />
-                                            </font>
-                                            <cursor>
-                                                <Cursor fx:constant="HAND" />
-                                            </cursor>
-                                 <styleClass>
-                                    <String fx:value="delete_icon" />
-                                    <String fx:value="icon" />
-                                 </styleClass>
-                                        </Button>
                                     </children>
                                 </AnchorPane>
                             </content>

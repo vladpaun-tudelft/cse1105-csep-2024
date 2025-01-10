@@ -134,9 +134,9 @@ public class DashboardCtrl implements Initializable {
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
-        markdownCtrl.setReferences(collectionView, markdownView, markdownViewBlocker, noteBody);
+        markdownCtrl.setReferences(collectionView, allNotesView, markdownView, markdownViewBlocker, noteBody);
         markdownCtrl.setDashboardCtrl(this);
-        searchCtrl.setReferences(searchField, collectionView, noteBody);
+        searchCtrl.setReferences(searchField, collectionView, allNotesView, noteBody);
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
                 case ENTER -> {
@@ -182,7 +182,6 @@ public class DashboardCtrl implements Initializable {
                         .and(allNotesView.getSelectionModel().selectedItemProperty().isNull()
                                 .or(Bindings.createBooleanBinding(() -> {
                                     TreeItem<Note> selectedItem = (TreeItem<Note>)allNotesView.getSelectionModel().getSelectedItem();
-                                    if(selectedItem!=null)System.out.println(selectedItem.isLeaf());
                                     return selectedItem == null || !selectedItem.isLeaf(); // Disable if no selection OR not a leaf
                                 }, allNotesView.getSelectionModel().selectedItemProperty())))
 
@@ -362,12 +361,15 @@ public class DashboardCtrl implements Initializable {
 
     public void search() {
         searchCtrl.search(collectionNotes);
+        searchCtrl.searchInTreeView(allNotesView, allNotes, collections);
     }
     public void setSearchIsActive(boolean b) {
         searchCtrl.setSearchIsActive(b, collectionNotes);
     }
     public void clearSearch() {
         searchCtrl.setSearchIsActive(false, collectionNotes);
+        searchCtrl.resetSearch(allNotes);
+        treeViewSetup();
     }
 
     public void refresh() {

@@ -1,12 +1,12 @@
 package client.controllers;
 
 import com.google.inject.Inject;
+import com.sun.source.tree.Tree;
+import commons.Collection;
 import commons.Note;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +16,7 @@ public class SearchCtrl {
     // References
     private TextField searchField;
     private ListView<Note> collectionView;
+    private TreeView<Note> treeView;
     private TextArea noteBody;
 
     // Variables
@@ -30,9 +31,10 @@ public class SearchCtrl {
      * @param searchField    TextField for search input
      * @param collectionView ListView for displaying notes
      */
-    public void setReferences(TextField searchField, ListView<Note> collectionView, TextArea noteBody) {
+    public void setReferences(TextField searchField, ListView<Note> collectionView, TreeView<Note> treeView, TextArea noteBody) {
         this.searchField = searchField;
         this.collectionView = collectionView;
+        this.treeView = treeView;
         this.noteBody = noteBody;
     }
 
@@ -70,6 +72,43 @@ public class SearchCtrl {
         updateCollectionView(FXCollections.observableArrayList(filteredNotes));
     }
 
+    public void searchInTreeView(TreeView<Note> allNotesView, ObservableList<Note> allNotes, List<Collection> collections) {
+        String searchText = searchField.getText().trim().toLowerCase();
+
+        if (searchText.isEmpty()) {
+            resetSearch(allNotes);
+            return;
+        }
+
+        searchIsActive = true;
+
+        // Create a list to store filtered TreeItems
+        TreeItem<Note> virtualRoot = new TreeItem<>(null);
+        virtualRoot.setExpanded(true); // Optional: if you want the root to be expanded by default
+
+        // Filter TreeView notes based on searchText
+        for (Collection collection : collections) {
+            TreeItem<Note> collectionItem = new TreeItem<>(new Note(collection.title, null, collection));
+            List<Note> collectionNotes = allNotes.stream()
+                    .filter(n -> n.collection.equals(collection) && containsText(n, searchText))
+                    .collect(Collectors.toList());
+
+            if (!collectionNotes.isEmpty()) {
+                for (Note note : collectionNotes) {
+                    TreeItem<Note> noteItem = new TreeItem<>(note);
+                    collectionItem.getChildren().add(noteItem);
+                }
+                virtualRoot.getChildren().add(collectionItem);
+                collectionItem.setExpanded(true);
+            }
+        }
+
+        // Update TreeView with filtered items
+        allNotesView.setRoot(virtualRoot);
+        allNotesView.setShowRoot(false); // Hide the virtual root if you don't want it to be visible
+    }
+
+
     /**
      * Reset the search field and display the original collection of notes.
      *
@@ -88,6 +127,7 @@ public class SearchCtrl {
     private void updateCollectionView(ObservableList<Note> notes) {
         collectionView.setItems(notes);
         collectionView.getSelectionModel().clearSelection();
+        treeView.getSelectionModel().clearSelection();
     }
 
     /**
