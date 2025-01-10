@@ -50,7 +50,7 @@ public class EditCollectionsCtrl implements Initializable {
     @FXML private Button createButton;
     @FXML private Button connectButton;
 
-    private List<Collection> addPending;
+    public List<Collection> addPending;
     private ObservableList<Collection> knownCollections;
 
     private boolean isMigration = false; // Tracks if a migration is needed
@@ -477,5 +477,18 @@ public class EditCollectionsCtrl implements Initializable {
         if (stage != null) {
             stage.close(); // Close the popup window
         }
+    }
+
+    public Collection getDefaultCollection() {
+        return dashboardCtrl.getDefaultCollection();
+    }
+
+    public void setDefaultCollection(Collection item) {
+        dashboardCtrl.setDefaultCollection(item);
+        config.setDefaultCollection(item);
+    }
+
+    public void refreshDefaultCollection() {
+        Platform.runLater(() -> {listView.refresh();});
     }
 }

@@ -98,18 +98,13 @@ public class DashboardCtrl implements Initializable {
 
 
     // Variables
-    @Getter
-    private Note currentNote = null;
-    @Getter @Setter
-    private Collection currentCollection = null;
-    @Getter
-    private Collection destinationCollection = null;
-    @Getter
-    public List<Collection> collections;
-    @Getter @Setter
-    private ObservableList<Note> allNotes;
-    @Getter
-    public ObservableList<Note> collectionNotes;
+    @Getter @Setter private Note currentNote = null;
+    @Getter @Setter private Collection currentCollection = null;
+    @Getter @Setter private Collection defaultCollection = null;
+    @Getter @Setter private Collection destinationCollection = null;
+    @Getter @Setter public List<Collection> collections;
+    @Getter @Setter private ObservableList<Note> allNotes;
+    @Getter @Setter public ObservableList<Note> collectionNotes;
 
 
     @Inject
@@ -174,8 +169,7 @@ public class DashboardCtrl implements Initializable {
         );
         noteCtrl.setDashboardCtrl(this);
 
-        collections = collectionCtrl.setUp();
-       collectionCtrl.initializeDropoutCollectionLabel();
+        collectionCtrl.setUp();
 
 
         BooleanBinding isNoteSelected = collectionView.getSelectionModel().selectedItemProperty().isNull()
@@ -325,7 +319,6 @@ public class DashboardCtrl implements Initializable {
     public void addNote() {
         setSearchIsActive(false);
         noteCtrl.addNote(currentCollection,
-                collections,
                 allNotes,
                 collectionNotes);
     }

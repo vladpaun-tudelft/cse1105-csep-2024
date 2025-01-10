@@ -261,26 +261,23 @@ public class CollectionCtrl {
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
         this.dashboardCtrl = dashboardCtrl;
     }
-    public List<Collection> setUp() {
 
-        //is this necessary if allNotesButton is menu Item is menu Item?
-        //collectionSelect.selectToggle( allNotesButton);
-
-        List<Collection> collections;
-        // If the default collection doesn't exist, create it
-        //TODO: This logic needs to be changed
-        if (config.readFromFile().isEmpty()) {
-            Collection defaultCollection = server.addCollection(new Collection("Default", "http://localhost:8080/"));
-            config.writeToFile(defaultCollection);
-        }
+    public void setUp() {
 
         // Set up the collections menu
-        collections = config.readFromFile();
+        List<Collection> collections = config.readFromFile();
+        dashboardCtrl.setCollections(collections);
+
+        Collection defaultCollection = collections.stream()
+                .filter(collection -> collection.equals(config.readDefaultCollection()))
+                .findFirst().orElse(null);
+        dashboardCtrl.setDefaultCollection(defaultCollection);
 
         for (Collection c : collections) {
             dashboardCtrl.createCollectionButton(c, collectionMenu, collectionSelect);
         }
-        return collections;
+
+        initializeDropoutCollectionLabel();
     }
 
 
