@@ -15,6 +15,8 @@
  */
 package client.utils;
 
+import client.ui.DialogStyler;
+import com.google.inject.Inject;
 import commons.Collection;
 import commons.EmbeddedFile;
 import commons.Note;
@@ -22,13 +24,13 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
+import javafx.scene.control.Alert;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.ConnectException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,129 +39,132 @@ import static jakarta.ws.rs.core.MediaType.MULTIPART_FORM_DATA_TYPE;
 
 public class ServerUtils {
 
-	private static final String SERVER = "http://localhost:8080/";
+	private final Config config;
+	private List<Collection> collections;
+	private DialogStyler dialogStyler;
+
+	@Inject
+	public ServerUtils(Config config, DialogStyler dialogStyler) {
+		this.config = config;
+		this.dialogStyler = dialogStyler;
+		collections = config.readFromFile();
+	}
 
 
 	public Note addNote(Note note) {
+		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("api/notes")
+				.target(note.collection.serverURL).path("api/notes")
 				.request(APPLICATION_JSON)
 				.post(Entity.entity(note, APPLICATION_JSON), Note.class);
 	}
 
 	public List<Note> getAllNotes() {
-		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("api/notes")
-				.request(APPLICATION_JSON)
-				.get(new GenericType<List<Note>>() {});
+		collections = config.readFromFile();
+		List<Note> allNotes = new ArrayList<>();
+		if (collections != null) {
+			for (Collection collection : collections) {
+				allNotes.addAll(getNotesByCollection(collection));
+			}
+		}
+		return allNotes;
 	}
 
-	public Note getNoteById(long id) {
-		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("api/notes/" + id)
-				.request(APPLICATION_JSON)
-				.get(Note.class);
-	}
 
 	public Note updateNote(Note note) {
+		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("api/notes/" + note.id)
+				.target(note.collection.serverURL).path("api/notes/" + note.id)
 				.request(APPLICATION_JSON)
 				.put(Entity.entity(note, APPLICATION_JSON), Note.class);
 	}
 
-	public void deleteNote(long id) {
+	public void deleteNote(Note note) {
+		if(!isServerAvailableWithAlert(note.collection.serverURL)) return;
 		ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("api/notes/" + id)
+				.target(note.collection.serverURL).path("api/notes/" + note.id)
 				.request(APPLICATION_JSON)
 				.delete();
 	}
 
 	public List<Note> getNotesByCollection(Collection collection) {
-		if (collection == null || collection.title == null || collection.title.isEmpty()) {
-			throw new IllegalArgumentException("Collection or collection title cannot be null or empty");
-		}
-
+		if (!isServerAvailableWithAlert(collection.serverURL)) return null;
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER)
+				.target(collection.serverURL)
 				.path("/api/collection/{title}")
 				.resolveTemplate("title", collection.title)
 				.request(APPLICATION_JSON)
 				.get(new GenericType<List<Note>>() {});
 	}
 
-	public Collection addCollection(Collection collection) {
+	public List<Collection> getCollectionsOnServer(String serverURL) {
+		if (!isServerAvailableWithAlert(serverURL)) return null;
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/collection")
-				.request(APPLICATION_JSON)
-				.post(Entity.entity(collection, APPLICATION_JSON), Collection.class);
-	}
-
-	public List<Collection> getCollections() {
-		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/collection")
+				.target(serverURL).path("/api/collection/")
 				.request(APPLICATION_JSON)
 				.get(new GenericType<List<Collection>>() {});
 	}
 
-
-	public Collection getCollectionByTitle(String title) {
-		if (title == null || title.isEmpty()) {
-			throw new IllegalArgumentException("Title cannot be null or empty");
-		}
-
+	public Collection addCollection(Collection collection) {
+		if(!isServerAvailableWithAlert(collection.serverURL)) return null;
+		if (!collection.serverURL.endsWith("/")) collection.serverURL = collection.serverURL + "/";
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER)
-				.path("/api/collection/title/{title}")
-				.resolveTemplate("title", title)
+				.target(collection.serverURL).path("/api/collection")
 				.request(APPLICATION_JSON)
-				.get(Collection.class);
+				.post(Entity.entity(collection, APPLICATION_JSON), Collection.class);
 	}
 
 
 	public Collection updateCollection(Collection collection) {
+		if (!isServerAvailableWithAlert(collection.serverURL)) return null;
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/collection/" + collection.id)
+				.target(collection.serverURL).path("/api/collection/" + collection.id)
 				.request(APPLICATION_JSON)
 				.put(Entity.entity(collection, APPLICATION_JSON), Collection.class);
 	}
 
-	public void deleteCollection(long id) {
+	public void deleteCollection(Collection collection) {
+		if (!isServerAvailableWithAlert(collection.serverURL)) return;
 		ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/collection/" + id)
+				.target(collection.serverURL).path("/api/collection/" + collection.id)
 				.request(APPLICATION_JSON)
 				.delete();
 	}
 
-	public EmbeddedFile addFile(Note note, File file) throws IOException {
+
+	public EmbeddedFile addFile(Note note, File file){
+		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
 		// Convert file to MultipartFile
 		FormDataMultiPart multiPart = new FormDataMultiPart();
 		multiPart.bodyPart(new FileDataBodyPart("file", file));
 
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/notes/" + note.id + "/files")
+				.target(note.collection.serverURL).path("/api/notes/" + note.id + "/files")
 				.request(APPLICATION_JSON)
 				.post(Entity.entity(multiPart, MULTIPART_FORM_DATA_TYPE), EmbeddedFile.class);
 	}
 
 	public void deleteFile(Note note, EmbeddedFile file) {
+		if (!isServerAvailableWithAlert(note.collection.serverURL)) return;
 		ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("api/notes/" + note.id + "/files/" + file.getId())
+				.target(note.collection.serverURL).path("api/notes/" + note.id + "/files/" + file.getId())
 				.request(APPLICATION_JSON)
 				.delete();
 	}
 
 	public EmbeddedFile renameFile(Note note, EmbeddedFile file, String newFileName) {
+		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
 		return ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("api/notes/" + note.id + "/files/" + file.getId() + "/rename")
+				.target(note.collection.serverURL).path("api/notes/" + note.id + "/files/" + file.getId() + "/rename")
 				.queryParam("newFileName", newFileName)
 				.request(APPLICATION_JSON)
 				.put(Entity.entity(file, APPLICATION_JSON), EmbeddedFile.class);
 	}
 
 	public List<EmbeddedFile> getFilesByNote(Note note) {
+		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
 		List<EmbeddedFile> result = ClientBuilder.newClient(new ClientConfig())
-				.target(SERVER).path("/api/notes/" + note.id + "/files")
+				.target(note.collection.serverURL).path("/api/notes/" + note.id + "/files")
 				.request(APPLICATION_JSON)
 				.get(new GenericType<List<EmbeddedFile>>() {});
 		if (result == null)
@@ -167,17 +172,71 @@ public class ServerUtils {
 		return result;
 	}
 
-	public boolean isServerAvailable() {
+	public long getCollectionID(Collection collection) {
+		if (!isServerAvailableWithAlert(collection.serverURL)) return -1;
+		Collection fetchedCollection = ClientBuilder.newClient(new ClientConfig())
+				.target(collection.serverURL).path("/api/collection/title/" + collection.title)
+				.request(APPLICATION_JSON)
+				.get(Collection.class);
+		return fetchedCollection.id;
+	}
+
+	public boolean isServerAvailableWithAlert(String serverUrl) {
+		if (!isServerAvailable(serverUrl)) {
+			dialogStyler.createStyledAlert(
+					Alert.AlertType.ERROR,
+					"Server Unreachable.",
+					"Server could not be reached.",
+					"The server you tried to access is unreachable. Please try again later."
+			).showAndWait();
+
+			return false;
+		}
+		return true;
+	}
+
+	public boolean isServerAvailable(String serverUrl) {
+		if (!isValidUrl(serverUrl)) return false;
 		try {
+			if (serverUrl == null);
 			ClientBuilder.newClient(new ClientConfig()) //
-					.target(SERVER) //
+					.target(serverUrl) //
 					.request(APPLICATION_JSON) //
 					.get();
+			return true;
 		} catch (ProcessingException e) {
 			if (e.getCause() instanceof ConnectException) {
 				return false;
 			}
 		}
-		return true;
+		return false;
 	}
+
+	public boolean isValidUrl(String url) {
+		try {
+			URI uri = new URI(url);
+
+			// Ensure the scheme is either http or https
+			String scheme = uri.getScheme();
+			if (scheme == null || !(scheme.equals("http") || scheme.equals("https"))) {
+				return false;
+			}
+
+			// Ensure there is a valid host
+			String host = uri.getHost();
+			if (host == null || host.isEmpty()) {
+				return false;
+			}
+
+			// Ensure the URL is not only scheme and host (e.g., "http://")
+			if (uri.getPath() == null && uri.getQuery() == null && uri.getFragment() == null) {
+				return true; // Acceptable for cases like "http://test.com"
+			}
+
+			return true; // URL is valid
+		} catch (URISyntaxException e) {
+			return false; // Invalid URL syntax
+		}
+	}
+
 }

@@ -200,7 +200,7 @@ public class MarkdownCtrl {
             }
             String encodedFileName = uri.toASCIIString();
 
-            String fileURL = "http://localhost:8080/api/notes/" + currentNote.getId() + "/files/" + encodedFileName;
+            String fileURL = currentNote.collection.serverURL + "api/notes/" + currentNote.getId() + "/files/" + encodedFileName;
 
             result.append(String.format("![%s](%s)", altText, fileURL));
 

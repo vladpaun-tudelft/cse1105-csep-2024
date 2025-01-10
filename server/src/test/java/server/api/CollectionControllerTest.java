@@ -40,8 +40,8 @@ class CollectionControllerTest {
         collectionController = new CollectionController(noteService, collectionService);
 
 
-        collection1 = new Collection("collection1");
-        collection2 = new Collection("collection2");
+        collection1 = new Collection("collection1", "http://localhost:8080/");
+        collection2 = new Collection("collection2", "http://localhost:8080/");
 
         note1 = new Note("note1", "bla", collection1);
         note2 = new Note("note2", "bla", collection1);
@@ -64,14 +64,20 @@ class CollectionControllerTest {
 
     @Test
     public void cannotAddCollectionWithEmptyTitle() {
-        var actual = collectionController.createCollection(new Collection(""));
+        var actual = collectionController.createCollection(new Collection("", "http://localhost:8080/"));
         assertEquals(ResponseEntity.badRequest().body("A collection needs a title."), actual);
+    }
+
+    @Test
+    public void cannotAddCollectionWithEmptyServer() {
+        var actual = collectionController.createCollection(new Collection("bla bla", ""));
+        assertEquals(ResponseEntity.badRequest().body("A collection needs a serverURL."), actual);
     }
 
     @Test
     public void cannotAddDuplicateCollectionTitles() {
         collectionController.createCollection(collection1);
-        var actual = collectionController.createCollection(new Collection("collection1"));
+        var actual = collectionController.createCollection(new Collection("collection1", "http://localhost:8080/"));
         assertEquals(ResponseEntity.status(HttpStatus.CONFLICT).body("Duplicated collection title."), actual);
     }
 
@@ -205,15 +211,15 @@ class CollectionControllerTest {
         collectionController.createCollection(collection1);
         collectionController.createCollection(collection2);
 
-        var actual = collectionController.updateCollection(1, new Collection(""));
+        var actual = collectionController.updateCollection(1, new Collection("", "http://localhost:8080/"));
 
         assertEquals(ResponseEntity.badRequest().body("A collection needs a title."), actual);
 
-        var actual2 = collectionController.updateCollection(1, new Collection(null));
+        var actual2 = collectionController.updateCollection(1, new Collection(null, "http://localhost:8080/"));
 
         assertEquals(ResponseEntity.badRequest().body("A collection needs a title."), actual2);
 
-        var actual3 = collectionController.updateCollection(1, new Collection("collection2"));
+        var actual3 = collectionController.updateCollection(1, new Collection("collection2", "http://localhost:8080/"));
         assertEquals(ResponseEntity.status(HttpStatus.CONFLICT).body("Duplicated collection title"), actual3);
     }
 }
