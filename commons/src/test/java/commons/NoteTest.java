@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class NoteTest {
-    private static final Collection SOME_COLLECTION = new Collection("title");
+    private static final Collection SOME_COLLECTION = new Collection("title", "http://localhost:8080/");
 
     @Test
     public void checkConstructor() {

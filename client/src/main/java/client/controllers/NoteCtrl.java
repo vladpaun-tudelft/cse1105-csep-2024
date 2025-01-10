@@ -159,7 +159,7 @@ public class NoteCtrl {
             createPendingNotes.remove(currentNote);
         } else {
             updatePendingNotes.remove(currentNote);
-            server.deleteNote(currentNote.id);
+            server.deleteNote(currentNote);
         }
         collectionNotes.remove(currentNote);
         allNotes.remove(currentNote);

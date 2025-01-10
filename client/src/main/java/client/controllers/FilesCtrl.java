@@ -49,7 +49,7 @@ public class FilesCtrl {
         this.dialogStyler = dialogStyler;
     }
 
-    public EmbeddedFile addFile(Note currentNote) throws IOException {
+    public EmbeddedFile addFile(Note currentNote) {
         if (currentNote == null) {
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.INFORMATION,

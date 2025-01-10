@@ -17,8 +17,8 @@ import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.layout.HBox;
 import javafx.scene.web.WebView;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -95,16 +95,16 @@ public class DashboardCtrl implements Initializable {
     // Variables
     @Getter
     private Note currentNote = null;
-    @Getter
+    @Getter @Setter
     private Collection currentCollection = null;
     @Getter
     private Collection destinationCollection = null;
     @Getter
-    private List<Collection> collections;
-    @Getter
+    public List<Collection> collections;
+    @Getter @Setter
     private ObservableList<Note> allNotes;
     @Getter
-    private ObservableList<Note> collectionNotes;
+    public ObservableList<Note> collectionNotes;
 
 
     @Inject
@@ -248,25 +248,24 @@ public class DashboardCtrl implements Initializable {
     }
 
 
-    public void addCollection() throws IOException {
-        currentCollection = collectionCtrl.addCollection(currentCollection, collections);
+    @FXML
+    public void addCollection(){
+        collectionCtrl.addCollection();
+    }
+    // This overloaded method is used when you already have the collection from the editCollections stage
+    public void addCollection(Collection collection){
+        currentCollection = collectionCtrl.addInputtedCollection(collection, currentCollection, collections);
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
     }
 
-    public void moveNoteFromCollection() throws IOException {
+    public void moveNoteFromCollection(){
         currentCollection = collectionCtrl.moveNoteFromCollection(currentNote, currentCollection, destinationCollection);
         collectionCtrl.viewNotes(currentCollection, allNotes);
     }
 
-    public void changeTitleInCollection() throws IOException {
-        currentCollection = collectionCtrl.changeTitleInCollection(currentCollection, collections);
 
-    }
-
-    public void deleteCollection() throws IOException {
-        currentCollection = collectionCtrl.deleteCollection(currentCollection, collections,
-                collectionNotes, allNotes);
-        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+    public void openEditCollections() {
+        collectionCtrl.editCollections();
     }
 
     public void viewAllNotes() {
@@ -302,7 +301,30 @@ public class DashboardCtrl implements Initializable {
         clearSearch();
     }
 
-    public void addFile() throws IOException {
+    @FXML
+    public void deleteCollection() {
+        currentCollection = collectionCtrl.deleteCollection(currentCollection, collections,
+                collectionNotes, allNotes);
+        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+    }
+
+    public void conectToCollection(Collection collection) {
+        List<Note> newCollectionNotes = server.getNotesByCollection(collection);
+        collectionNotes = FXCollections.observableArrayList(newCollectionNotes);
+        allNotes.addAll(newCollectionNotes);
+        currentCollection = collection;
+
+        collections.add(collection);
+        config.writeToFile(collection);
+
+        // add entry in collections menu
+        RadioMenuItem radioMenuItem = createCollectionButton(collection, collectionMenu, collectionSelect);
+        collectionSelect.selectToggle(radioMenuItem);
+
+        collectionCtrl.viewNotes(currentCollection, allNotes);
+    }
+
+    public void addFile(){
         // Make sure notes are saved on the server
         noteCtrl.saveAllPendingNotes();
         EmbeddedFile newFile = filesCtrl.addFile(currentNote);

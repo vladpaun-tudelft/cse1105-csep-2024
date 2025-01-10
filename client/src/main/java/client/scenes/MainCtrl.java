@@ -25,7 +25,6 @@ public class MainCtrl {
 
     private Stage primaryStage;
 
-
     private DashboardCtrl dashboardCtrl;
     private Scene dashboard;
 

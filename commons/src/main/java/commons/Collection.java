@@ -27,10 +27,9 @@ public class Collection {
     @Column(unique = true, nullable = false)
     public String title;
 
-    // Refined the annotation here.
-    //  mapped by specifies the field in the child entity (Note) that maps the relationship.
-    // we can just use cascadeType.ALL for all the cascading types.
-    // with orphanRemoval, if a Note is removed from a collection, it is deleted from the database.
+    @Column(nullable = false)
+    public String serverURL;
+
     @OneToMany(mappedBy = "collection",cascade = CascadeType.ALL, orphanRemoval = true)
     public Set<Note> notes;
 
@@ -38,8 +37,9 @@ public class Collection {
     private Collection() {
     }
 
-    public Collection(String title) {
+    public Collection(String title, String serverURL) {
         this.title = title;
+        this.serverURL = serverURL;
         this.notes = new HashSet<>();
     }
 

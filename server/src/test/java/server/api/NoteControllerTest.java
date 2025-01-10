@@ -47,8 +47,8 @@ class NoteControllerTest {
         collectionController = new CollectionController(noteService, collectionService);
 
 
-        collection1 = new Collection("collection1");
-        collection2 = new Collection("collection2");
+        collection1 = new Collection("collection1", "http://localhost:8080/");
+        collection2 = new Collection("collection2", "http://localhost:8080/");
 
         note1 = new Note("note1", "bla", collection1);
         note2 = new Note("note2", "bla", collection1);
