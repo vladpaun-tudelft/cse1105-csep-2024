@@ -164,7 +164,7 @@ public class CollectionCtrl {
                         Note currentNote = dashboardCtrl.getCurrentNote();
                         try {
                             moveNoteFromCollection(currentNote, dashboardCtrl.getCurrentCollection(), selectedCollection);
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
                         collectionSelect.selectToggle(item);
@@ -351,28 +351,6 @@ public class CollectionCtrl {
                 "Delete collection",
                 "Are you sure you want to delete this collection? All notes in the collection will be deleted as well."
         ).showAndWait().filter(b -> b == ButtonType.OK).isPresent();
-    }
-
-    public void editCollections() {
-        try {
-            // Load the FXML file
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/client/scenes/EditCollections.fxml"));
-            Parent root = fxmlLoader.load();
-
-            // Create a new stage for the popup window
-            Stage stage = new Stage();
-            stage.setTitle("Edit Collections");
-
-            // Set the scene with the loaded FXML root
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-
-            // Show the new window
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            // Handle the exception as needed
-        }
     }
 
     /**
