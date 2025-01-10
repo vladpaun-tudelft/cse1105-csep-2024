@@ -1,7 +1,6 @@
 package client.controllers;
 
 import com.google.inject.Inject;
-import com.sun.source.tree.Tree;
 import commons.Collection;
 import commons.Note;
 import javafx.collections.FXCollections;
