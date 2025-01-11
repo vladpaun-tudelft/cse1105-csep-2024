@@ -119,7 +119,7 @@ public class CustomTreeCell extends TreeCell<Object> {
             Collection collection = (Collection) getItem();
             if (collection != null && !collection.equals(dashboardCtrl.getDefaultCollection())) {
                 dashboardCtrl.setDefaultCollection(collection);
-                dashboardCtrl.refresh();
+                dashboardCtrl.refreshTreeView();
             }
         });
     }
@@ -135,6 +135,8 @@ public class CustomTreeCell extends TreeCell<Object> {
             updateNoteItem(note);
         } else if (item instanceof Collection collection) {
             updateCollectionItem(collection);
+        } else {
+            setText(item.toString());
         }
     }
 
@@ -178,7 +180,7 @@ public class CustomTreeCell extends TreeCell<Object> {
             favouriteButton.getStyleClass().remove("default_collection_icon");
         }
 
-        collectionTitleLabel.maxWidthProperty().bind(dashboardCtrl.allNotesView.widthProperty().subtract(40));
+        collectionTitleLabel.maxWidthProperty().bind(dashboardCtrl.allNotesView.widthProperty().subtract(60));
 
         setGraphic(collectionHBox);
     }

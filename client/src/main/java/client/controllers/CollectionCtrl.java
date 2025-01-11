@@ -158,20 +158,20 @@ public class CollectionCtrl {
         listView.setOnMouseClicked(event -> {
             Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
             for (Toggle toggle : collectionSelect.getToggles()) {
-                if (toggle instanceof RadioMenuItem) {
-                    RadioMenuItem item = (RadioMenuItem) toggle;
+                if (toggle instanceof RadioMenuItem item) {
                     if (item.getText().equals(selectedCollection.title)) {
                         Note currentNote = dashboardCtrl.getCurrentNote();
-                        moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
-                        collectionSelect.selectToggle(item);
+
                         if(dashboardCtrl.getCurrentCollection() != null ) {
                             item.fire();   // If not in all note view
                             dashboardCtrl.collectionView.getSelectionModel().select(currentNote);
                         }
                         else {
-                            dashboardCtrl.treeViewSetup();                             // else update all note view
-                            dashboardCtrl.selectNoteInTreeView(currentNote);
+                            dashboardCtrl.moveNoteInTreeView(currentNote, selectedCollection);
                         }
+
+                        moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
+                        collectionSelect.selectToggle(item);
                         moveNotesButton.hide();
                         break;
                     }
@@ -293,7 +293,6 @@ public class CollectionCtrl {
             currentCollectionTitle.setText("All Notes");
             collectionView.setVisible(false);
             treeView.setVisible(true);
-            dashboardCtrl.treeViewSetup();
             collectionView.getSelectionModel().clearSelection();
         } else {
             collectionNotes = FXCollections.observableArrayList(

@@ -97,9 +97,6 @@ public class NoteCtrl {
             collectionView.getSelectionModel().select(collectionNotes.size() - 1);
             collectionView.getFocusModel().focus(collectionNotes.size() - 1);
             collectionView.edit(collectionNotes.size() - 1);
-        }else {
-            dashboardCtrl.treeViewSetup();
-            dashboardCtrl.selectNoteInTreeView(newNote);
         }
 
         noteTitle.setText(newTitle);
@@ -110,6 +107,8 @@ public class NoteCtrl {
 
     public void showCurrentNote(Note selectedNote) {
         if (selectedNote == null) return;
+
+        moveNotesButton.setText(selectedNote.collection.title);
 
         noteTitle.setText(selectedNote.title);
         noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
@@ -150,7 +149,6 @@ public class NoteCtrl {
                 collectionView.getSelectionModel().clearSelection();
                 noteBody.clear();
             }
-            dashboardCtrl.treeViewSetup();
         }
     }
 

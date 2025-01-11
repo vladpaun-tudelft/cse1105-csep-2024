@@ -493,6 +493,6 @@ public class EditCollectionsCtrl implements Initializable {
     }
 
     public void refreshTreeView() {
-        Platform.runLater(() -> dashboardCtrl.treeViewSetup());
+        Platform.runLater(() -> dashboardCtrl.refreshTreeView());
     }
 }
