@@ -1,8 +1,8 @@
 package client.scenes;
 
 import client.controllers.*;
+import client.ui.CustomTreeCell;
 import client.ui.NoteListItem;
-import client.ui.NoteTreeItem;
 import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
@@ -235,22 +235,23 @@ public class DashboardCtrl implements Initializable {
 
     public void treeViewSetup() {
         // Create a virtual root item (you can use this if you don't want the root to be visible)
-        TreeItem<Note> virtualRoot = new TreeItem<>(null);
+        TreeItem<Object> virtualRoot = new TreeItem<>(null);
         virtualRoot.setExpanded(true); // Optional: if you want the root to be expanded by default
 
         // Populate TreeView with TreeItems for each Note
         for (Collection collection : collections) {
-            TreeItem<Note> collectionItem = new TreeItem<>(new Note(collection.title, null, collection));
+            TreeItem<Object> collectionItem = new TreeItem<>(collection);
             List<Note> collectionNotes = allNotes.stream().filter(n -> n.collection.equals(collection)).toList();
-            if(collectionNotes.size() > 0) {
-                for(Note note : collectionNotes) {
-                    TreeItem<Note> noteItem = new TreeItem<>(note);
+            if (!collectionNotes.isEmpty()) {
+                for (Note note : collectionNotes) {
+                    TreeItem<Object> noteItem = new TreeItem<>(note);
                     collectionItem.getChildren().add(noteItem);
                 }
-                virtualRoot.getChildren().add(collectionItem);
-                collectionItem.setExpanded(true);
-
+            } else {
+                collectionItem.getChildren().add(null);
             }
+
+            virtualRoot.getChildren().add(collectionItem);
         }
 
         allNotesView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -274,28 +275,31 @@ public class DashboardCtrl implements Initializable {
         allNotesView.setShowRoot(false); // To hide the root item if it's just a container
 
         // Set custom TreeCell factory for NoteTreeItem
-        allNotesView.setCellFactory(param -> new NoteTreeItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl));
+        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
 
     }
 
     public void selectNoteInTreeView(Note targetNote) {
         // Call the helper method to find and select the item
-        TreeItem<Note> itemToSelect = findItem(allNotesView.getRoot(), targetNote);
+        TreeItem<Object> itemToSelect = findItem(allNotesView.getRoot(), targetNote);
         if (itemToSelect != null) {
             // Select the TreeItem
             allNotesView.getSelectionModel().select(itemToSelect);
         }
     }
 
-    private TreeItem<Note> findItem(TreeItem<Note> currentItem, Note targetNote) {
+    private TreeItem<Object> findItem(TreeItem<Object> currentItem, Note targetNote) {
         // Check if the current item matches the target note
-        if (currentItem.getValue() != null && currentItem.getValue().equals(targetNote)) {
-            return currentItem; // Found the matching item
+        if (currentItem.getValue() != null){
+            if (currentItem.getValue() instanceof Note note && note.title.equals(targetNote.title)) {
+                return currentItem;
+            }
+
         }
 
         // Recursively check children of the current item
-        for (TreeItem<Note> child : currentItem.getChildren()) {
-            TreeItem<Note> result = findItem(child, targetNote);
+        for (TreeItem<Object> child : currentItem.getChildren()) {
+            TreeItem<Object> result = findItem(child, targetNote);
             if (result != null) {
                 return result; // Found in child subtree
             }
@@ -377,6 +381,7 @@ public class DashboardCtrl implements Initializable {
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
         filesCtrl.showFiles(currentNote);
         clearSearch();
+        allNotesView.requestFocus();
     }
 
     @FXML

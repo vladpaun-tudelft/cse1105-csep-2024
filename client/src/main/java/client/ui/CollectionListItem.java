@@ -91,6 +91,7 @@ public class CollectionListItem extends ListCell<Collection> {
             }
 
             collectionTitle.maxWidthProperty().bind(controller.listView.widthProperty().subtract(10));
+            controller.refreshTreeView();
         }
         // Set the cell content
         setGraphic(hBox);
