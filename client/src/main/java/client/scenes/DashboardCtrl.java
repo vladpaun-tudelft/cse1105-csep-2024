@@ -66,7 +66,7 @@ public class DashboardCtrl implements Initializable {
     @FXML
     public TreeView allNotesView;
     @FXML
-    private Button addButton;
+    @Getter Button addButton;
     @FXML
     private Label noteTitleMD;
     @FXML

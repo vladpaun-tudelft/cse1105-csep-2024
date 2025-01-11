@@ -273,6 +273,10 @@ public class CollectionCtrl {
                 .findFirst().orElse(null);
         dashboardCtrl.setDefaultCollection(defaultCollection);
 
+        if (defaultCollection == null) {
+            dashboardCtrl.getAddButton().setDisable(true);
+        }
+
         for (Collection c : collections) {
             dashboardCtrl.createCollectionButton(c, collectionMenu, collectionSelect);
         }
@@ -376,6 +380,12 @@ public class CollectionCtrl {
             addedCollection = server.addCollection(inputtedCollection);
             if (addedCollection == null) return currentCollection;
             config.writeToFile(addedCollection);
+            if (dashboardCtrl.getDefaultCollection() == null) {
+                dashboardCtrl.setDefaultCollection(addedCollection);
+                config.setDefaultCollection(addedCollection);
+                dashboardCtrl.getAddButton().setDisable(false);
+            }
+
             collections.add(addedCollection);
         } catch (ClientErrorException e) {
             Alert alert = dialogStyler.createStyledAlert(
