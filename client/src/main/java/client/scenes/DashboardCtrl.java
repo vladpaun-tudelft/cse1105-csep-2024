@@ -78,8 +78,6 @@ public class DashboardCtrl implements Initializable {
     @FXML
     private MenuButton currentCollectionTitle;
     @FXML
-    private Menu collectionMenu;
-    @FXML
     private MenuItem allNotesButton;
     @FXML
     private ToggleGroup collectionSelect;
@@ -151,7 +149,6 @@ public class DashboardCtrl implements Initializable {
         collectionCtrl.setReferences(collectionView,
                 allNotesView,
                 currentCollectionTitle,
-                collectionMenu,
                 collectionSelect,
                 allNotesButton,
                 editCollectionTitle,
@@ -383,6 +380,7 @@ public class DashboardCtrl implements Initializable {
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
         filesCtrl.showFiles(currentNote);
+        viewAllNotes();
         clearSearch();
     }
 
@@ -403,7 +401,8 @@ public class DashboardCtrl implements Initializable {
         config.writeToFile(collection);
 
         // add entry in collections menu
-        RadioMenuItem radioMenuItem = createCollectionButton(collection, collectionMenu, collectionSelect);
+        //right now in createCollectionButton they are not added to any menu
+        RadioMenuItem radioMenuItem = createCollectionButton(collection, currentCollectionTitle, collectionSelect);
         collectionSelect.selectToggle(radioMenuItem);
 
         collectionCtrl.viewNotes(currentCollection, allNotes);
@@ -430,14 +429,15 @@ public class DashboardCtrl implements Initializable {
         scheduler.shutdown();
     }
 
-    public RadioMenuItem createCollectionButton(Collection c, Menu collectionMenu, ToggleGroup collectionSelect) {
+    public RadioMenuItem createCollectionButton(Collection c, MenuButton currentCollectionTitle, ToggleGroup collectionSelect) {
         RadioMenuItem radioMenuItem = new RadioMenuItem(c.title);
         radioMenuItem.setOnAction(event -> {
             currentCollection = c;
             collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
         });
         radioMenuItem.setToggleGroup(collectionSelect);
-        collectionMenu.getItems().addFirst(radioMenuItem);
+        //here they are not added
+        //currentCollectionTitle.getItems().addFirst(radioMenuItem);
         return radioMenuItem;
     }
 

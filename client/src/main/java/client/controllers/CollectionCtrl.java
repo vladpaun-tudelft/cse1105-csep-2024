@@ -43,7 +43,6 @@ public class CollectionCtrl {
     private ListView collectionView;
     private TreeView treeView;
     private MenuButton currentCollectionTitle;
-    private Menu collectionMenu;
     private ToggleGroup collectionSelect;
     private MenuItem allNotesButton;
     private MenuItem editCollectionTitle;
@@ -65,7 +64,6 @@ public class CollectionCtrl {
     public void setReferences(ListView collectionView,
                               TreeView treeView,
                               MenuButton currentCollectionTitle,
-                              Menu collectionMenu,
                               ToggleGroup collectionSelect,
                               MenuItem allNotesButton,
                               MenuItem editCollectionTitle,
@@ -74,12 +72,11 @@ public class CollectionCtrl {
         this.collectionView = collectionView;
         this.treeView = treeView;
         this.currentCollectionTitle = currentCollectionTitle;
-        this.collectionMenu = collectionMenu;
-        this.collectionSelect = collectionSelect;
         this.allNotesButton = allNotesButton;
         this.editCollectionTitle = editCollectionTitle;
         this.deleteCollectionButton = deleteCollectionButton;
         this.moveNotesButton = moveNotesButton;
+        this.collectionSelect = new ToggleGroup();
     }
     /**
      * method used for selecting and switching the collection
@@ -97,14 +94,17 @@ public class CollectionCtrl {
         //switching to collection
         listView.setOnMouseClicked(event -> {
             Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
-            for (Toggle toggle : collectionSelect.getToggles()) {
-                if (toggle instanceof RadioMenuItem) {
-                    RadioMenuItem item = (RadioMenuItem) toggle;
-                    if (item.getText().equals(selectedCollection.title)) {
-                        collectionSelect.selectToggle(item);
-                        item.fire();
-                        currentCollectionTitle.hide();
-                        break;
+            // Check if collectionSelect is not null
+            if (collectionSelect != null) {
+                for (Toggle toggle : collectionSelect.getToggles()) {
+                    if (toggle instanceof RadioMenuItem) {
+                        RadioMenuItem item = (RadioMenuItem) toggle;
+                        if (item.getText().equals(selectedCollection.title)) {
+                            collectionSelect.selectToggle(item);
+                            item.fire();
+                            currentCollectionTitle.hide();
+                            break;
+                        }
                     }
                 }
             }
@@ -118,8 +118,14 @@ public class CollectionCtrl {
      * @param collections collections
      */
     private void listViewDisplayOnlyTitles(ListView<Collection> listView, ObservableList<Collection> collections) {
-        ObservableList<Collection> filteredCollections = collections.filtered(collection -> !collection.equals(dashboardCtrl.getCurrentCollection()));
-
+        ObservableList<Collection> filteredCollections = FXCollections.observableArrayList(
+                collections.stream()
+                        .filter(collection -> !collection.equals(dashboardCtrl.getCurrentCollection()))
+                        .toList()
+        );
+        if(dashboardCtrl.getCurrentNote() != null) {
+            filteredCollections.remove(dashboardCtrl.getCurrentNote().collection);
+        }
         listView.setItems(filteredCollections);
         listView.setFixedCellSize(35);
         listView.getStyleClass().add("collection-list-view");
@@ -133,6 +139,7 @@ public class CollectionCtrl {
                 if (empty || filteredCollection == null) {
                     setText(null);
                 } else {
+
                     Label label = new Label(filteredCollection.title);
                     label.maxWidthProperty().bind(listView.widthProperty().subtract(10)); // Set maximum width in pixels
                     label.setTextOverrun(OverrunStyle.ELLIPSIS); // Set overrun to ellipsis
@@ -276,7 +283,7 @@ public class CollectionCtrl {
         collections = config.readFromFile();
 
         for (Collection c : collections) {
-            dashboardCtrl.createCollectionButton(c, collectionMenu, collectionSelect);
+            dashboardCtrl.createCollectionButton(c, currentCollectionTitle, collectionSelect);
         }
         return collections;
     }
@@ -332,9 +339,9 @@ public class CollectionCtrl {
 
         config.writeAllToFile(collections);
         // delete collection from collections menu
-        collectionMenu.getItems().remove(
-                collectionSelect.getSelectedToggle()
-        );
+        //currentCollectionTitle.getItems().remove(
+//.getSelectedToggle()
+        //);
         return null;
     }
 
@@ -390,7 +397,7 @@ public class CollectionCtrl {
         }
 
         // add entry in collections menu
-        RadioMenuItem radioMenuItem = dashboardCtrl.createCollectionButton(addedCollection, collectionMenu, collectionSelect);
+        RadioMenuItem radioMenuItem = dashboardCtrl.createCollectionButton(addedCollection, currentCollectionTitle, collectionSelect);
         collectionSelect.selectToggle(radioMenuItem);
 
         return addedCollection;
