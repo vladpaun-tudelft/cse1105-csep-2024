@@ -396,7 +396,6 @@ public class DashboardCtrl implements Initializable {
     }
     public void clearSearch() {
         searchCtrl.setSearchIsActive(false, collectionNotes);
-        searchCtrl.resetSearch(allNotes);
         refreshTreeView();
     }
 
