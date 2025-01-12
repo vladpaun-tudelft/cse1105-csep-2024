@@ -15,6 +15,7 @@
  */
 package client.scenes;
 
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -76,8 +77,8 @@ public class MainCtrl {
                 }
 
                 case ESCAPE -> {
-                    dashboardCtrl.setSearchIsActive(false);
-                    dashboardCtrl.getSearchField().requestFocus();
+                    dashboardCtrl.clearSearch();
+                    Platform.runLater(() -> {dashboardCtrl.getSearchField().requestFocus();});
                 }
 
                 //FULLSCREEN

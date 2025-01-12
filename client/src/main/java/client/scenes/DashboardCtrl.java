@@ -257,24 +257,22 @@ public class DashboardCtrl implements Initializable {
      * This method populates a treeItem root with the collections and notes in the app.
      * @param virtualRoot the root we want to populate
      */
-    public void populateTreeView(TreeItem<Object> virtualRoot) {
+    public void populateTreeView(TreeItem<Object> virtualRoot, List<Collection> filteredCollections, List<Note> filteredNotes, boolean expanded) {
         // Map each collection to its TreeItem
         Map<Collection, TreeItem<Object>> collectionItems = new HashMap<>();
         TreeItem<Object> noNotesItem = new TreeItem<>(" - no notes in collection.");
 
-        // Initialize TreeView with current data
-        for (Collection collection : collections) {
+        // Initialize TreeView with filtered data
+        for (Collection collection : filteredCollections) {
             TreeItem<Object> collectionItem = new TreeItem<>(collection);
             collectionItems.put(collection, collectionItem);
             virtualRoot.getChildren().add(collectionItem);
             collectionItem.getChildren().add(noNotesItem);
-
-            // Eh, idk
-            // collectionItem.setExpanded(true);
+            collectionItem.setExpanded(expanded);
         }
 
-        // Populate TreeItems with existing notes in allNotes
-        for (Note note : allNotes) {
+        // Populate TreeItems with existing notes in filteredNotes
+        for (Note note : filteredNotes) {
             TreeItem<Object> collectionItem = collectionItems.get(note.collection);
             if (collectionItem != null) {
                 TreeItem<Object> noteItem = new TreeItem<>(note);
@@ -284,18 +282,26 @@ public class DashboardCtrl implements Initializable {
                 collectionItem.getChildren().add(noteItem);
             }
         }
-
+    }
+    public void populateTreeView(TreeItem<Object> virtualRoot) {
+        populateTreeView(virtualRoot, collections, allNotes, false);
     }
 
     /**
      * This method refreshes the treeView
      * Any new, changed, or deleted items will be reflected in the tree view after this methood
      */
-    public void refreshTreeView() {
-        allNotesView.getRoot().getChildren().clear();
-        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
-        populateTreeView(allNotesView.getRoot());
+    public void refreshTreeView(List<Collection> filteredCollections, List<Note> filteredNotes, boolean expanded) {
+        TreeItem<Object> virtualRoot = new TreeItem<>(null);
+        virtualRoot.setExpanded(true);
+        populateTreeView(virtualRoot, filteredCollections, filteredNotes, expanded);
+        allNotesView.setRoot(virtualRoot);
+        allNotesView.setShowRoot(false);
     }
+    public void refreshTreeView() {
+        refreshTreeView(collections, allNotes, false);
+    }
+
 
     /**
      * This method is used to pars through and select a note from the tree view
@@ -383,7 +389,7 @@ public class DashboardCtrl implements Initializable {
 
     public void search() {
         searchCtrl.search(collectionNotes);
-        searchCtrl.searchInTreeView(allNotesView, allNotes, collections);
+        searchCtrl.searchInTreeView(this, allNotes, collections);
     }
     public void setSearchIsActive(boolean b) {
         searchCtrl.setSearchIsActive(b, collectionNotes);
