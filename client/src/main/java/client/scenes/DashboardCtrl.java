@@ -24,10 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -47,55 +44,34 @@ public class DashboardCtrl implements Initializable {
 
     // Controllers
     @Inject
-    private final MarkdownCtrl markdownCtrl;
+    @Getter private final MarkdownCtrl markdownCtrl;
     private final CollectionCtrl collectionCtrl;
-    private final NoteCtrl noteCtrl;
+    @Getter private final NoteCtrl noteCtrl;
     private final SearchCtrl searchCtrl;
-    private final FilesCtrl filesCtrl;
+    @Getter private final FilesCtrl filesCtrl;
 
     // FXML Components
-    @FXML
-    private Label contentBlocker;
-    @FXML
-    @Getter private TextArea noteBody;
-    @FXML
-    private WebView markdownView;
-    @FXML
-    private Label markdownViewBlocker;
-    @FXML
-    private Label noteTitle;
-    @FXML
-    public ListView collectionView;
-    @FXML
-    public TreeView allNotesView;
-    @FXML
-    @Getter Button addButton;
-    @FXML
-    private Label noteTitleMD;
-    @FXML
-    private Button deleteButton;
-    @FXML
-    private Button clearSearchButton;
-    @FXML
-    private TextField searchField;
-    @FXML
-    private MenuButton currentCollectionTitle;
-    @FXML
-    private MenuItem allNotesButton;
-    @FXML
-    private ToggleGroup collectionSelect;
-    @FXML
-    private Button deleteCollectionButton;
-    @FXML
-    private MenuItem editCollectionTitle;
-    @FXML
-    private MenuButton moveNotesButton;
-    @FXML
-    private Button addFileButton;
-    @FXML
-    private HBox filesView;
-    @FXML
-    private Label filesViewBlocker;
+    @FXML private Label contentBlocker;
+    @FXML @Getter private TextArea noteBody;
+    @FXML private WebView markdownView;
+    @FXML private Label markdownViewBlocker;
+    @FXML private Label noteTitle;
+    @FXML public ListView collectionView;
+    @FXML public TreeView allNotesView;
+    @FXML @Getter Button addButton;
+    @FXML private Label noteTitleMD;
+    @FXML private Button deleteButton;
+    @FXML private Button clearSearchButton;
+    @FXML @Getter private TextField searchField;
+    @FXML private MenuButton currentCollectionTitle;
+    @FXML private MenuItem allNotesButton;
+    @FXML private ToggleGroup collectionSelect;
+    @FXML private Button deleteCollectionButton;
+    @FXML private MenuItem editCollectionTitle;
+    @FXML private MenuButton moveNotesButton;
+    @FXML private Button addFileButton;
+    @FXML private HBox filesView;
+    @FXML private Label filesViewBlocker;
 
 
     // Variables
@@ -393,18 +369,6 @@ public class DashboardCtrl implements Initializable {
         return null; // If no match is found
     }
 
-    public FilesCtrl getFilesCtrl() {
-        return this.filesCtrl;
-    }
-
-    public MarkdownCtrl getMarkdownCtrl() {
-        return this.markdownCtrl;
-    }
-
-    public NoteCtrl getNoteCtrl() {
-        return this.noteCtrl;
-    }
-
     public void addNote() {
         setSearchIsActive(false);
         noteCtrl.addNote(currentCollection,
@@ -498,10 +462,6 @@ public class DashboardCtrl implements Initializable {
         }
     }
 
-    public Note getCurrentNote() {
-        return currentNote;
-    }
-
     // Temporary solution
     @FXML
     public void onClose() {
@@ -521,4 +481,139 @@ public class DashboardCtrl implements Initializable {
         //currentCollectionTitle.getItems().addFirst(radioMenuItem);
         return radioMenuItem;
     }
+
+    // ----------------------- HCI - Keyboard shortcuts -----------------------
+
+    /**
+     * CTRL + RIGHT ARROW - cycles through collections
+     */
+    public void selectNextCollection() {
+        if (currentCollection == null) {
+            currentCollection = collections.getFirst();
+        } else {
+            if (collections.indexOf(currentCollection) == collections.size() - 1) {
+                currentCollection = null;
+            } else {
+                currentCollection = collections.get(collections.indexOf(currentCollection) + 1);
+            }
+        }
+        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+    }
+
+    /**
+     * CTRL + LEFT ARROW - cycles through collections
+     */
+    public void selectPreviousCollection() {
+        if (currentCollection == null) {
+            currentCollection = collections.getLast();
+        } else {
+            if (collections.indexOf(currentCollection) == 0) {
+                currentCollection = null;
+            } else {
+                currentCollection = collections.get(collections.indexOf(currentCollection) - 1);
+            }
+        }
+        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+    }
+
+    /**
+     * CTRL + DOWN ARROW - cycles through notes
+     */
+    public void selectNextNote() {
+        selectNoteInDirection(1); // Direction 1 for "next"
+    }
+
+    /**
+     * CTRL + UP ARROW - cycles through notes
+     */
+    public void selectPreviousNote() {
+        selectNoteInDirection(-1); // Direction -1 for "previous"
+    }
+
+
+    // ----------------------- HCI - Helper methods -----------------------
+
+    private void selectNoteInDirection(int direction) {
+        if (currentCollection == null) {
+            TreeItem<Object> root = allNotesView.getRoot();
+            if (root == null || root.getChildren().isEmpty()) {
+                return; // No items in the TreeView, do nothing
+            }
+
+            TreeItem<Object> selectedItem = (TreeItem<Object>) allNotesView.getSelectionModel().getSelectedItem();
+            TreeItem<Object> nextItem;
+
+            if (selectedItem == null) {
+                // No item selected, select the first valid item
+                nextItem = findFirstValidItem(root);
+            } else {
+                // Find the next or previous valid item
+                nextItem = findValidItemInDirection(root, selectedItem, direction);
+            }
+
+            if (nextItem != null) {
+                allNotesView.getSelectionModel().select(nextItem);
+
+                // If the selected item is of type Note, set it as the current note and show it
+                if (nextItem.getValue() instanceof Note note) {
+                    currentNote = note;
+                    noteCtrl.showCurrentNote(currentNote);
+                }
+            }
+        } else {
+            // Collection-specific behavior
+            if (currentNote == null) {
+                currentNote = (direction > 0) ? collectionNotes.getFirst() : collectionNotes.getLast();
+            } else {
+                int currentIndex = collectionNotes.indexOf(currentNote);
+                int nextIndex = (currentIndex + direction + collectionNotes.size()) % collectionNotes.size();
+                currentNote = collectionNotes.get(nextIndex);
+            }
+            collectionView.getSelectionModel().select(currentNote);
+            noteCtrl.showCurrentNote(currentNote);
+        }
+    }
+
+    private TreeItem<Object> findFirstValidItem(TreeItem<Object> root) {
+        for (TreeItem<Object> child : flattenTree(root)) {
+            if (child.getValue() instanceof Note) {
+                return child;
+            }
+        }
+        return null; // No valid items found
+    }
+
+    private TreeItem<Object> findValidItemInDirection(TreeItem<Object> root, TreeItem<Object> currentItem, int direction) {
+        List<TreeItem<Object>> flatList = flattenTree(root);
+
+        // Find the index of the currently selected item
+        int currentIndex = flatList.indexOf(currentItem);
+
+        // Traverse the list in the specified direction
+        for (int i = 1; i <= flatList.size(); i++) {
+            int nextIndex = (currentIndex + (i * direction) + flatList.size()) % flatList.size();
+            TreeItem<Object> nextItem = flatList.get(nextIndex);
+            if (nextItem.getValue() instanceof Note) {
+                return nextItem;
+            }
+        }
+
+        return null; // No valid items found
+    }
+
+    private List<TreeItem<Object>> flattenTree(TreeItem<Object> root) {
+        List<TreeItem<Object>> items = new ArrayList<>();
+        flattenTreeRecursive(root, items);
+        return items;
+    }
+
+    private void flattenTreeRecursive(TreeItem<Object> node, List<TreeItem<Object>> items) {
+        if (node.getValue() != null) {
+            items.add(node);
+        }
+        for (TreeItem<Object> child : node.getChildren()) {
+            flattenTreeRecursive(child, items);
+        }
+    }
+
 }

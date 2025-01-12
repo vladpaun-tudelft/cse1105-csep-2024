@@ -36,23 +36,62 @@ public class MainCtrl {
         this.dashboardCtrl = dashboard.getKey();
         this.dashboard = new Scene(dashboard.getValue());
         this.dashboard.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+
+        configureKeyboardShortcuts();
+
+        showDashboard();
+        primaryStage.show();
+    }
+
+    /**
+     * Configures various keyboard shortcuts used in the dashboard
+     */
+    private void configureKeyboardShortcuts() {
         this.dashboard.setOnKeyPressed(event -> {
             switch (event.getCode()) {
+
+                // NAVIGATION
+                case  RIGHT -> {
+                    if (event.isAltDown()) dashboardCtrl.selectNextCollection();
+                }
+                case LEFT -> {
+                    if (event.isAltDown()) dashboardCtrl.selectPreviousCollection();
+                }
+                case DOWN -> {
+                    if (event.isAltDown()) dashboardCtrl.selectNextNote();
+                }
+                case UP -> {
+                    if (event.isAltDown()) dashboardCtrl.selectPreviousNote();
+                }
+
+                // ADDING NOTES AND COLLECTIONS
+                case N -> {
+                    if (event.isControlDown()) {
+                        if (event.isShiftDown()) {
+                            dashboardCtrl.addCollection();
+                        } else {
+                            dashboardCtrl.addNote();
+                        }
+                    }
+                }
+
+                case ESCAPE -> {
+                    dashboardCtrl.setSearchIsActive(false);
+                    dashboardCtrl.getSearchField().requestFocus();
+                }
+
+                //FULLSCREEN
                 case F11 -> primaryStage.setFullScreen(!primaryStage.isFullScreen());
                 case ENTER -> {
                     if (event.isAltDown()) {
                         primaryStage.setFullScreen(!primaryStage.isFullScreen());
                     }
                 }
-                case ESCAPE -> {
-                    dashboardCtrl.setSearchIsActive(false);
-                }
+
                 default -> {}
             }
+            event.consume();
         });
-
-        showDashboard();
-        primaryStage.show();
     }
 
     /**
