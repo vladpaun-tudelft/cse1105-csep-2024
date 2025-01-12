@@ -103,7 +103,12 @@
 			<version>4.0.0-M1</version>
 		</dependency>
 
-
+		<!-- Web socket -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+			<version>3.3.5</version>
+		</dependency>
 
 		<!-- test -->
 		<dependency>

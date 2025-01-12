@@ -295,9 +295,11 @@ public class CollectionCtrl {
             dashboardCtrl.treeViewSetup();
             collectionView.getSelectionModel().clearSelection();
         } else {
+            server.getWebSocketURL(currentCollection.serverURL);
             collectionNotes = FXCollections.observableArrayList(
                     allNotes.stream()
                             .filter(note -> note.collection.equals(currentCollection))
+                            .distinct()
                             .collect(Collectors.toList())
             );
             currentCollectionTitle.setText(currentCollection.title);
@@ -419,7 +421,6 @@ public class CollectionCtrl {
         controller.addCollection();
 
         popupStage.showAndWait();
-
     }
 
     public void editCollections() {

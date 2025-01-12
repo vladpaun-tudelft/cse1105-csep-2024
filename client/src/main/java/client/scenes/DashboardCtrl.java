@@ -9,6 +9,7 @@ import com.google.inject.Inject;
 import commons.Collection;
 import commons.EmbeddedFile;
 import commons.Note;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
@@ -23,8 +24,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -110,7 +113,6 @@ public class DashboardCtrl implements Initializable {
     private ObservableList<Note> allNotes;
     @Getter
     public ObservableList<Note> collectionNotes;
-
 
     @Inject
     public DashboardCtrl(ServerUtils server,
@@ -204,6 +206,26 @@ public class DashboardCtrl implements Initializable {
         // Temporary solution
         scheduler.scheduleAtFixedRate(() -> noteCtrl.saveAllPendingNotes(),
                 10,10, TimeUnit.SECONDS);
+
+        // For note addition sync
+        server.registerForMessages("/topic/notes", Note.class, note -> {
+            Platform.runLater(() -> {
+                noteCtrl.updateViewAfterAdd(currentCollection, collectionNotes, allNotes, note);
+                if (currentCollection != null) {
+                    collectionCtrl.viewNotes(currentCollection, allNotes);
+                }
+            });
+        });
+
+        // For note deletion sync
+        server.registerForMessages("/topic/notes/delete", Note.class, note -> {
+            Platform.runLater(() -> {
+                noteCtrl.updateAfterDelete(note, collectionNotes, allNotes);
+                if (currentCollection != null) {
+                    collectionCtrl.viewNotes(currentCollection, allNotes);
+                }
+            });
+        });
     }
 
     /**

@@ -37,7 +37,6 @@ public class NoteCtrl {
     private MenuButton moveNotesButton;
 
     // Variables
-    public List<Note> createPendingNotes = new ArrayList<>();
     public List<Note> updatePendingNotes = new ArrayList<>();
     private long tempNoteId = -1;
 
@@ -91,20 +90,14 @@ public class NoteCtrl {
 
         newNote.title = newTitle;
         newNote.id = this.tempNoteId--;
-        allNotes.add(newNote);
 
-
-
-        // Add the new note to a list of notes pending being sent to the server
-        createPendingNotes.add(newNote);
+        server.send("/app/notes", newNote);
 
         if (currentCollection != null) {
-            collectionNotes.add(newNote);
             collectionView.getSelectionModel().select(collectionNotes.size() - 1);
             collectionView.getFocusModel().focus(collectionNotes.size() - 1);
             collectionView.edit(collectionNotes.size() - 1);
         }else {
-            dashboardCtrl.treeViewSetup();
             dashboardCtrl.selectNoteInTreeView(newNote);
         }
 
@@ -112,8 +105,15 @@ public class NoteCtrl {
         noteTitleMd.setText(newTitle);
 
         noteBody.setText("");
+    }
 
-
+    public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> collectionNotes, ObservableList<Note> allNotes, Note note) {
+        if (!allNotes.contains(note)) {
+            allNotes.add(note);
+        }
+        if (currentCollection == null) {
+            dashboardCtrl.treeViewSetup();
+        }
     }
 
     public void showCurrentNote(Note selectedNote) {
@@ -165,24 +165,27 @@ public class NoteCtrl {
     public void deleteNote(Note currentNote,
                            ObservableList<Note> collectionNotes,
                            ObservableList<Note> allNotes) {
-        if (createPendingNotes.contains(currentNote)) {
-            createPendingNotes.remove(currentNote);
-        } else {
-            updatePendingNotes.remove(currentNote);
-            server.deleteNote(currentNote);
-        }
+        updatePendingNotes.remove(currentNote);
+        server.send("/app/deleteNote", currentNote);
         collectionNotes.remove(currentNote);
         allNotes.remove(currentNote);
+        if (currentNote == null) {
+            dashboardCtrl.treeViewSetup();
+        }
+    }
+
+    public void updateAfterDelete(Note currentNote,
+                                  ObservableList<Note> collectionNotes,
+                                  ObservableList<Note> allNotes) {
+        updatePendingNotes.remove(currentNote);
+        while (allNotes.contains(currentNote)) {
+            allNotes.remove(currentNote);
+        }
+        dashboardCtrl.treeViewSetup();
     }
 
     public void saveAllPendingNotes() {
         try {
-            for (Note note : createPendingNotes) {
-                Note savedNote = server.addNote(note);
-                note.id = savedNote.id;
-            }
-            createPendingNotes.clear();
-
             for (Note note : updatePendingNotes) {
                 server.updateNote(note);
             }
@@ -198,7 +201,7 @@ public class NoteCtrl {
             currentNote.setBody(rawText);
 
             // Add any edited but already existing note to the pending list
-            if (!createPendingNotes.contains(currentNote) && !updatePendingNotes.contains(currentNote)) {
+            if (!updatePendingNotes.contains(currentNote)) {
                 updatePendingNotes.add(currentNote);
             }
         }

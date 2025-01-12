@@ -2,11 +2,15 @@ package server.api;
 
 import commons.EmbeddedFile;
 import commons.Note;
+import org.hibernate.Hibernate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import server.database.NoteRepository;
 import server.service.CollectionService;
 import server.service.EmbeddedFileService;
 import server.service.NoteService;
@@ -24,11 +28,34 @@ public class NoteController {
     private final NoteService noteService;
     private final CollectionService collectionService;
     private final EmbeddedFileService embeddedFileService;
+    private final NoteRepository noteRepository;
 
-    public NoteController(NoteService noteService, CollectionService collectionService, EmbeddedFileService embeddedFileService) {
+    public NoteController(NoteService noteService, CollectionService collectionService, EmbeddedFileService embeddedFileService, NoteRepository noteRepository) {
         this.noteService = noteService;
         this.collectionService = collectionService;
         this.embeddedFileService = embeddedFileService;
+        this.noteRepository = noteRepository;
+    }
+
+    @MessageMapping("/notes")
+    @SendTo("/topic/notes")
+    public Note addMessage(Note note) {
+        ResponseEntity<Note> response = createNote(note);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            Note addedNote = response.getBody();
+            return addedNote;
+        }
+        throw new RuntimeException("Failed to create note on server");
+    }
+
+    @MessageMapping("/deleteNote")
+    @SendTo("/topic/notes/delete")
+    public Note deleteNoteHandler(Note note) {
+        ResponseEntity<Void> response = deleteNote(note.id);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            return note;
+        }
+        throw new RuntimeException("Failed to delete note on server");
     }
 
     @PostMapping(path = {"/", ""})

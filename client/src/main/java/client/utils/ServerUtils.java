@@ -28,11 +28,21 @@ import javafx.scene.control.Alert;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
+import org.springframework.messaging.simp.stomp.StompFrameHandler;
+import org.springframework.messaging.simp.stomp.StompHeaders;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.MULTIPART_FORM_DATA_TYPE;
@@ -50,6 +60,45 @@ public class ServerUtils {
 		collections = config.readFromFile();
 	}
 
+	public void getWebSocketURL(String serverURL) {
+		String webSocket = serverURL.replace("http://", "ws://");
+		webSocket += "websocket";
+		session = connect(webSocket);
+	}
+
+	private StompSession session = connect("ws://localhost:8080/websocket");
+
+	private StompSession connect(String url) {
+		var client = new StandardWebSocketClient();
+		var stomp = new WebSocketStompClient(client);
+		stomp.setMessageConverter(new MappingJackson2MessageConverter());
+		try {
+			return stomp.connectAsync(url, new StompSessionHandlerAdapter() {}).get();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e);
+		}
+		throw new IllegalStateException();
+	}
+
+	public <T> void registerForMessages(String dest, Class<T> type, Consumer<T> consumer) {
+		session.subscribe(dest, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return type;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((T) payload);
+			}
+		});
+	}
+
+	public void send(String dest, Object o) {
+		session.send(dest, o);
+	}
 
 	public Note addNote(Note note) {
 		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
@@ -69,7 +118,6 @@ public class ServerUtils {
 		}
 		return allNotes;
 	}
-
 
 	public Note updateNote(Note note) {
 		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
@@ -125,12 +173,17 @@ public class ServerUtils {
 
 	public void deleteCollection(Collection collection) {
 		if (!isServerAvailableWithAlert(collection.serverURL)) return;
+
+		List<Note> notesInCollection = getNotesByCollection(collection);
+		for (Note note : notesInCollection) {
+			deleteNote(note);
+		}
+
 		ClientBuilder.newClient(new ClientConfig())
 				.target(collection.serverURL).path("/api/collection/" + collection.id)
 				.request(APPLICATION_JSON)
 				.delete();
 	}
-
 
 	public EmbeddedFile addFile(Note note, File file){
 		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;

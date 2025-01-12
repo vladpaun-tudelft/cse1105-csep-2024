@@ -57,8 +57,10 @@ public class Config {
 
     public void writeToFile(Collection collection){
         List<Collection> collections = readFromFile();
-        collections.add(collection);
-        writeAllToFile(collections);
+        if (!collections.contains(collection)) {
+            collections.add(collection);
+            writeAllToFile(collections);
+        }
     }
 
     public void writeAllToFile(List<Collection> collections){
