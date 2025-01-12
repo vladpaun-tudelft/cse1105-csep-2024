@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.ArrayList;
@@ -40,7 +38,7 @@ public class Note {
     @JoinColumn(name = "collection_id", nullable = false)
     public commons.Collection collection;
 
-    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true/*, fetch = FetchType.EAGER*/)
     @JsonManagedReference  // required to prevent infinite recursion
     public List<EmbeddedFile> embeddedFiles;
 

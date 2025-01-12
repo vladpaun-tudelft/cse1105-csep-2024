@@ -16,6 +16,8 @@
 package client.utils;
 
 import client.ui.DialogStyler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.inject.Inject;
 import commons.Collection;
 import commons.EmbeddedFile;
@@ -53,11 +55,39 @@ public class ServerUtils {
 	private List<Collection> collections;
 	private DialogStyler dialogStyler;
 
+	private StompSession.Subscription embeddedFilesSubscription;
+
 	@Inject
 	public ServerUtils(Config config, DialogStyler dialogStyler) {
 		this.config = config;
 		this.dialogStyler = dialogStyler;
 		collections = config.readFromFile();
+	}
+
+	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<EmbeddedFile> consumer) {
+		if (embeddedFilesSubscription != null) {
+			embeddedFilesSubscription.unsubscribe();
+		}
+
+		String topic = "/topic/notes/" + selectedNote.getId() + "/files";
+		embeddedFilesSubscription = session.subscribe(topic, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return EmbeddedFile.class;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((EmbeddedFile) payload);
+			}
+		});
+	}
+
+	public void unregisterFromEmbeddedFileUpdates() {
+		if (embeddedFilesSubscription != null) {
+			embeddedFilesSubscription.unsubscribe();
+			embeddedFilesSubscription = null;
+		}
 	}
 
 	public void getWebSocketURL(String serverURL) {
@@ -66,12 +96,18 @@ public class ServerUtils {
 		session = connect(webSocket);
 	}
 
+	// TODO: change after new Default collection logic is done
 	private StompSession session = connect("ws://localhost:8080/websocket");
 
 	private StompSession connect(String url) {
 		var client = new StandardWebSocketClient();
 		var stomp = new WebSocketStompClient(client);
-		stomp.setMessageConverter(new MappingJackson2MessageConverter());
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.registerModule(new JavaTimeModule());
+		MappingJackson2MessageConverter messageConverter = new MappingJackson2MessageConverter();
+		messageConverter.setObjectMapper(objectMapper);
+		stomp.setMessageConverter(messageConverter);
 		try {
 			return stomp.connectAsync(url, new StompSessionHandlerAdapter() {}).get();
 		} catch (InterruptedException e) {

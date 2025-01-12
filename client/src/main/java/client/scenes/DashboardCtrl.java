@@ -24,10 +24,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -248,12 +246,20 @@ public class DashboardCtrl implements Initializable {
                 moveNotesButton.setText(currentNote.collection.title);
                 noteCtrl.showCurrentNote(currentNote);
                 markdownViewBlocker.setVisible(false);
+
+                server.registerForEmbeddedFileUpdates(currentNote, embeddedFile -> {
+                    Platform.runLater(() -> {
+                        filesCtrl.showFiles(currentNote);
+                    });
+                });
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
                 moveNotesButton.setText("Move Note");
                 filesViewBlocker.setVisible(true);
+
+                server.unregisterFromEmbeddedFileUpdates();
             }
         });
 
@@ -288,12 +294,20 @@ public class DashboardCtrl implements Initializable {
                 noteCtrl.showCurrentNote(currentNote);
                 markdownViewBlocker.setVisible(false);
                 allNotesView.getFocusModel().focus(0);
+
+                server.registerForEmbeddedFileUpdates(currentNote, embeddedFile -> {
+                    Platform.runLater(() -> {
+                        filesCtrl.showFiles(currentNote);
+                    });
+                });
             } else {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
                 moveNotesButton.setText("Move Note");
                 filesViewBlocker.setVisible(true);
+
+                server.unregisterFromEmbeddedFileUpdates();
             }
         });
 

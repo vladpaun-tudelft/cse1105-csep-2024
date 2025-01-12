@@ -2,10 +2,10 @@ package server.api;
 
 import commons.EmbeddedFile;
 import commons.Note;
-import org.hibernate.Hibernate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +56,12 @@ public class NoteController {
             return note;
         }
         throw new RuntimeException("Failed to delete note on server");
+    }
+
+    @MessageMapping("/notes/{noteId}/files")
+    @SendTo("/topic/notes/{noteId}/files")
+    public EmbeddedFile sendEmbeddedFileUpdate(@DestinationVariable Long noteId, EmbeddedFile embeddedFile) {
+        return embeddedFile;
     }
 
     @PostMapping(path = {"/", ""})
