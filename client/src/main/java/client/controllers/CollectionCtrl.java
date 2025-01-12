@@ -298,6 +298,7 @@ public class CollectionCtrl {
             currentCollectionTitle.setText("All Notes");
             collectionView.setVisible(false);
             treeView.setVisible(true);
+            dashboardCtrl.treeViewSetup();
             collectionView.getSelectionModel().clearSelection();
         } else {
             collectionNotes = FXCollections.observableArrayList(
