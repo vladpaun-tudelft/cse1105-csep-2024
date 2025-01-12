@@ -3,10 +3,11 @@ package commons;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
@@ -45,21 +46,12 @@ public class Collection {
 
     @Override
     public boolean equals(Object obj) {
-        // return EqualsBuilder.reflectionEquals(this, obj);
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || this.getClass() != obj.getClass()) {
-            return false;
-        }
-        Collection that = (Collection) obj;
-        return Objects.equals(this.id, that.id);
+        return EqualsBuilder.reflectionEquals(this, obj);
     }
 
     @Override
     public int hashCode() {
-        // return HashCodeBuilder.reflectionHashCode(this);
-        return Objects.hash(id);
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 
     @Override

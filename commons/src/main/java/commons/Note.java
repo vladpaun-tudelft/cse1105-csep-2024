@@ -5,11 +5,12 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 
@@ -38,7 +39,7 @@ public class Note {
     @JoinColumn(name = "collection_id", nullable = false)
     public commons.Collection collection;
 
-    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true/*, fetch = FetchType.EAGER*/)
+    @OneToMany(mappedBy = "note"/*, cascade = CascadeType.ALL, orphanRemoval = true*/, fetch = FetchType.EAGER)
     @JsonManagedReference  // required to prevent infinite recursion
     public List<EmbeddedFile> embeddedFiles;
 
@@ -115,15 +116,7 @@ public class Note {
      */
     @Override
     public boolean equals(Object obj) {
-        // return EqualsBuilder.reflectionEquals(this, obj);
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || this.getClass() != obj.getClass()) {
-            return false;
-        }
-        Note that = (Note) obj;
-        return Objects.equals(this.id, that.id);
+        return EqualsBuilder.reflectionEquals(this, obj);
     }
 
     /**
@@ -132,8 +125,7 @@ public class Note {
      */
     @Override
     public int hashCode() {
-        // return HashCodeBuilder.reflectionHashCode(this);
-        return Objects.hash(id);
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 
     /**

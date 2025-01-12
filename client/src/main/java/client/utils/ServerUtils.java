@@ -165,6 +165,11 @@ public class ServerUtils {
 
 	public void deleteNote(Note note) {
 		if(!isServerAvailableWithAlert(note.collection.serverURL)) return;
+
+		List<EmbeddedFile> embeddedFiles = getFilesByNote(note);
+		for (EmbeddedFile e : embeddedFiles) {
+			deleteFile(note, e);
+		}
 		ClientBuilder.newClient(new ClientConfig())
 				.target(note.collection.serverURL).path("api/notes/" + note.id)
 				.request(APPLICATION_JSON)
