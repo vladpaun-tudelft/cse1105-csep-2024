@@ -292,11 +292,9 @@ public class DashboardCtrl implements Initializable {
      * Any new, changed, or deleted items will be reflected in the tree view after this methood
      */
     public void refreshTreeView(List<Collection> filteredCollections, List<Note> filteredNotes, boolean expanded) {
-        TreeItem<Object> virtualRoot = new TreeItem<>(null);
-        virtualRoot.setExpanded(true);
-        populateTreeView(virtualRoot, filteredCollections, filteredNotes, expanded);
-        allNotesView.setRoot(virtualRoot);
-        allNotesView.setShowRoot(false);
+        allNotesView.getRoot().getChildren().clear();
+        populateTreeView(allNotesView.getRoot(), filteredCollections, filteredNotes, expanded);
+        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
     }
     public void refreshTreeView() {
         refreshTreeView(collections, allNotes, false);

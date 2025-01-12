@@ -90,7 +90,7 @@ public class CollectionCtrl {
             ListView<Collection> listView,
             ObservableList<Collection> collections
     ) {
-        listViewDisplayOnlyTitles(listView, collections);
+        listViewDisplayOnlyTitles(listView, collections, false);
 
         //switching to collection
         listView.setOnMouseClicked(event -> {
@@ -118,13 +118,13 @@ public class CollectionCtrl {
      * @param listView    listview
      * @param collections collections
      */
-    private void listViewDisplayOnlyTitles(ListView<Collection> listView, ObservableList<Collection> collections) {
+    private void listViewDisplayOnlyTitles(ListView<Collection> listView, ObservableList<Collection> collections, boolean removeSelf) {
         ObservableList<Collection> filteredCollections = FXCollections.observableArrayList(
                 collections.stream()
                         .filter(collection -> !collection.equals(dashboardCtrl.getCurrentCollection()))
                         .toList()
         );
-        if(dashboardCtrl.getCurrentNote() != null) {
+        if(dashboardCtrl.getCurrentNote() != null && removeSelf) {
             filteredCollections.remove(dashboardCtrl.getCurrentNote().collection);
         }
         listView.setItems(filteredCollections);
@@ -161,7 +161,7 @@ public class CollectionCtrl {
             ListView<Collection> listView,
             ObservableList<Collection> collections
     ) {
-        listViewDisplayOnlyTitles(listView, collections);
+        listViewDisplayOnlyTitles(listView, collections, true);
         //switching to collection
         listView.setOnMouseClicked(event -> {
             Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
