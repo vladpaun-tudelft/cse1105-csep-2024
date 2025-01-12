@@ -12,6 +12,7 @@ import com.google.inject.Injector;
 import commons.Collection;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
@@ -169,15 +170,16 @@ public class CollectionCtrl {
                     if (item.getText().equals(selectedCollection.title)) {
                         Note currentNote = dashboardCtrl.getCurrentNote();
 
+                        moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
                         if(dashboardCtrl.getCurrentCollection() != null ) {
                             item.fire();   // If not in all note view
                             dashboardCtrl.collectionView.getSelectionModel().select(currentNote);
                         }
                         else {
-                            dashboardCtrl.moveNoteInTreeView(currentNote, selectedCollection);
+                            dashboardCtrl.refreshTreeView();
+                            dashboardCtrl.selectNoteInTreeView(currentNote);
                         }
 
-                        moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
                         collectionSelect.selectToggle(item);
                         moveNotesButton.hide();
                         break;
@@ -270,7 +272,7 @@ public class CollectionCtrl {
     public void setUp() {
 
         // Set up the collections menu
-        List<Collection> collections = config.readFromFile();
+        ObservableList<Collection> collections = FXCollections.observableArrayList(config.readFromFile());
         dashboardCtrl.setCollections(collections);
 
         Collection defaultCollection = collections.stream()
@@ -278,9 +280,13 @@ public class CollectionCtrl {
                 .findFirst().orElse(null);
         dashboardCtrl.setDefaultCollection(defaultCollection);
 
-        if (defaultCollection == null) {
-            dashboardCtrl.getAddButton().setDisable(true);
-        }
+        dashboardCtrl.getAddButton().disableProperty().bind(
+                Bindings.createBooleanBinding(
+                        collections::isEmpty,
+                        collections
+                )
+        );
+
 
         for (Collection c : collections) {
             dashboardCtrl.createCollectionButton(c, currentCollectionTitle, collectionSelect);
@@ -298,7 +304,7 @@ public class CollectionCtrl {
             currentCollectionTitle.setText("All Notes");
             collectionView.setVisible(false);
             treeView.setVisible(true);
-            dashboardCtrl.treeViewSetup();
+            dashboardCtrl.refreshTreeView();
             collectionView.getSelectionModel().clearSelection();
         } else {
             collectionNotes = FXCollections.observableArrayList(
@@ -388,7 +394,6 @@ public class CollectionCtrl {
             if (dashboardCtrl.getDefaultCollection() == null) {
                 dashboardCtrl.setDefaultCollection(addedCollection);
                 config.setDefaultCollection(addedCollection);
-                dashboardCtrl.getAddButton().setDisable(false);
             }
 
             collections.add(addedCollection);

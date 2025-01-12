@@ -19,3 +19,13 @@ to start the server or ...
 to run the client. Please note that the server needs to be running, before you can start the client.
 
 Once this is working, you can try importing the project into your favorite IDE.
+
+## Keyboard Shortcuts
+- ```CTRL + N``` -- New Note
+- ```CTRL + SHIFT + N``` - New Collection
+- ```ALT + DOWN ARROW``` - Show next note
+- ```ALT + UP ARROW``` - Show previous note
+- ```ALT + RIGHT ARROW``` - Show next collection
+- ```ALT + LEFT ARROW``` - Show previous collection
+- ```ESCAPE``` - Clear search and focus search field
+- ```F11``` or ```ALT + ENTER``` - Fullscreen

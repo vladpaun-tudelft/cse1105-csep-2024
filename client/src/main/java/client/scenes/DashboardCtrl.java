@@ -24,10 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -47,55 +44,34 @@ public class DashboardCtrl implements Initializable {
 
     // Controllers
     @Inject
-    private final MarkdownCtrl markdownCtrl;
+    @Getter private final MarkdownCtrl markdownCtrl;
     private final CollectionCtrl collectionCtrl;
-    private final NoteCtrl noteCtrl;
+    @Getter private final NoteCtrl noteCtrl;
     private final SearchCtrl searchCtrl;
-    private final FilesCtrl filesCtrl;
+    @Getter private final FilesCtrl filesCtrl;
 
     // FXML Components
-    @FXML
-    private Label contentBlocker;
-    @FXML
-    @Getter private TextArea noteBody;
-    @FXML
-    private WebView markdownView;
-    @FXML
-    private Label markdownViewBlocker;
-    @FXML
-    private Label noteTitle;
-    @FXML
-    public ListView collectionView;
-    @FXML
-    public TreeView allNotesView;
-    @FXML
-    @Getter Button addButton;
-    @FXML
-    private Label noteTitleMD;
-    @FXML
-    private Button deleteButton;
-    @FXML
-    private Button clearSearchButton;
-    @FXML
-    private TextField searchField;
-    @FXML
-    private MenuButton currentCollectionTitle;
-    @FXML
-    private MenuItem allNotesButton;
-    @FXML
-    private ToggleGroup collectionSelect;
-    @FXML
-    private Button deleteCollectionButton;
-    @FXML
-    private MenuItem editCollectionTitle;
-    @FXML
-    private MenuButton moveNotesButton;
-    @FXML
-    private Button addFileButton;
-    @FXML
-    private HBox filesView;
-    @FXML
-    private Label filesViewBlocker;
+    @FXML private Label contentBlocker;
+    @FXML @Getter private TextArea noteBody;
+    @FXML private WebView markdownView;
+    @FXML private Label markdownViewBlocker;
+    @FXML private Label noteTitle;
+    @FXML public ListView collectionView;
+    @FXML public TreeView allNotesView;
+    @FXML @Getter Button addButton;
+    @FXML private Label noteTitleMD;
+    @FXML private Button deleteButton;
+    @FXML private Button clearSearchButton;
+    @FXML @Getter private TextField searchField;
+    @FXML private MenuButton currentCollectionTitle;
+    @FXML private MenuItem allNotesButton;
+    @FXML private ToggleGroup collectionSelect;
+    @FXML private Button deleteCollectionButton;
+    @FXML private MenuItem editCollectionTitle;
+    @FXML private MenuButton moveNotesButton;
+    @FXML private Button addFileButton;
+    @FXML private HBox filesView;
+    @FXML private Label filesViewBlocker;
 
 
     // Variables
@@ -103,7 +79,7 @@ public class DashboardCtrl implements Initializable {
     @Getter @Setter private Collection currentCollection = null;
     @Getter @Setter private Collection defaultCollection = null;
     @Getter @Setter private Collection destinationCollection = null;
-    @Getter @Setter public List<Collection> collections;
+    @Getter @Setter public ObservableList<Collection> collections;
     @Getter @Setter private ObservableList<Note> allNotes;
     @Getter @Setter public ObservableList<Note> collectionNotes;
 
@@ -193,6 +169,8 @@ public class DashboardCtrl implements Initializable {
         filesCtrl.setDashboardCtrl(this);
         filesCtrl.setReferences(filesView);
 
+        viewAllNotes();
+
         // Temporary solution
         scheduler.scheduleAtFixedRate(() -> noteCtrl.saveAllPendingNotes(),
                 10,10, TimeUnit.SECONDS);
@@ -229,70 +207,31 @@ public class DashboardCtrl implements Initializable {
 
     }
 
+    /**
+     * Method used to set up the treeView
+     * This method should only be used once in the initialization.
+     */
     public void treeViewSetup() {
         // Create a virtual root item (you can use this if you don't want the root to be visible)
         TreeItem<Object> virtualRoot = new TreeItem<>(null);
         virtualRoot.setExpanded(true); // Optional: if you want the root to be expanded by default
 
-        // Map each collection to its TreeItem
-        Map<Collection, TreeItem<Object>> collectionItems = new HashMap<>();
-        TreeItem<Object> noNotesItem = new TreeItem<>(" - no notes in collection.");
-
-        // Initialize TreeView with current data
-        for (Collection collection : collections) {
-            TreeItem<Object> collectionItem = new TreeItem<>(collection);
-            collectionItems.put(collection, collectionItem);
-            virtualRoot.getChildren().add(collectionItem);
-            collectionItem.getChildren().add(noNotesItem);
-
-            // Eh, idk
-            // collectionItem.setExpanded(true);
-        }
-
-        // Populate TreeItems with existing notes in allNotes
-        for (Note note : allNotes) {
-            TreeItem<Object> collectionItem = collectionItems.get(note.collection);
-            if (collectionItem != null) {
-                TreeItem<Object> noteItem = new TreeItem<>(note);
-                if (collectionItem.getChildren().get(0).equals(noNotesItem)) {
-                    collectionItem.getChildren().remove(0);
-                }
-                collectionItem.getChildren().add(noteItem);
-            }
-        }
+        populateTreeView(virtualRoot);
 
         // Add listener to the ObservableList to dynamically update the TreeView
         allNotes.addListener((ListChangeListener<Note>) change -> {
             while (change.next()) {
+                refreshTreeView();
                 if (change.wasAdded()) {
-                    for (Note note : change.getAddedSubList()) {
-                        TreeItem<Object> noteItem = new TreeItem<>(note);
-                        TreeItem<Object> collectionItem = collectionItems.get(note.collection);
-                        if (collectionItem != null) {
-                            if (collectionItem.getChildren().size() ==  1 && collectionItem.getChildren().get(0).equals(noNotesItem)) {
-                                collectionItem.getChildren().remove(0);
-                            }
-                            collectionItem.getChildren().add(noteItem);
-                        }
-                    }
                     selectNoteInTreeView(change.getAddedSubList().getLast());
-                }
-                if (change.wasRemoved()) {
-                    for (Note note : change.getRemoved()) {
-                        TreeItem<Object> collectionItem = collectionItems.get(note.collection);
-                        if (collectionItem != null) {
-                            collectionItem.getChildren().removeIf(item -> item.getValue().equals(note));
-                            if (collectionItem.getChildren().isEmpty()) {
-                                collectionItem.getChildren().add(noNotesItem);
-                            }
-                        }
-                    }
                 }
             }
         });
 
         // Add selection change listener
         allNotesView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            // If the selected item is a note, show it,
+            // Content blockers otherwise
             if (newValue != null && ((TreeItem)newValue).getValue() instanceof Note) {
                 currentNote = (Note)((TreeItem)newValue).getValue();
                 noteCtrl.showCurrentNote(currentNote);
@@ -313,50 +252,61 @@ public class DashboardCtrl implements Initializable {
         allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
 
     }
+
+    /**
+     * This method populates a treeItem root with the collections and notes in the app.
+     * @param virtualRoot the root we want to populate
+     */
+    public void populateTreeView(TreeItem<Object> virtualRoot, List<Collection> filteredCollections, List<Note> filteredNotes, boolean expanded) {
+        // Map each collection to its TreeItem
+        Map<Collection, TreeItem<Object>> collectionItems = new HashMap<>();
+        TreeItem<Object> noNotesItem = new TreeItem<>(" - no notes in collection.");
+
+        // Initialize TreeView with filtered data
+        for (Collection collection : filteredCollections) {
+            TreeItem<Object> collectionItem = new TreeItem<>(collection);
+            collectionItems.put(collection, collectionItem);
+            virtualRoot.getChildren().add(collectionItem);
+            collectionItem.getChildren().add(noNotesItem);
+            collectionItem.setExpanded(expanded);
+        }
+
+        // Populate TreeItems with existing notes in filteredNotes
+        for (Note note : filteredNotes) {
+            TreeItem<Object> collectionItem = collectionItems.get(note.collection);
+            if (collectionItem != null) {
+                TreeItem<Object> noteItem = new TreeItem<>(note);
+                if (collectionItem.getChildren().get(0).equals(noNotesItem)) {
+                    collectionItem.getChildren().remove(0);
+                }
+                collectionItem.getChildren().add(noteItem);
+            }
+        }
+    }
+    public void populateTreeView(TreeItem<Object> virtualRoot) {
+        populateTreeView(virtualRoot, collections, allNotes, false);
+    }
+
+    /**
+     * This method refreshes the treeView
+     * Any new, changed, or deleted items will be reflected in the tree view after this methood
+     */
+    public void refreshTreeView(List<Collection> filteredCollections, List<Note> filteredNotes, boolean expanded) {
+        TreeItem<Object> virtualRoot = new TreeItem<>(null);
+        virtualRoot.setExpanded(true);
+        populateTreeView(virtualRoot, filteredCollections, filteredNotes, expanded);
+        allNotesView.setRoot(virtualRoot);
+        allNotesView.setShowRoot(false);
+    }
     public void refreshTreeView() {
-        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
+        refreshTreeView(collections, allNotes, false);
     }
 
-    public void moveNoteInTreeView(Note currentNote, Collection selectedCollection) {
-        // Ensure the current note and destination collection are not null
-        if (currentNote == null || selectedCollection == null || currentNote.collection.equals(selectedCollection)) {
-            return; // No action needed if note or collection is null or if the note is already in the selected collection
-        }
 
-        // Locate the current TreeItem for the note
-        TreeItem<Object> root = allNotesView.getRoot();
-        TreeItem<Object> currentCollectionItem = findItem(root, currentNote.collection);
-        TreeItem<Object> noteItem = findItem(root, currentNote);
-
-        // Locate the destination collection TreeItem
-        TreeItem<Object> destinationCollectionItem = findItem(root, selectedCollection);
-
-        // Perform the move if all items are found
-        if (currentCollectionItem != null && noteItem != null && destinationCollectionItem != null) {
-            // Remove the note from the current collection's children
-            currentCollectionItem.getChildren().remove(noteItem);
-
-            // If the current collection is now empty, optionally add a placeholder
-            if (currentCollectionItem.getChildren().isEmpty()) {
-                currentCollectionItem.getChildren().add(new TreeItem<>(" - no notes in collection."));
-            }
-
-            // Add the note to the destination collection
-            if (destinationCollectionItem.getChildren().size() == 1 &&
-                    destinationCollectionItem.getChildren().get(0).getValue().equals(" - no notes in collection.")) {
-                // Remove placeholder if present
-                destinationCollectionItem.getChildren().clear();
-            }
-            destinationCollectionItem.getChildren().add(noteItem);
-
-            // Update the collection reference in the note
-            currentNote.collection = selectedCollection;
-
-            // Optionally select the moved note in the TreeView
-            allNotesView.getSelectionModel().select(noteItem);
-        }
-    }
-
+    /**
+     * This method is used to pars through and select a note from the tree view
+     * @param targetNote the targeted note
+     */
     public void selectNoteInTreeView(Note targetNote) {
         // Call the helper method to find and select the item
         TreeItem<Object> itemToSelect = findItem(allNotesView.getRoot(), targetNote);
@@ -366,6 +316,13 @@ public class DashboardCtrl implements Initializable {
         }
     }
 
+    /**
+     * This method takes in the current TreeItem that is selected in the treeView
+     * And a target object that we want to find and it returns the targets respective TreeItem
+     * @param currentItem currently selected TreeItem
+     * @param targetObject object to be found
+     * @return the TreeItem that represents the targetObject
+     */
     private TreeItem<Object> findItem(TreeItem<Object> currentItem, Object targetObject) {
         // Check if the current item matches the target note
         if (currentItem.getValue() != null){
@@ -391,18 +348,6 @@ public class DashboardCtrl implements Initializable {
         }
 
         return null; // If no match is found
-    }
-
-    public FilesCtrl getFilesCtrl() {
-        return this.filesCtrl;
-    }
-
-    public MarkdownCtrl getMarkdownCtrl() {
-        return this.markdownCtrl;
-    }
-
-    public NoteCtrl getNoteCtrl() {
-        return this.noteCtrl;
     }
 
     public void addNote() {
@@ -444,15 +389,14 @@ public class DashboardCtrl implements Initializable {
 
     public void search() {
         searchCtrl.search(collectionNotes);
-        searchCtrl.searchInTreeView(allNotesView, allNotes, collections);
+        searchCtrl.searchInTreeView(this, allNotes, collections);
     }
     public void setSearchIsActive(boolean b) {
         searchCtrl.setSearchIsActive(b, collectionNotes);
     }
     public void clearSearch() {
         searchCtrl.setSearchIsActive(false, collectionNotes);
-        searchCtrl.resetSearch(allNotes);
-        treeViewSetup();
+        refreshTreeView();
     }
 
     public void refresh() {
@@ -498,10 +442,6 @@ public class DashboardCtrl implements Initializable {
         }
     }
 
-    public Note getCurrentNote() {
-        return currentNote;
-    }
-
     // Temporary solution
     @FXML
     public void onClose() {
@@ -521,4 +461,139 @@ public class DashboardCtrl implements Initializable {
         //currentCollectionTitle.getItems().addFirst(radioMenuItem);
         return radioMenuItem;
     }
+
+    // ----------------------- HCI - Keyboard shortcuts -----------------------
+
+    /**
+     * ALT + RIGHT ARROW - cycles through collections
+     */
+    public void selectNextCollection() {
+        if (currentCollection == null) {
+            currentCollection = collections.getFirst();
+        } else {
+            if (collections.indexOf(currentCollection) == collections.size() - 1) {
+                currentCollection = null;
+            } else {
+                currentCollection = collections.get(collections.indexOf(currentCollection) + 1);
+            }
+        }
+        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+    }
+
+    /**
+     * ALT + LEFT ARROW - cycles through collections
+     */
+    public void selectPreviousCollection() {
+        if (currentCollection == null) {
+            currentCollection = collections.getLast();
+        } else {
+            if (collections.indexOf(currentCollection) == 0) {
+                currentCollection = null;
+            } else {
+                currentCollection = collections.get(collections.indexOf(currentCollection) - 1);
+            }
+        }
+        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+    }
+
+    /**
+     * ALT + DOWN ARROW - cycles through notes
+     */
+    public void selectNextNote() {
+        selectNoteInDirection(1); // Direction 1 for "next"
+    }
+
+    /**
+     * ALT + UP ARROW - cycles through notes
+     */
+    public void selectPreviousNote() {
+        selectNoteInDirection(-1); // Direction -1 for "previous"
+    }
+
+
+    // ----------------------- HCI - Helper methods -----------------------
+
+    private void selectNoteInDirection(int direction) {
+        if (currentCollection == null) {
+            TreeItem<Object> root = allNotesView.getRoot();
+            if (root == null || root.getChildren().isEmpty()) {
+                return; // No items in the TreeView, do nothing
+            }
+
+            TreeItem<Object> selectedItem = (TreeItem<Object>) allNotesView.getSelectionModel().getSelectedItem();
+            TreeItem<Object> nextItem;
+
+            if (selectedItem == null) {
+                // No item selected, select the first valid item
+                nextItem = findFirstValidItem(root);
+            } else {
+                // Find the next or previous valid item
+                nextItem = findValidItemInDirection(root, selectedItem, direction);
+            }
+
+            if (nextItem != null) {
+                allNotesView.getSelectionModel().select(nextItem);
+
+                // If the selected item is of type Note, set it as the current note and show it
+                if (nextItem.getValue() instanceof Note note) {
+                    currentNote = note;
+                    noteCtrl.showCurrentNote(currentNote);
+                }
+            }
+        } else {
+            // Collection-specific behavior
+            if (currentNote == null) {
+                currentNote = (direction > 0) ? collectionNotes.getFirst() : collectionNotes.getLast();
+            } else {
+                int currentIndex = collectionNotes.indexOf(currentNote);
+                int nextIndex = (currentIndex + direction + collectionNotes.size()) % collectionNotes.size();
+                currentNote = collectionNotes.get(nextIndex);
+            }
+            collectionView.getSelectionModel().select(currentNote);
+            noteCtrl.showCurrentNote(currentNote);
+        }
+    }
+
+    private TreeItem<Object> findFirstValidItem(TreeItem<Object> root) {
+        for (TreeItem<Object> child : flattenTree(root)) {
+            if (child.getValue() instanceof Note) {
+                return child;
+            }
+        }
+        return null; // No valid items found
+    }
+
+    private TreeItem<Object> findValidItemInDirection(TreeItem<Object> root, TreeItem<Object> currentItem, int direction) {
+        List<TreeItem<Object>> flatList = flattenTree(root);
+
+        // Find the index of the currently selected item
+        int currentIndex = flatList.indexOf(currentItem);
+
+        // Traverse the list in the specified direction
+        for (int i = 1; i <= flatList.size(); i++) {
+            int nextIndex = (currentIndex + (i * direction) + flatList.size()) % flatList.size();
+            TreeItem<Object> nextItem = flatList.get(nextIndex);
+            if (nextItem.getValue() instanceof Note) {
+                return nextItem;
+            }
+        }
+
+        return null; // No valid items found
+    }
+
+    private List<TreeItem<Object>> flattenTree(TreeItem<Object> root) {
+        List<TreeItem<Object>> items = new ArrayList<>();
+        flattenTreeRecursive(root, items);
+        return items;
+    }
+
+    private void flattenTreeRecursive(TreeItem<Object> node, List<TreeItem<Object>> items) {
+        if (node.getValue() != null) {
+            items.add(node);
+        }
+        for (TreeItem<Object> child : node.getChildren()) {
+            flattenTreeRecursive(child, items);
+        }
+    }
+
 }

@@ -127,9 +127,7 @@ public class NoteCtrl {
         dashboardCtrl.getMarkdownCtrl().setCurrentNote(selectedNote);
         dashboardCtrl.getMarkdownCtrl().updateMarkdownView(selectedNote.getBody());
 
-        if (!searchField.isFocused()) {
-            Platform.runLater(() -> noteBody.requestFocus());
-        }
+        Platform.runLater(() -> noteBody.requestFocus());
     }
 
     public void deleteSelectedNote(Note currentNote,
