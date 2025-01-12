@@ -373,7 +373,7 @@ public class CollectionCtrl {
         if(noteCtrl.isTitleDuplicate(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false)){
             currentNote.setTitle(noteCtrl.generateUniqueTitle(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false));
         }
-        noteCtrl.updatePendingNotes.add(currentNote);
+        noteCtrl.getUpdatePendingNotes().add(currentNote);
         noteCtrl.saveAllPendingNotes();
 
         return destinationCollection;

@@ -45,7 +45,7 @@ public class CollectionCtrlTest {
         MockitoAnnotations.openMocks(this);
         collectionCtrl = new CollectionCtrl(serverMock, configMock, noteCtrlMock, searchCtrlMock);
         collectionCtrl.setDashboardCtrl(dashboardCtrlMock);
-        noteCtrlMock.updatePendingNotes = new ArrayList<>();
+        noteCtrlMock.setUpdatePendingNotes(new ArrayList<>());
     }
 
     @Test
