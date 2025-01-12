@@ -465,7 +465,7 @@ public class DashboardCtrl implements Initializable {
     // ----------------------- HCI - Keyboard shortcuts -----------------------
 
     /**
-     * CTRL + RIGHT ARROW - cycles through collections
+     * ALT + RIGHT ARROW - cycles through collections
      */
     public void selectNextCollection() {
         if (currentCollection == null) {
@@ -481,7 +481,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     /**
-     * CTRL + LEFT ARROW - cycles through collections
+     * ALT + LEFT ARROW - cycles through collections
      */
     public void selectPreviousCollection() {
         if (currentCollection == null) {
@@ -497,14 +497,14 @@ public class DashboardCtrl implements Initializable {
     }
 
     /**
-     * CTRL + DOWN ARROW - cycles through notes
+     * ALT + DOWN ARROW - cycles through notes
      */
     public void selectNextNote() {
         selectNoteInDirection(1); // Direction 1 for "next"
     }
 
     /**
-     * CTRL + UP ARROW - cycles through notes
+     * ALT + UP ARROW - cycles through notes
      */
     public void selectPreviousNote() {
         selectNoteInDirection(-1); // Direction -1 for "previous"
