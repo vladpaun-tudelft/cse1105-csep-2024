@@ -165,20 +165,20 @@ public class CollectionCtrl {
         listView.setOnMouseClicked(event -> {
             Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
             for (Toggle toggle : collectionSelect.getToggles()) {
-                if (toggle instanceof RadioMenuItem) {
-                    RadioMenuItem item = (RadioMenuItem) toggle;
+                if (toggle instanceof RadioMenuItem item) {
                     if (item.getText().equals(selectedCollection.title)) {
                         Note currentNote = dashboardCtrl.getCurrentNote();
-                        moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
-                        collectionSelect.selectToggle(item);
+
                         if(dashboardCtrl.getCurrentCollection() != null ) {
                             item.fire();   // If not in all note view
                             dashboardCtrl.collectionView.getSelectionModel().select(currentNote);
                         }
                         else {
-                            dashboardCtrl.treeViewSetup();                             // else update all note view
-                            dashboardCtrl.selectNoteInTreeView(currentNote);
+                            dashboardCtrl.moveNoteInTreeView(currentNote, selectedCollection);
                         }
+
+                        moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
+                        collectionSelect.selectToggle(item);
                         moveNotesButton.hide();
                         break;
                     }
@@ -266,26 +266,27 @@ public class CollectionCtrl {
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
         this.dashboardCtrl = dashboardCtrl;
     }
-    public List<Collection> setUp() {
 
-        //is this necessary if allNotesButton is menu Item is menu Item?
-        //collectionSelect.selectToggle( allNotesButton);
-
-        List<Collection> collections;
-        // If the default collection doesn't exist, create it
-        //TODO: This logic needs to be changed
-        if (config.readFromFile().isEmpty()) {
-            Collection defaultCollection = server.addCollection(new Collection("Default", "http://localhost:8080/"));
-            config.writeToFile(defaultCollection);
-        }
+    public void setUp() {
 
         // Set up the collections menu
-        collections = config.readFromFile();
+        List<Collection> collections = config.readFromFile();
+        dashboardCtrl.setCollections(collections);
+
+        Collection defaultCollection = collections.stream()
+                .filter(collection -> collection.equals(config.readDefaultCollection()))
+                .findFirst().orElse(null);
+        dashboardCtrl.setDefaultCollection(defaultCollection);
+
+        if (defaultCollection == null) {
+            dashboardCtrl.getAddButton().setDisable(true);
+        }
 
         for (Collection c : collections) {
             dashboardCtrl.createCollectionButton(c, currentCollectionTitle, collectionSelect);
         }
-        return collections;
+
+        initializeDropoutCollectionLabel();
     }
 
 
@@ -297,7 +298,6 @@ public class CollectionCtrl {
             currentCollectionTitle.setText("All Notes");
             collectionView.setVisible(false);
             treeView.setVisible(true);
-            dashboardCtrl.treeViewSetup();
             collectionView.getSelectionModel().clearSelection();
         } else {
             collectionNotes = FXCollections.observableArrayList(
@@ -384,6 +384,12 @@ public class CollectionCtrl {
             addedCollection = server.addCollection(inputtedCollection);
             if (addedCollection == null) return currentCollection;
             config.writeToFile(addedCollection);
+            if (dashboardCtrl.getDefaultCollection() == null) {
+                dashboardCtrl.setDefaultCollection(addedCollection);
+                config.setDefaultCollection(addedCollection);
+                dashboardCtrl.getAddButton().setDisable(false);
+            }
+
             collections.add(addedCollection);
         } catch (ClientErrorException e) {
             Alert alert = dialogStyler.createStyledAlert(

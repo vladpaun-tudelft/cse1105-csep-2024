@@ -167,6 +167,15 @@
     -fx-background-color: -main-background;
 }
 
+.collection_list_icon {
+    -fx-background-size: 15px;
+    -fx-pref-width: 25px;
+    -fx-pref-height: 25px;
+}
+.collection_list_icon:hover {
+    -fx-background-color: -main-background;
+}
+
 .edit_icon {
     -fx-background-image: url("icons/edit_title.png");
 }
@@ -189,6 +198,14 @@
 
 .refresh_icon {
     -fx-background-image: url("icons/refresh.png");
+}
+
+.set_default_collection_icon {
+    -fx-background-image: url("icons/set_default_collection.png");
+}
+
+.default_collection_icon{
+    -fx-background-image: url("icons/default_collection.png");
 }
 
 /* WebView */
