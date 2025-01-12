@@ -107,13 +107,11 @@ public class NoteCtrl {
         noteBody.setText("");
     }
 
-    public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> collectionNotes, ObservableList<Note> allNotes, Note note) {
+    public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> allNotes, Note note) {
         if (!allNotes.contains(note)) {
             allNotes.add(note);
         }
-        if (currentCollection == null) {
-            dashboardCtrl.treeViewSetup();
-        }
+        dashboardCtrl.getCollectionCtrl().viewNotes(currentCollection, allNotes);
     }
 
     public void showCurrentNote(Note selectedNote) {
@@ -175,13 +173,13 @@ public class NoteCtrl {
     }
 
     public void updateAfterDelete(Note currentNote,
-                                  ObservableList<Note> collectionNotes,
+                                  Collection currentCollection,
                                   ObservableList<Note> allNotes) {
         updatePendingNotes.remove(currentNote);
         while (allNotes.contains(currentNote)) {
             allNotes.remove(currentNote);
         }
-        dashboardCtrl.treeViewSetup();
+        dashboardCtrl.getCollectionCtrl().viewNotes(currentCollection, allNotes);
     }
 
     public void saveAllPendingNotes() {

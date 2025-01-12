@@ -208,20 +208,14 @@ public class DashboardCtrl implements Initializable {
         // For note addition sync
         server.registerForMessages("/topic/notes", Note.class, note -> {
             Platform.runLater(() -> {
-                noteCtrl.updateViewAfterAdd(currentCollection, collectionNotes, allNotes, note);
-                if (currentCollection != null) {
-                    collectionCtrl.viewNotes(currentCollection, allNotes);
-                }
+                noteCtrl.updateViewAfterAdd(currentCollection, allNotes, note);
             });
         });
 
         // For note deletion sync
         server.registerForMessages("/topic/notes/delete", Note.class, note -> {
             Platform.runLater(() -> {
-                noteCtrl.updateAfterDelete(note, collectionNotes, allNotes);
-                if (currentCollection != null) {
-                    collectionCtrl.viewNotes(currentCollection, allNotes);
-                }
+                noteCtrl.updateAfterDelete(note, currentCollection, allNotes);
             });
         });
     }
@@ -356,6 +350,10 @@ public class DashboardCtrl implements Initializable {
 
     public NoteCtrl getNoteCtrl() {
         return this.noteCtrl;
+    }
+
+    public CollectionCtrl getCollectionCtrl() {
+        return this.collectionCtrl;
     }
 
     public void addNote() {
