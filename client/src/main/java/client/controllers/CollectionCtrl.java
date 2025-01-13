@@ -20,6 +20,7 @@ import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.springframework.messaging.simp.stomp.StompSession;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -308,6 +309,8 @@ public class CollectionCtrl {
             collectionView.getSelectionModel().clearSelection();
         } else {
             server.getWebSocketURL(currentCollection.serverURL);
+            dashboardCtrl.noteAdditionSync();
+            dashboardCtrl.noteDeletionSync();
             collectionNotes = FXCollections.observableArrayList(
                     allNotes.stream()
                             .filter(note -> note.collection.equals(currentCollection))

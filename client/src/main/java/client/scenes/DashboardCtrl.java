@@ -174,15 +174,17 @@ public class DashboardCtrl implements Initializable {
         // Temporary solution
         scheduler.scheduleAtFixedRate(() -> noteCtrl.saveAllPendingNotes(),
                 10,10, TimeUnit.SECONDS);
+    }
 
-        // For note addition sync
+    public void noteAdditionSync() {
         server.registerForMessages("/topic/notes", Note.class, note -> {
             Platform.runLater(() -> {
                 noteCtrl.updateViewAfterAdd(currentCollection, allNotes, note);
             });
         });
+    }
 
-        // For note deletion sync
+    public void noteDeletionSync() {
         server.registerForMessages("/topic/notes/delete", Note.class, note -> {
             Platform.runLater(() -> {
                 noteCtrl.updateAfterDelete(note, currentCollection, allNotes);

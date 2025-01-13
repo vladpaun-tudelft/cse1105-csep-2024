@@ -31,10 +31,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.StompFrameHandler;
-import org.springframework.messaging.simp.stomp.StompHeaders;
-import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.messaging.simp.stomp.*;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
@@ -91,15 +88,14 @@ public class ServerUtils {
 	}
 
 	public void getWebSocketURL(String serverURL) {
-		String webSocket = serverURL.replace("http://", "ws://");
+		String webSocket = serverURL.replace("http", "ws");
 		webSocket += "websocket";
-		session = connect(webSocket);
+		this.session = connect(webSocket);
 	}
 
-	// TODO: change after new Default collection logic is done
 	private StompSession session = connect("ws://localhost:8080/websocket");
 
-	private StompSession connect(String url) {
+	public StompSession connect(String url) {
 		var client = new StandardWebSocketClient();
 		var stomp = new WebSocketStompClient(client);
 
@@ -109,7 +105,7 @@ public class ServerUtils {
 		messageConverter.setObjectMapper(objectMapper);
 		stomp.setMessageConverter(messageConverter);
 		try {
-			return stomp.connectAsync(url, new StompSessionHandlerAdapter() {}).get();
+            return stomp.connectAsync(url, new StompSessionHandlerAdapter() {}).get();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} catch (ExecutionException e) {
@@ -119,7 +115,10 @@ public class ServerUtils {
 	}
 
 	public <T> void registerForMessages(String dest, Class<T> type, Consumer<T> consumer) {
-		session.subscribe(dest, new StompFrameHandler() {
+		if (this.session == null) {
+			return;
+        }
+		this.session.subscribe(dest, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {
 				return type;
@@ -133,6 +132,9 @@ public class ServerUtils {
 	}
 
 	public void send(String dest, Object o) {
+		if (session == null || !session.isConnected()) {
+			return;
+		}
 		session.send(dest, o);
 	}
 
