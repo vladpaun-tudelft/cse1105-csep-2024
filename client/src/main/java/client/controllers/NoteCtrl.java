@@ -74,13 +74,9 @@ public class NoteCtrl {
     }
 
     public void addNote(Collection currentCollection,
-                        List<Collection> collections,
                         ObservableList<Note> allNotes,
                         ObservableList<Note> collectionNotes) {
-        Collection collection = currentCollection;
-        if (currentCollection == null) {
-            collection = collections.stream().filter(c -> c.title.equals("Default")).findFirst().orElse(null);
-        }
+        Collection collection = currentCollection != null ? currentCollection : dashboardCtrl.getDefaultCollection();
 
         // Generate a unique title
         String baseTitle = "New Note";
@@ -97,6 +93,7 @@ public class NoteCtrl {
             collectionView.getSelectionModel().select(collectionNotes.size() - 1);
             collectionView.getFocusModel().focus(collectionNotes.size() - 1);
             collectionView.edit(collectionNotes.size() - 1);
+
         }else {
             dashboardCtrl.selectNoteInTreeView(newNote);
         }
@@ -105,6 +102,7 @@ public class NoteCtrl {
         noteTitleMd.setText(newTitle);
 
         noteBody.setText("");
+
     }
 
     public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> allNotes, Note note) {
@@ -116,6 +114,8 @@ public class NoteCtrl {
 
     public void showCurrentNote(Note selectedNote) {
         if (selectedNote == null) return;
+
+        moveNotesButton.setText(selectedNote.collection.title);
 
         noteTitle.setText(selectedNote.title);
         noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
@@ -134,9 +134,7 @@ public class NoteCtrl {
         dashboardCtrl.getMarkdownCtrl().setCurrentNote(selectedNote);
         dashboardCtrl.getMarkdownCtrl().updateMarkdownView(selectedNote.getBody());
 
-        if (!searchField.isFocused()) {
-            Platform.runLater(() -> noteBody.requestFocus());
-        }
+        Platform.runLater(() -> noteBody.requestFocus());
     }
 
     public void deleteSelectedNote(Note currentNote,
@@ -156,7 +154,6 @@ public class NoteCtrl {
                 collectionView.getSelectionModel().clearSelection();
                 noteBody.clear();
             }
-            dashboardCtrl.treeViewSetup();
         }
     }
 

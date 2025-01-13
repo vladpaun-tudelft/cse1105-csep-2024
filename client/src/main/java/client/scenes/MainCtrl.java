@@ -15,11 +15,14 @@
  */
 package client.scenes;
 
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+
+import javafx.scene.input.KeyEvent;
 
 public class MainCtrl {
 
@@ -36,23 +39,69 @@ public class MainCtrl {
         this.dashboardCtrl = dashboard.getKey();
         this.dashboard = new Scene(dashboard.getValue());
         this.dashboard.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-        this.dashboard.setOnKeyPressed(event -> {
+
+        configureKeyboardShortcuts();
+
+        showDashboard();
+        primaryStage.show();
+    }
+
+    /**
+     * Configures various keyboard shortcuts used in the dashboard
+     */
+    private void configureKeyboardShortcuts() {
+        this.dashboard.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             switch (event.getCode()) {
+
+                // NAVIGATION
+                case  RIGHT -> {
+                    if (event.isAltDown()) dashboardCtrl.selectNextCollection();
+                    event.consume();
+                }
+                case LEFT -> {
+                    if (event.isAltDown()) dashboardCtrl.selectPreviousCollection();
+                    event.consume();
+                }
+                case DOWN -> {
+                    if (event.isAltDown()) dashboardCtrl.selectNextNote();
+                    event.consume();
+                }
+                case UP -> {
+                    if (event.isAltDown()) dashboardCtrl.selectPreviousNote();
+                    event.consume();
+                }
+
+                // ADDING NOTES AND COLLECTIONS
+                case N -> {
+                    if (event.isControlDown()) {
+                        if (event.isShiftDown()) {
+                            dashboardCtrl.addCollection();
+                        } else {
+                            dashboardCtrl.addNote();
+                        }
+                    }
+                    event.consume();
+                }
+
+                // SEARCHING
+                case ESCAPE -> {
+                    dashboardCtrl.clearSearch();
+                    Platform.runLater(() -> {dashboardCtrl.getSearchField().requestFocus();});
+                    event.consume();
+                }
+
+                //FULLSCREEN
                 case F11 -> primaryStage.setFullScreen(!primaryStage.isFullScreen());
                 case ENTER -> {
                     if (event.isAltDown()) {
                         primaryStage.setFullScreen(!primaryStage.isFullScreen());
+                        event.consume();
                     }
                 }
-                case ESCAPE -> {
-                    dashboardCtrl.setSearchIsActive(false);
-                }
+
                 default -> {}
             }
         });
-
-        showDashboard();
-        primaryStage.show();
     }
 
     /**

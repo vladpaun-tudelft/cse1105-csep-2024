@@ -1,5 +1,6 @@
 package client.controllers;
 
+import client.scenes.DashboardCtrl;
 import com.google.inject.Inject;
 import commons.Collection;
 import commons.Note;
@@ -71,41 +72,29 @@ public class SearchCtrl {
         updateCollectionView(FXCollections.observableArrayList(filteredNotes));
     }
 
-    public void searchInTreeView(TreeView<Note> allNotesView, ObservableList<Note> allNotes, List<Collection> collections) {
+    public void searchInTreeView(DashboardCtrl dashboardCtrl, ObservableList<Note> allNotes, List<Collection> collections) {
         String searchText = searchField.getText().trim().toLowerCase();
 
         if (searchText.isEmpty()) {
-            resetSearch(allNotes);
+            dashboardCtrl.refreshTreeView();
             return;
         }
 
         searchIsActive = true;
 
-        // Create a list to store filtered TreeItems
-        TreeItem<Note> virtualRoot = new TreeItem<>(null);
-        virtualRoot.setExpanded(true); // Optional: if you want the root to be expanded by default
+        // Filter collections and notes
+        List<Note> filteredNotes = allNotes.stream()
+                .filter(note -> containsText(note, searchText))
+                .collect(Collectors.toList());
 
-        // Filter TreeView notes based on searchText
-        for (Collection collection : collections) {
-            TreeItem<Note> collectionItem = new TreeItem<>(new Note(collection.title, null, collection));
-            List<Note> collectionNotes = allNotes.stream()
-                    .filter(n -> n.collection.equals(collection) && containsText(n, searchText))
-                    .collect(Collectors.toList());
+        List<Collection> filteredCollections = collections.stream()
+                .filter(collection -> filteredNotes.stream()
+                        .anyMatch(note -> note.collection.equals(collection)))
+                .collect(Collectors.toList());
 
-            if (!collectionNotes.isEmpty()) {
-                for (Note note : collectionNotes) {
-                    TreeItem<Note> noteItem = new TreeItem<>(note);
-                    collectionItem.getChildren().add(noteItem);
-                }
-                virtualRoot.getChildren().add(collectionItem);
-                collectionItem.setExpanded(true);
-            }
-        }
-
-        // Update TreeView with filtered items
-        allNotesView.setRoot(virtualRoot);
-        allNotesView.setShowRoot(false); // Hide the virtual root if you don't want it to be visible
+        dashboardCtrl.refreshTreeView(filteredCollections, filteredNotes, true);
     }
+
 
 
     /**
