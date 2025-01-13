@@ -46,7 +46,7 @@ public class DashboardCtrl implements Initializable {
     // Controllers
     @Inject
     @Getter private final MarkdownCtrl markdownCtrl;
-    private final CollectionCtrl collectionCtrl;
+    @Getter private final CollectionCtrl collectionCtrl;
     @Getter private final NoteCtrl noteCtrl;
     private final SearchCtrl searchCtrl;
     @Getter private final FilesCtrl filesCtrl;
@@ -387,22 +387,6 @@ public class DashboardCtrl implements Initializable {
         }
 
         return null; // If no match is found
-    }
-
-    public FilesCtrl getFilesCtrl() {
-        return this.filesCtrl;
-    }
-
-    public MarkdownCtrl getMarkdownCtrl() {
-        return this.markdownCtrl;
-    }
-
-    public NoteCtrl getNoteCtrl() {
-        return this.noteCtrl;
-    }
-
-    public CollectionCtrl getCollectionCtrl() {
-        return this.collectionCtrl;
     }
 
     public void addNote() {

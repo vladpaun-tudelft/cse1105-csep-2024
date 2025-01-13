@@ -165,7 +165,7 @@ public class NoteCtrl {
         collectionNotes.remove(currentNote);
         allNotes.remove(currentNote);
         if (currentNote == null) {
-            dashboardCtrl.treeViewSetup();
+            dashboardCtrl.refreshTreeView();
         }
     }
 
