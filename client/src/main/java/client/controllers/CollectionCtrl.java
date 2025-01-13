@@ -20,7 +20,6 @@ import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.springframework.messaging.simp.stomp.StompSession;
 
 import java.util.List;
 import java.util.stream.Collectors;
