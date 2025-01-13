@@ -275,6 +275,14 @@ public class CollectionCtrl {
         ObservableList<Collection> collections = FXCollections.observableArrayList(config.readFromFile());
         dashboardCtrl.setCollections(collections);
 
+        if (!collections.isEmpty()) {
+            server.getWebSocketURL(
+                    config.readDefaultCollection().serverURL
+            );
+            dashboardCtrl.noteAdditionSync();
+            dashboardCtrl.noteDeletionSync();
+        }
+
         Collection defaultCollection = collections.stream()
                 .filter(collection -> collection.equals(config.readDefaultCollection()))
                 .findFirst().orElse(null);

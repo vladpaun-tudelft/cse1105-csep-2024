@@ -52,6 +52,7 @@ public class ServerUtils {
 	private List<Collection> collections;
 	private DialogStyler dialogStyler;
 
+	private static StompSession session;
 	private StompSession.Subscription embeddedFilesSubscription;
 
 	@Inject
@@ -92,8 +93,6 @@ public class ServerUtils {
 		webSocket += "websocket";
 		this.session = connect(webSocket);
 	}
-
-	private StompSession session = connect("ws://localhost:8080/websocket");
 
 	public StompSession connect(String url) {
 		var client = new StandardWebSocketClient();
