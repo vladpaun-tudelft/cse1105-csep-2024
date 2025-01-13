@@ -10,6 +10,8 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +39,16 @@ public class NoteCtrl {
     private MenuButton moveNotesButton;
 
     // Variables
-    public List<Note> updatePendingNotes = new ArrayList<>();
+    @Getter @Setter private List<Note> createPendingNotes;
+    @Getter @Setter private List<Note> updatePendingNotes;
+
     private long tempNoteId = -1;
 
     @Inject
     public NoteCtrl(ServerUtils server) {
         this.server = server;
+        createPendingNotes = new ArrayList<>();
+        updatePendingNotes = new ArrayList<>();
     }
 
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {

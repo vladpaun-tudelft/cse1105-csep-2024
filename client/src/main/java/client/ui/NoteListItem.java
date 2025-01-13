@@ -175,7 +175,7 @@ public class NoteListItem extends ListCell<Note> {
         try {
             item.setTitle(uniqueTitle); // Update the title of the Note
             noteTitle.setText(uniqueTitle);
-            noteCtrl.updatePendingNotes.add(item);// Notify NoteCtrl of the change
+            noteCtrl.getUpdatePendingNotes().add(item);// Notify NoteCtrl of the change
 
             handleReferenceTitleChange(item, oldTitle, uniqueTitle);
 
@@ -203,7 +203,7 @@ public class NoteListItem extends ListCell<Note> {
                 .filter(note -> note.body.contains("[[" + oldTitle + "]]"))
                 .forEach(note -> {
                     note.body = note.body.replace("[[" + oldTitle + "]]", "[[" + uniqueTitle + "]]");
-                    noteCtrl.updatePendingNotes.add(note);
+                    noteCtrl.getUpdatePendingNotes().add(note);
                 });
     }
 

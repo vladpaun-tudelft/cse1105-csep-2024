@@ -233,7 +233,7 @@ public class CustomTreeCell extends TreeCell<Object> {
 
         try {
             note.setTitle(uniqueTitle);
-            noteCtrl.updatePendingNotes.add(note);
+            noteCtrl.getUpdatePendingNotes().add(note);
             handleReferenceTitleChange(note, oldTitle, uniqueTitle);
             noteCtrl.saveAllPendingNotes();
             noteTitleLabel.setText(uniqueTitle);
@@ -254,7 +254,7 @@ public class CustomTreeCell extends TreeCell<Object> {
                 .filter(note -> note.body.contains("[[" + oldTitle + "]]"))
                 .forEach(note -> {
                     note.body = note.body.replace("[[" + oldTitle + "]]", "[[" + uniqueTitle + "]]");
-                    noteCtrl.updatePendingNotes.add(note);
+                    noteCtrl.getUpdatePendingNotes().add(note);
                 });
     }
 
