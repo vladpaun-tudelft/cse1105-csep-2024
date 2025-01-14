@@ -221,39 +221,11 @@ public class EditCollectionsCtrl implements Initializable {
         if (deleteButton.isDisabled()) return;
         if (currentCollection == null) return;
 
-        if (!dialogStyler.createStyledAlert(
-                Alert.AlertType.CONFIRMATION,
-                "Delete collection",
-                "Delete collection",
-                "Are you sure you want to delete this collection? All notes in the collection will be deleted as well."
-        ).showAndWait().filter(b -> b == ButtonType.OK).isPresent()) return;
+        dashboardCtrl.deleteCollection(currentCollection);
 
-        dashboardCtrl.setAllNotes(
-                FXCollections.observableArrayList(
-                        dashboardCtrl.getAllNotes().stream().filter(note ->
-                                !note.collection.title.equals(currentCollection.title)
-                        ).collect(Collectors.toList())
-                )
-        );
-
-        List<Note> notesToDelete = dashboardCtrl.getAllNotes().stream()
-                .filter(note -> note.collection.equals(currentCollection)).collect(Collectors.toList());
-        for (Note n : notesToDelete) {
-            noteCtrl.deleteNote(n, FXCollections.observableArrayList(notesToDelete), dashboardCtrl.getAllNotes());
-        }
-        // delete collection from server
-        serverUtils.deleteCollection(currentCollection);
-
-        collectionList.remove(currentCollection);
         knownCollections.remove(currentCollection);
-
         currentCollection = null;
-
-        dashboardCtrl.setCurrentCollection(null);
         dashboardCtrl.viewAllNotes();
-
-        // delete collection from config file
-        config.writeAllToFile(collectionList);
 
         refreshListView();
     }

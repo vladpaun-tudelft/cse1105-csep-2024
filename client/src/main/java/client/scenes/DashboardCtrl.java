@@ -245,7 +245,7 @@ public class DashboardCtrl implements Initializable {
      * Method used to set up the treeView
      * This method should only be used once in the initialization.
      */
-    public void treeViewSetup() {
+    private void treeViewSetup() {
         // Create a virtual root item (you can use this if you don't want the root to be visible)
         TreeItem<Object> virtualRoot = new TreeItem<>(null);
         virtualRoot.setExpanded(true); // Optional: if you want the root to be expanded by default
@@ -281,6 +281,29 @@ public class DashboardCtrl implements Initializable {
                             allNotesView.getSelectionModel().select(toSelect);
                         });
                     }
+                }
+                allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
+            }
+        });
+
+        collections.addListener((ListChangeListener<Collection>) change -> {
+            while (change.next()) {
+                if (change.wasAdded()) {
+
+                }
+                if (change.wasRemoved()) {
+                    TreeItem<Object> toRemove = findItem(change.getRemoved().getFirst());
+                    TreeItem<Object> toSelect = findValidItemInDirection(virtualRoot,toRemove, -1);
+                    if (toRemove != null) {
+                        toRemove.getChildren().clear();
+                        TreeItem<Object> parent = toRemove.getParent();
+                        if (parent != null) {
+                            parent.getChildren().removeIf(child -> Objects.equals(child.getValue(), toRemove.getValue()));
+                        }
+                    }
+                    Platform.runLater(() -> {
+                        allNotesView.getSelectionModel().select(toSelect);
+                    });
                 }
                 allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
             }
@@ -482,6 +505,9 @@ public class DashboardCtrl implements Initializable {
 
     @FXML
     public void deleteCollection() {
+        deleteCollection(currentCollection);
+    }
+    public void deleteCollection(Collection currentCollection) {
         currentCollection = collectionCtrl.deleteCollection(currentCollection, collections,
                 collectionNotes, allNotes);
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);

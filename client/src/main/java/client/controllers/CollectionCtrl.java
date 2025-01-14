@@ -335,9 +335,13 @@ public class CollectionCtrl {
     {
         if (!showDeleteConfirmation()) return currentCollection;
 
-        List<Note> notesToDelete = collectionNotes.stream().toList();
+        List<Note> notesToDelete = allNotes.stream()
+                .filter(note -> note.collection.equals(currentCollection))
+                .collect(Collectors.toList());
         for (Note n : notesToDelete) {
             noteCtrl.deleteNote(n,collectionNotes,allNotes);
+            collectionNotes.remove(n);
+            allNotes.remove(n);
         }
         // delete collection from server
         server.deleteCollection(currentCollection);
@@ -345,10 +349,6 @@ public class CollectionCtrl {
         collections.remove(currentCollection);
 
         config.writeAllToFile(collections);
-        // delete collection from collections menu
-        //currentCollectionTitle.getItems().remove(
-//.getSelectedToggle()
-        //);
         return null;
     }
 
