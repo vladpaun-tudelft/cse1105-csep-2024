@@ -10,6 +10,7 @@ import com.google.inject.Inject;
 import commons.Collection;
 import commons.EmbeddedFile;
 import commons.Note;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
@@ -84,7 +85,6 @@ public class DashboardCtrl implements Initializable {
     @Getter @Setter public ObservableList<Collection> collections;
     @Getter @Setter private ObservableList<Note> allNotes;
     @Getter @Setter public ObservableList<Note> collectionNotes;
-
 
     @Inject
     public DashboardCtrl(ServerUtils server,
@@ -180,6 +180,22 @@ public class DashboardCtrl implements Initializable {
                 10,10, TimeUnit.SECONDS);
     }
 
+    public void noteAdditionSync() {
+        server.registerForMessages("/topic/notes", Note.class, note -> {
+            Platform.runLater(() -> {
+                noteCtrl.updateViewAfterAdd(currentCollection, allNotes, note);
+            });
+        });
+    }
+
+    public void noteDeletionSync() {
+        server.registerForMessages("/topic/notes/delete", Note.class, note -> {
+            Platform.runLater(() -> {
+                noteCtrl.updateAfterDelete(note, currentCollection, allNotes);
+            });
+        });
+    }
+
     /**
      * Handles the current collection viewer setup
      */
@@ -198,6 +214,15 @@ public class DashboardCtrl implements Initializable {
             if (newValue != null) {
                 currentNote = (Note) newValue;
                 noteCtrl.showCurrentNote(currentNote);
+
+                markdownViewBlocker.setVisible(false);
+
+                server.registerForEmbeddedFileUpdates(currentNote, embeddedFile -> {
+                    Platform.runLater(() -> {
+                        filesCtrl.showFiles(currentNote);
+                    });
+                });
+
             } else {
                 currentNote = null;
                 // Show content blockers when no item is selected
@@ -205,6 +230,8 @@ public class DashboardCtrl implements Initializable {
                 markdownViewBlocker.setVisible(true);
                 moveNotesButton.setText("Move Note");
                 filesViewBlocker.setVisible(true);
+
+                server.unregisterFromEmbeddedFileUpdates();
             }
         });
 
@@ -254,6 +281,16 @@ public class DashboardCtrl implements Initializable {
             if (newValue != null && ((TreeItem)newValue).getValue() instanceof Note) {
                 currentNote = (Note)((TreeItem)newValue).getValue();
                 noteCtrl.showCurrentNote(currentNote);
+
+                markdownViewBlocker.setVisible(false);
+                allNotesView.getFocusModel().focus(0);
+
+                server.registerForEmbeddedFileUpdates(currentNote, embeddedFile -> {
+                    Platform.runLater(() -> {
+                        filesCtrl.showFiles(currentNote);
+                    });
+                });
+
             } else {
                 currentNote = null;
                 // Show content blockers when no item is selected
@@ -261,6 +298,8 @@ public class DashboardCtrl implements Initializable {
                 markdownViewBlocker.setVisible(true);
                 moveNotesButton.setText("Move Note");
                 filesViewBlocker.setVisible(true);
+
+                server.unregisterFromEmbeddedFileUpdates();
             }
         });
 
@@ -449,7 +488,7 @@ public class DashboardCtrl implements Initializable {
         // add entry in collections menu
         //right now in createCollectionButton they are not added to any menu
         RadioMenuItem radioMenuItem = createCollectionButton(collection, currentCollectionTitle, collectionSelect);
-        collectionSelect.selectToggle(radioMenuItem);
+        // collectionSelect.selectToggle(radioMenuItem);
 
         collectionCtrl.viewNotes(currentCollection, allNotes);
     }

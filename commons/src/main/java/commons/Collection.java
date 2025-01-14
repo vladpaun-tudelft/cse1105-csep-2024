@@ -30,7 +30,8 @@ public class Collection {
     @Column(nullable = false)
     public String serverURL;
 
-    @OneToMany(mappedBy = "collection",cascade = CascadeType.ALL, orphanRemoval = true)
+//    @OneToMany(mappedBy = "collection",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "collection", fetch = FetchType.EAGER)
     public Set<Note> notes;
 
     @SuppressWarnings("unused")

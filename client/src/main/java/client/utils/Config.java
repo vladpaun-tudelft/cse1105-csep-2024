@@ -60,9 +60,14 @@ public class Config {
 
     public void writeToFile(Collection collection) {
         List<Collection> collections = readFromFile();
-        if (collections != null) {
-            collections.add(collection);
-            writeAllToFile(collections);
+
+        if (!collections.contains(collection)) {
+
+            if (collections != null) {
+
+                collections.add(collection);
+                writeAllToFile(collections);
+            }
         }
     }
 

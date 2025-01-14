@@ -86,6 +86,7 @@ public class FilesCtrl {
                 return null;
             }
             EmbeddedFile e = serverUtils.addFile(currentNote, uploadedFile);
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", e);
             currentNote.getEmbeddedFiles().add(e);
             showFiles(currentNote);
             return e;
@@ -155,6 +156,7 @@ public class FilesCtrl {
         if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)){
             currentNote.getEmbeddedFiles().remove(file);
             serverUtils.deleteFile(currentNote, file);
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", file);
             showFiles(currentNote);
         }
     }
@@ -179,6 +181,7 @@ public class FilesCtrl {
             }
             currentNote.getEmbeddedFiles().remove(file);
             EmbeddedFile e = serverUtils.renameFile(currentNote, file, fileName.get());
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", e);
             currentNote.getEmbeddedFiles().add(e);
             persistFileName(currentNote, file.getFileName(), fileName.get());
             showFiles(currentNote);
