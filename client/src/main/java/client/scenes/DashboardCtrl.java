@@ -199,6 +199,7 @@ public class DashboardCtrl implements Initializable {
                 currentNote = (Note) newValue;
                 noteCtrl.showCurrentNote(currentNote);
             } else {
+                currentNote = null;
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
@@ -254,6 +255,7 @@ public class DashboardCtrl implements Initializable {
                 currentNote = (Note)((TreeItem)newValue).getValue();
                 noteCtrl.showCurrentNote(currentNote);
             } else {
+                currentNote = null;
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
