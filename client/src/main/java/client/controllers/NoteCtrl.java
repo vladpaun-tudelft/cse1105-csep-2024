@@ -154,7 +154,6 @@ public class NoteCtrl {
 
             if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
                 deleteNote(currentNote, collectionNotes, allNotes);
-                collectionView.getSelectionModel().clearSelection();
                 noteBody.clear();
             }
         }
@@ -165,18 +164,16 @@ public class NoteCtrl {
                            ObservableList<Note> allNotes) {
         updatePendingNotes.remove(currentNote);
         server.send("/app/deleteNote", currentNote);
-        collectionNotes.remove(currentNote);
-        allNotes.remove(currentNote);
     }
 
     public void updateAfterDelete(Note currentNote,
-                                  Collection currentCollection,
-                                  ObservableList<Note> allNotes) {
+                                  ObservableList<Note> allNotes,
+                                  ObservableList<Note> collectionNotes) {
         updatePendingNotes.remove(currentNote);
-        while (allNotes.contains(currentNote)) {
-            allNotes.remove(currentNote);
-        }
-        dashboardCtrl.getCollectionCtrl().viewNotes(currentCollection, allNotes);
+
+        allNotes.remove(currentNote);
+        collectionNotes.remove(currentNote);
+
     }
 
     public void saveAllPendingNotes() {

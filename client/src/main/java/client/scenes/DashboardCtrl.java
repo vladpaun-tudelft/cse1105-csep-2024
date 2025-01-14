@@ -193,7 +193,7 @@ public class DashboardCtrl implements Initializable {
     public void noteDeletionSync() {
         server.registerForMessages("/topic/notes/delete", Note.class, note -> {
             Platform.runLater(() -> {
-                noteCtrl.updateAfterDelete(note, currentCollection, allNotes);
+                noteCtrl.updateAfterDelete(note, allNotes, collectionNotes);
             });
         });
     }
