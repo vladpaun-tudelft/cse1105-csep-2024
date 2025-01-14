@@ -27,6 +27,8 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
 import javafx.scene.control.Alert;
+import lombok.Getter;
+import lombok.Setter;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
@@ -52,7 +54,9 @@ public class ServerUtils {
 	private List<Collection> collections;
 	private DialogStyler dialogStyler;
 
+	@Getter @Setter
 	private static StompSession session;
+	@Getter @Setter
 	private StompSession.Subscription embeddedFilesSubscription;
 
 	@Inject
@@ -60,20 +64,6 @@ public class ServerUtils {
 		this.config = config;
 		this.dialogStyler = dialogStyler;
 		collections = config.readFromFile();
-	}
-
-	// for testing purposes
-	public void setSession(StompSession s) {
-		session = s;
-	}
-	public StompSession getSession() {
-		return session;
-	}
-	public void setEmbeddedFilesSubscription(StompSession.Subscription embeddedFilesSubscription) {
-		this.embeddedFilesSubscription = embeddedFilesSubscription;
-	}
-	public StompSession.Subscription getEmbeddedFilesSubscription() {
-		return embeddedFilesSubscription;
 	}
 
 	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<EmbeddedFile> consumer) {
@@ -112,9 +102,17 @@ public class ServerUtils {
 		this.session = connect(webSocket);
 	}
 
+	// for testing purposes
+	public WebSocketStompClient getWebSocketStompClient(StandardWebSocketClient client) {
+		return new WebSocketStompClient(client);
+	}
+	public StandardWebSocketClient getStandardWebSocketClient() {
+		return new StandardWebSocketClient();
+	}
+
 	public StompSession connect(String url) {
-		var client = new StandardWebSocketClient();
-		var stomp = new WebSocketStompClient(client);
+		var client = getStandardWebSocketClient();
+		var stomp = getWebSocketStompClient(client);
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());

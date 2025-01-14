@@ -454,4 +454,54 @@ class ServerUtilsTest {
 
         verify(sessionMock).subscribe(eq(destination), any(StompFrameHandler.class));
     }
+
+    @Test
+    void send() {
+        String destination = "/topic/send";
+        EmbeddedFile file = new EmbeddedFile();
+
+        when(sessionMock.isConnected()).thenReturn(true);
+
+        serverUtils.setSession(sessionMock);
+        serverUtils.send(destination, file);
+
+        verify(sessionMock).send(eq(destination), eq(file));
+    }
+
+    @Test
+    void sendNotConnected() {
+        String destination = "/topic/send";
+        EmbeddedFile file = new EmbeddedFile();
+
+        when(sessionMock.isConnected()).thenReturn(false);
+
+        serverUtils.setSession(sessionMock);
+        serverUtils.send(destination, file);
+
+        verify(sessionMock, never()).send(anyString(), any());
+    }
+
+    @Test
+    void connect() {
+        StandardWebSocketClient clientMock = mock(StandardWebSocketClient.class);
+        WebSocketStompClient stompClientMock = mock(WebSocketStompClient.class);
+        StompSession stompSessionMock = mock(StompSession.class);
+
+        ServerUtils spyServerUtils = spy(serverUtils);
+
+        when(spyServerUtils.getStandardWebSocketClient()).thenReturn(clientMock);
+        when(spyServerUtils.getWebSocketStompClient(clientMock)).thenReturn(stompClientMock);
+
+        String url = "ws://mock-server.com/websocket";
+
+        CompletableFuture<StompSession> futureSession = new CompletableFuture<>();
+        futureSession.complete(stompSessionMock);
+
+        when(stompClientMock.connectAsync(eq(url), any(StompSessionHandlerAdapter.class))).thenReturn(futureSession);
+
+        StompSession result = spyServerUtils.connect(url);
+
+        assertNotNull(result);
+        assertEquals(stompSessionMock, result);
+    }
 }
