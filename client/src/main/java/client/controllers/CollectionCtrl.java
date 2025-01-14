@@ -1,36 +1,25 @@
 package client.controllers;
 
-import client.MyFXML;
-import client.MyModule;
 import client.scenes.DashboardCtrl;
 import client.scenes.EditCollectionsCtrl;
 import client.ui.DialogStyler;
 import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import commons.Collection;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.google.inject.Guice.createInjector;
 
 
 public class CollectionCtrl {
-
-    private static final Injector INJECTOR = createInjector(new MyModule());
-    private static final MyFXML FXML = new MyFXML(INJECTOR);
 
     // Utilities
     private final ServerUtils server;
@@ -416,49 +405,12 @@ public class CollectionCtrl {
     }
 
     public void addCollection(){
-        var editCollections = FXML.load(EditCollectionsCtrl.class, "client", "scenes", "EditCollections.fxml");
-
-        Stage popupStage = new Stage();
-        popupStage.initModality(Modality.APPLICATION_MODAL); // Block interaction with main window
-        popupStage.initStyle(StageStyle.TRANSPARENT); // Make window transparent
-        popupStage.setTitle("Popup Window");
-
-        Scene scene = new Scene(editCollections.getValue());
-        scene.setFill(javafx.scene.paint.Color.TRANSPARENT); // Transparent scene
-
-        popupStage.setScene(scene);
-        popupStage.getScene().getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-
-        // Set the stage in controller for dragging
-        EditCollectionsCtrl controller = (EditCollectionsCtrl) editCollections.getKey();
-        controller.setReferences(popupStage, this, dashboardCtrl, server, noteCtrl, config, dialogStyler);
-        controller.setCollectionList(dashboardCtrl.getCollections());
-        controller.addCollection();
-
-        popupStage.showAndWait();
-
+        EditCollectionsCtrl editCollectionsCtrl = dashboardCtrl.getMainCtrl().showEditCollections();
+        editCollectionsCtrl.addCollection();
     }
 
     public void editCollections() {
-        var editCollections = FXML.load(EditCollectionsCtrl.class, "client", "scenes", "EditCollections.fxml");
-
-        Stage popupStage = new Stage();
-        popupStage.initModality(Modality.APPLICATION_MODAL); // Block interaction with main window
-        popupStage.initStyle(StageStyle.TRANSPARENT); // Make window transparent
-        popupStage.setTitle("Popup Window");
-
-        Scene scene = new Scene(editCollections.getValue());
-        scene.setFill(javafx.scene.paint.Color.TRANSPARENT); // Transparent scene
-
-        popupStage.setScene(scene);
-        popupStage.getScene().getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-
-        // Set the stage in controller for dragging
-        EditCollectionsCtrl controller = (EditCollectionsCtrl) editCollections.getKey();
-        controller.setReferences(popupStage, this, dashboardCtrl, server, noteCtrl, config, dialogStyler);
-        controller.setCollectionList(dashboardCtrl.getCollections());
-
-        popupStage.showAndWait();
+        dashboardCtrl.getMainCtrl().showEditCollections();
     }
 
 

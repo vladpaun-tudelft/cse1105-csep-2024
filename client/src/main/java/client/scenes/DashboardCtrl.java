@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.controllers.*;
 import client.ui.CustomTreeCell;
+import client.ui.DialogStyler;
 import client.ui.NoteListItem;
 import client.utils.Config;
 import client.utils.ServerUtils;
@@ -38,16 +39,17 @@ public class DashboardCtrl implements Initializable {
     // Utilities
     //TODO: This is just a temporary solution, to be changed with something smarter
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final ServerUtils server;
-    private final MainCtrl mainCtrl;
-    private final Config config;
+    @Getter private final ServerUtils server;
+    @Getter private final MainCtrl mainCtrl;
+    @Getter private final Config config;
+    @Getter private final DialogStyler dialogStyler;
 
     // Controllers
     @Inject
     @Getter private final MarkdownCtrl markdownCtrl;
-    private final CollectionCtrl collectionCtrl;
+    @Getter private final CollectionCtrl collectionCtrl;
     @Getter private final NoteCtrl noteCtrl;
-    private final SearchCtrl searchCtrl;
+    @Getter private final SearchCtrl searchCtrl;
     @Getter private final FilesCtrl filesCtrl;
 
     // FXML Components
@@ -92,7 +94,8 @@ public class DashboardCtrl implements Initializable {
                          CollectionCtrl collectionCtrl,
                          NoteCtrl noteCtrl,
                          SearchCtrl searchCtrl,
-                         FilesCtrl filesCtrl) {
+                         FilesCtrl filesCtrl,
+                         DialogStyler dialogStyler) {
         this.mainCtrl = mainCtrl;
         this.server = server;
         this.config = config;
@@ -101,6 +104,7 @@ public class DashboardCtrl implements Initializable {
         this.noteCtrl = noteCtrl;
         this.searchCtrl = searchCtrl;
         this.filesCtrl = filesCtrl;
+        this.dialogStyler = dialogStyler;
     }
 
     @SneakyThrows
