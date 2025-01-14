@@ -145,7 +145,7 @@ public class MainCtrl {
                     }
                 }
                 case C -> {
-                    if (event.isControlDown() || event.isAltDown()) {
+                    if (event.isAltDown()) {
                         editCollectionsCtrl.connectToCollection();
                         editCollectionsCtrl.createCollection();
                         event.consume();

@@ -46,7 +46,7 @@ Once this is working, you can try importing the project into your favorite IDE.
 #### Collections Stage
 - ```CTRL + N``` or ```ALT + N``` - Add new collection
 - ```CTRL + S``` or ```ALT + S``` - Save collection
-- ```CTRL + C``` or ```ALT + C``` - Create/Connect collection
+- ```ALT + C``` - Create/Connect collection
 - ```ALT + DELETE``` - Delete collection
 - ```ALT + SHIFT + DELETE``` - Forget collection
 
