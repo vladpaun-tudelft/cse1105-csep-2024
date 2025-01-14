@@ -55,11 +55,11 @@ public class DashboardCtrl implements Initializable {
     @FXML @Getter private TextArea noteBody;
     @FXML private WebView markdownView;
     @FXML private Label markdownViewBlocker;
-    @FXML private Label noteTitle;
+    @FXML @Getter private Label noteTitle;
     @FXML public ListView collectionView;
     @FXML public TreeView allNotesView;
     @FXML @Getter Button addButton;
-    @FXML private Label noteTitleMD;
+    @FXML @Getter private Label noteTitleMD;
     @FXML private Button deleteButton;
     @FXML private Button clearSearchButton;
     @FXML @Getter private TextField searchField;
@@ -238,6 +238,7 @@ public class DashboardCtrl implements Initializable {
                         }
                     }
                 }
+                allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
             }
         });
 
