@@ -185,7 +185,7 @@ public class DashboardCtrl implements Initializable {
     public void noteAdditionSync() {
         server.registerForMessages("/topic/notes", Note.class, note -> {
             Platform.runLater(() -> {
-                noteCtrl.updateViewAfterAdd(currentCollection, allNotes, note);
+                noteCtrl.updateViewAfterAdd(currentCollection, allNotes, collectionNotes, note);
             });
         });
     }
@@ -265,9 +265,8 @@ public class DashboardCtrl implements Initializable {
                     selectNoteInTreeView(note);
                 }
                 if (change.wasRemoved()) {
-                    selectPreviousNote();
-                    Note previousNote = (Note) ((TreeItem<Object>) allNotesView.getSelectionModel().getSelectedItem()).getValue();
                     TreeItem<Object> toRemove = findItem(change.getRemoved().getFirst());
+                    TreeItem<Object> toSelect = findValidItemInDirection(virtualRoot,toRemove, -1);
                     if (toRemove != null) {
                         // Locate the parent of the item to remove
                         TreeItem<Object> parent = toRemove.getParent();
@@ -277,10 +276,11 @@ public class DashboardCtrl implements Initializable {
                         if (parent.getChildren().isEmpty()) {
                             parent.getChildren().add(noNotesItem);
                         }
+
+                        Platform.runLater(() -> {
+                            allNotesView.getSelectionModel().select(toSelect);
+                        });
                     }
-                    Platform.runLater(() -> {
-                        selectNoteInTreeView(previousNote);
-                    });
                 }
                 allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
             }

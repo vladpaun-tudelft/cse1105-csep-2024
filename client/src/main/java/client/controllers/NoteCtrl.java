@@ -95,12 +95,6 @@ public class NoteCtrl {
 
         server.send("/app/notes", newNote);
 
-        if (currentCollection != null) {
-            collectionView.getSelectionModel().select(collectionNotes.size() - 1);
-            collectionView.getFocusModel().focus(collectionNotes.size() - 1);
-            collectionView.edit(collectionNotes.size() - 1);
-        }
-
         noteTitle.setText(newTitle);
         noteTitleMd.setText(newTitle);
 
@@ -108,12 +102,16 @@ public class NoteCtrl {
 
     }
 
-    public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> allNotes, Note note) {
+    public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> allNotes,ObservableList<Note> collectionNotes, Note note) {
         if (!allNotes.contains(note)) {
             allNotes.add(note);
         }
         if (currentCollection != null) {
-            dashboardCtrl.getCollectionCtrl().viewNotes(currentCollection, allNotes);
+            if (!collectionNotes.contains(note)) collectionNotes.add(note);
+
+            collectionView.getSelectionModel().select(collectionNotes.size() - 1);
+            collectionView.getFocusModel().focus(collectionNotes.size() - 1);
+            collectionView.edit(collectionNotes.size() - 1);
         }
     }
 
