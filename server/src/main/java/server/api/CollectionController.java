@@ -5,6 +5,8 @@ import commons.Note;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 import server.service.CollectionService;
 import server.service.NoteService;
@@ -22,6 +24,13 @@ public class CollectionController {
     public CollectionController(NoteService noteService, CollectionService collectionService) {
         this.noteService = noteService;
         this.collectionService = collectionService;
+    }
+
+    @MessageMapping("/collections")
+    @SendTo("/topic/collections")
+    public Collection addMessage(Collection collection) {
+        createCollection(collection);
+        return collection;
     }
 
     /**

@@ -39,8 +39,7 @@ public class Note {
     @JoinColumn(name = "collection_id", nullable = false)
     public commons.Collection collection;
 
-    // Needs to be fixed when UI for embedded files are done
-    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "note"/*, cascade = CascadeType.ALL, orphanRemoval = true*/, fetch = FetchType.EAGER)
     @JsonManagedReference  // required to prevent infinite recursion
     public List<EmbeddedFile> embeddedFiles;
 

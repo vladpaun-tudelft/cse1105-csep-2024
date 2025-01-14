@@ -43,7 +43,7 @@ class NoteControllerTest {
         collectionService = new CollectionService(collectionRepo);
         embeddedFileService = new EmbeddedFileService(embeddedFileRepository);
 
-        noteController = new NoteController(noteService, collectionService, embeddedFileService);
+        noteController = new NoteController(noteService, collectionService, embeddedFileService, noteRepo);
         collectionController = new CollectionController(noteService, collectionService);
 
 

@@ -275,6 +275,14 @@ public class CollectionCtrl {
         ObservableList<Collection> collections = FXCollections.observableArrayList(config.readFromFile());
         dashboardCtrl.setCollections(collections);
 
+        if (!collections.isEmpty()) {
+            server.getWebSocketURL(
+                    config.readDefaultCollection().serverURL
+            );
+            dashboardCtrl.noteAdditionSync();
+            dashboardCtrl.noteDeletionSync();
+        }
+
         Collection defaultCollection = collections.stream()
                 .filter(collection -> collection.equals(config.readDefaultCollection()))
                 .findFirst().orElse(null);
@@ -307,9 +315,13 @@ public class CollectionCtrl {
             dashboardCtrl.refreshTreeView();
             collectionView.getSelectionModel().clearSelection();
         } else {
+            server.getWebSocketURL(currentCollection.serverURL);
+            dashboardCtrl.noteAdditionSync();
+            dashboardCtrl.noteDeletionSync();
             collectionNotes = FXCollections.observableArrayList(
                     allNotes.stream()
                             .filter(note -> note.collection.equals(currentCollection))
+                            .distinct()
                             .collect(Collectors.toList())
             );
             currentCollectionTitle.setText(currentCollection.title);
@@ -436,7 +448,6 @@ public class CollectionCtrl {
         controller.addCollection();
 
         popupStage.showAndWait();
-
     }
 
     public void editCollections() {

@@ -16,6 +16,8 @@
 package client.utils;
 
 import client.ui.DialogStyler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.inject.Inject;
 import commons.Collection;
 import commons.EmbeddedFile;
@@ -28,11 +30,18 @@ import javafx.scene.control.Alert;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
+import org.springframework.messaging.simp.stomp.*;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static jakarta.ws.rs.core.MediaType.MULTIPART_FORM_DATA_TYPE;
@@ -43,6 +52,9 @@ public class ServerUtils {
 	private List<Collection> collections;
 	private DialogStyler dialogStyler;
 
+	private static StompSession session;
+	private StompSession.Subscription embeddedFilesSubscription;
+
 	@Inject
 	public ServerUtils(Config config, DialogStyler dialogStyler) {
 		this.config = config;
@@ -50,6 +62,95 @@ public class ServerUtils {
 		collections = config.readFromFile();
 	}
 
+	// for testing purposes
+	public void setSession(StompSession s) {
+		session = s;
+	}
+	public void setEmbeddedFilesSubscription(StompSession.Subscription embeddedFilesSubscription) {
+		this.embeddedFilesSubscription = embeddedFilesSubscription;
+	}
+	public StompSession.Subscription getEmbeddedFilesSubscription() {
+		return embeddedFilesSubscription;
+	}
+
+	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<EmbeddedFile> consumer) {
+		if (embeddedFilesSubscription != null) {
+			embeddedFilesSubscription.unsubscribe();
+		}
+
+		String topic = "/topic/notes/" + selectedNote.getId() + "/files";
+		embeddedFilesSubscription = session.subscribe(topic, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return EmbeddedFile.class;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((EmbeddedFile) payload);
+			}
+		});
+	}
+
+	public void unregisterFromEmbeddedFileUpdates() {
+		if (embeddedFilesSubscription != null) {
+			embeddedFilesSubscription.unsubscribe();
+			embeddedFilesSubscription = null;
+		}
+	}
+
+	public void getWebSocketURL(String serverURL) {
+		if (session != null) {
+			session.disconnect();
+		}
+
+		String webSocket = serverURL.replace("http", "ws");
+		webSocket += "websocket";
+		this.session = connect(webSocket);
+	}
+
+	public StompSession connect(String url) {
+		var client = new StandardWebSocketClient();
+		var stomp = new WebSocketStompClient(client);
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.registerModule(new JavaTimeModule());
+		MappingJackson2MessageConverter messageConverter = new MappingJackson2MessageConverter();
+		messageConverter.setObjectMapper(objectMapper);
+		stomp.setMessageConverter(messageConverter);
+		try {
+            return stomp.connectAsync(url, new StompSessionHandlerAdapter() {}).get();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e);
+		}
+		throw new IllegalStateException();
+	}
+
+	public <T> void registerForMessages(String dest, Class<T> type, Consumer<T> consumer) {
+		if (this.session == null) {
+			return;
+        }
+		this.session.subscribe(dest, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return type;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((T) payload);
+			}
+		});
+	}
+
+	public void send(String dest, Object o) {
+		if (session == null || !session.isConnected()) {
+			return;
+		}
+		session.send(dest, o);
+	}
 
 	public Note addNote(Note note) {
 		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
@@ -70,7 +171,6 @@ public class ServerUtils {
 		return allNotes;
 	}
 
-
 	public Note updateNote(Note note) {
 		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
 		return ClientBuilder.newClient(new ClientConfig())
@@ -81,6 +181,11 @@ public class ServerUtils {
 
 	public void deleteNote(Note note) {
 		if(!isServerAvailableWithAlert(note.collection.serverURL)) return;
+
+		List<EmbeddedFile> embeddedFiles = getFilesByNote(note);
+		for (EmbeddedFile e : embeddedFiles) {
+			deleteFile(note, e);
+		}
 		ClientBuilder.newClient(new ClientConfig())
 				.target(note.collection.serverURL).path("api/notes/" + note.id)
 				.request(APPLICATION_JSON)
@@ -125,12 +230,17 @@ public class ServerUtils {
 
 	public void deleteCollection(Collection collection) {
 		if (!isServerAvailableWithAlert(collection.serverURL)) return;
+
+		List<Note> notesInCollection = getNotesByCollection(collection);
+		for (Note note : notesInCollection) {
+			deleteNote(note);
+		}
+
 		ClientBuilder.newClient(new ClientConfig())
 				.target(collection.serverURL).path("/api/collection/" + collection.id)
 				.request(APPLICATION_JSON)
 				.delete();
 	}
-
 
 	public EmbeddedFile addFile(Note note, File file){
 		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
