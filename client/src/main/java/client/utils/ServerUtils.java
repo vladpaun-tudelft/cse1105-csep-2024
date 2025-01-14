@@ -66,6 +66,9 @@ public class ServerUtils {
 	public void setSession(StompSession s) {
 		session = s;
 	}
+	public StompSession getSession() {
+		return session;
+	}
 	public void setEmbeddedFilesSubscription(StompSession.Subscription embeddedFilesSubscription) {
 		this.embeddedFilesSubscription = embeddedFilesSubscription;
 	}
