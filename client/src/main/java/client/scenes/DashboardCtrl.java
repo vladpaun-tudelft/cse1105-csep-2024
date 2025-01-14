@@ -86,6 +86,8 @@ public class DashboardCtrl implements Initializable {
     @Getter @Setter private ObservableList<Note> allNotes;
     @Getter @Setter public ObservableList<Note> collectionNotes;
 
+    private TreeItem<Object> noNotesItem = new TreeItem<>(" - no notes in collection.");
+
     @Inject
     public DashboardCtrl(ServerUtils server,
                          MainCtrl mainCtrl,
@@ -256,11 +258,15 @@ public class DashboardCtrl implements Initializable {
                 if (change.wasAdded()) {
                     Note note = change.getAddedSubList().getLast();
                     TreeItem<Object> parent = findItem(note.collection);
+                    if (parent.getChildren().size() == 1 && parent.getChildren().getFirst().equals(noNotesItem)) {
+                        parent.getChildren().remove(noNotesItem);
+                    }
                     parent.getChildren().addLast(new TreeItem<>(note));
                     selectNoteInTreeView(note);
                 }
                 if (change.wasRemoved()) {
                     selectPreviousNote();
+                    Note previousNote = (Note) ((TreeItem<Object>) allNotesView.getSelectionModel().getSelectedItem()).getValue();
                     TreeItem<Object> toRemove = findItem(change.getRemoved().getFirst());
                     if (toRemove != null) {
                         // Locate the parent of the item to remove
@@ -268,7 +274,13 @@ public class DashboardCtrl implements Initializable {
                         if (parent != null) {
                             parent.getChildren().removeIf(child -> Objects.equals(child.getValue(), toRemove.getValue()));
                         }
+                        if (parent.getChildren().isEmpty()) {
+                            parent.getChildren().add(noNotesItem);
+                        }
                     }
+                    Platform.runLater(() -> {
+                        selectNoteInTreeView(previousNote);
+                    });
                 }
                 allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
             }
@@ -319,7 +331,6 @@ public class DashboardCtrl implements Initializable {
     public void populateTreeView(TreeItem<Object> virtualRoot, List<Collection> filteredCollections, List<Note> filteredNotes, boolean expanded) {
         // Map each collection to its TreeItem
         Map<Collection, TreeItem<Object>> collectionItems = new HashMap<>();
-        TreeItem<Object> noNotesItem = new TreeItem<>(" - no notes in collection.");
 
         // Initialize TreeView with filtered data
         for (Collection collection : filteredCollections) {

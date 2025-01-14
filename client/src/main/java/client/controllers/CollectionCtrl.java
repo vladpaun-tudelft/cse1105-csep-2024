@@ -301,7 +301,6 @@ public class CollectionCtrl {
             currentCollectionTitle.setText("All Notes");
             collectionView.setVisible(false);
             treeView.setVisible(true);
-            dashboardCtrl.refreshTreeView();
             collectionView.getSelectionModel().clearSelection();
         } else {
             server.getWebSocketURL(currentCollection.serverURL);

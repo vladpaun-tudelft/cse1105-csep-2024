@@ -99,9 +99,6 @@ public class NoteCtrl {
             collectionView.getSelectionModel().select(collectionNotes.size() - 1);
             collectionView.getFocusModel().focus(collectionNotes.size() - 1);
             collectionView.edit(collectionNotes.size() - 1);
-
-        }else {
-            dashboardCtrl.selectNoteInTreeView(newNote);
         }
 
         noteTitle.setText(newTitle);
@@ -172,9 +169,6 @@ public class NoteCtrl {
         server.send("/app/deleteNote", currentNote);
         collectionNotes.remove(currentNote);
         allNotes.remove(currentNote);
-        if (currentNote == null) {
-            dashboardCtrl.refreshTreeView();
-        }
     }
 
     public void updateAfterDelete(Note currentNote,
