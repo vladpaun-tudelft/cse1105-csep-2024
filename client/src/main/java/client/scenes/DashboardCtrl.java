@@ -221,9 +221,22 @@ public class DashboardCtrl implements Initializable {
         // Add listener to the ObservableList to dynamically update the TreeView
         allNotes.addListener((ListChangeListener<Note>) change -> {
             while (change.next()) {
-                refreshTreeView();
                 if (change.wasAdded()) {
-                    selectNoteInTreeView(change.getAddedSubList().getLast());
+                    Note note = change.getAddedSubList().getLast();
+                    TreeItem<Object> parent = findItem(note.collection);
+                    parent.getChildren().addLast(new TreeItem<>(note));
+                    selectNoteInTreeView(note);
+                }
+                if (change.wasRemoved()) {
+                    selectPreviousNote();
+                    TreeItem<Object> toRemove = findItem(change.getRemoved().getFirst());
+                    if (toRemove != null) {
+                        // Locate the parent of the item to remove
+                        TreeItem<Object> parent = toRemove.getParent();
+                        if (parent != null) {
+                            parent.getChildren().removeIf(child -> Objects.equals(child.getValue(), toRemove.getValue()));
+                        }
+                    }
                 }
             }
         });
@@ -307,7 +320,7 @@ public class DashboardCtrl implements Initializable {
      */
     public void selectNoteInTreeView(Note targetNote) {
         // Call the helper method to find and select the item
-        TreeItem<Object> itemToSelect = findItem(allNotesView.getRoot(), targetNote);
+        TreeItem<Object> itemToSelect = findItem(targetNote);
         if (itemToSelect != null) {
             // Select the TreeItem
             allNotesView.getSelectionModel().select(itemToSelect);
@@ -346,6 +359,9 @@ public class DashboardCtrl implements Initializable {
         }
 
         return null; // If no match is found
+    }
+    private TreeItem<Object> findItem(Object targetObject) {
+        return findItem(allNotesView.getRoot(), targetObject);
     }
 
     public void addNote() {
