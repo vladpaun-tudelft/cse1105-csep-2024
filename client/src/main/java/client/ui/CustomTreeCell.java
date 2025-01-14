@@ -185,7 +185,7 @@ public class CustomTreeCell extends TreeCell<Object> {
         setGraphic(collectionHBox);
     }
 
-    private void startEditing() {
+    public void startEditing() {
         Note note = (Note) getItem();
         if (note == null) return;
 

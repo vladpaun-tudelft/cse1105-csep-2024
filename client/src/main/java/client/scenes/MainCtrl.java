@@ -15,9 +15,12 @@
  */
 package client.scenes;
 
+import commons.Note;
 import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -55,32 +58,65 @@ public class MainCtrl {
 
                 // NAVIGATION
                 case  RIGHT -> {
-                    if (event.isAltDown()) dashboardCtrl.selectNextCollection();
-                    event.consume();
+                    if (event.isAltDown()) {
+                        dashboardCtrl.selectNextCollection();
+                        event.consume();
+                    }
                 }
                 case LEFT -> {
-                    if (event.isAltDown()) dashboardCtrl.selectPreviousCollection();
-                    event.consume();
+                    if (event.isAltDown()) {
+                        dashboardCtrl.selectPreviousCollection();
+                        event.consume();
+                    }
                 }
                 case DOWN -> {
-                    if (event.isAltDown()) dashboardCtrl.selectNextNote();
-                    event.consume();
+                    if (event.isAltDown()) {
+                        dashboardCtrl.selectNextNote();
+                        event.consume();
+                    }
                 }
                 case UP -> {
-                    if (event.isAltDown()) dashboardCtrl.selectPreviousNote();
-                    event.consume();
+                    if (event.isAltDown()){
+                        dashboardCtrl.selectPreviousNote();
+                        event.consume();
+                    }
+                }
+                case TAB -> {
+
+                }
+
+                // DELETING NOTES
+                case DELETE -> {
+                    if (event.isAltDown()) {
+                        dashboardCtrl.deleteSelectedNote();
+                        event.consume();
+                    }
+                }
+
+                // EDITING
+                case E -> {
+                    if (event.isAltDown() || event.isControlDown()) {
+                        if (event.isShiftDown()) {
+                            dashboardCtrl.openEditCollections();
+                            event.consume();
+                        } else {
+                            dashboardCtrl.editCurrentNoteName();
+                            event.consume();
+                        }
+                    }
                 }
 
                 // ADDING NOTES AND COLLECTIONS
                 case N -> {
-                    if (event.isControlDown()) {
+                    if (event.isControlDown() || event.isAltDown()) {
                         if (event.isShiftDown()) {
                             dashboardCtrl.addCollection();
+                            event.consume();
                         } else {
                             dashboardCtrl.addNote();
+                            event.consume();
                         }
                     }
-                    event.consume();
                 }
 
                 // SEARCHING
@@ -90,7 +126,13 @@ public class MainCtrl {
                     event.consume();
                 }
 
-                //FULLSCREEN
+                // REFRESH
+                case F5 -> {
+                    dashboardCtrl.refresh();
+                    event.consume();
+                }
+
+                // FULLSCREEN
                 case F11 -> primaryStage.setFullScreen(!primaryStage.isFullScreen());
                 case ENTER -> {
                     if (event.isAltDown()) {

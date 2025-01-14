@@ -123,7 +123,7 @@ public class NoteListItem extends ListCell<Note> {
         }
     }
 
-    private void startEditing() {
+    public void startEditing() {
         Note item = getItem();
         if (item != null) {
             originalTitle = item.getTitle();

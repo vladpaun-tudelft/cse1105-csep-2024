@@ -525,6 +525,32 @@ public class DashboardCtrl implements Initializable {
         selectNoteInDirection(-1); // Direction -1 for "previous"
     }
 
+    /**
+     * ALT/CTRL + E - starts editing the current note name
+     */
+    public void editCurrentNoteName() {
+        if (currentCollection == null) {
+            // Handle TreeView selection
+            TreeItem<Object> selectedItem = (TreeItem<Object>) allNotesView.getSelectionModel().getSelectedItem();
+            if (selectedItem != null && selectedItem.getValue() instanceof Note) {
+                CustomTreeCell customTreeCell = (CustomTreeCell) allNotesView.lookup(".tree-cell:selected");
+                if (customTreeCell != null) {
+                    customTreeCell.startEditing();
+                }
+            }
+        } else {
+            // Handle ListView selection
+            Note selectedNote = (Note) collectionView.getSelectionModel().getSelectedItem();
+            if (selectedNote != null) {
+                NoteListItem noteListItem = (NoteListItem) collectionView.lookup(".list-cell:selected");
+                if (noteListItem != null) {
+                    noteListItem.startEditing();
+                }
+            }
+        }
+    }
+
+
 
     // ----------------------- HCI - Helper methods -----------------------
 
@@ -610,5 +636,4 @@ public class DashboardCtrl implements Initializable {
             flattenTreeRecursive(child, items);
         }
     }
-
 }
