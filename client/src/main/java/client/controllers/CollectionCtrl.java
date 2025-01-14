@@ -13,6 +13,7 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
+import lombok.Getter;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class CollectionCtrl {
     private ListView collectionView;
     private TreeView treeView;
     private MenuButton currentCollectionTitle;
-    private ToggleGroup collectionSelect;
+    @Getter private ToggleGroup collectionSelect;
     private MenuItem allNotesButton;
     private MenuItem editCollectionTitle;
     private Button deleteCollectionButton;
@@ -54,7 +55,6 @@ public class CollectionCtrl {
     public void setReferences(ListView collectionView,
                               TreeView treeView,
                               MenuButton currentCollectionTitle,
-                              ToggleGroup collectionSelect,
                               MenuItem allNotesButton,
                               MenuItem editCollectionTitle,
                               Button deleteCollectionButton,
@@ -412,7 +412,7 @@ public class CollectionCtrl {
         RadioMenuItem radioMenuItem = dashboardCtrl.createCollectionButton(addedCollection, currentCollectionTitle, collectionSelect);
         collectionSelect.selectToggle(radioMenuItem);
 
-        return addedCollection;
+        return currentCollection == null ? currentCollection : addedCollection;
     }
 
     public void addCollection(){

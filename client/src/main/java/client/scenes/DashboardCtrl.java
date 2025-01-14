@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Controls all logic for the main dashboard.
@@ -130,12 +131,13 @@ public class DashboardCtrl implements Initializable {
         collectionCtrl.setReferences(collectionView,
                 allNotesView,
                 currentCollectionTitle,
-                collectionSelect,
                 allNotesButton,
                 editCollectionTitle,
                 deleteCollectionButton,
                 moveNotesButton
         );
+        collectionSelect = collectionCtrl.getCollectionSelect();
+
         collectionCtrl.setDashboardCtrl(this);
 
         noteCtrl.setReferences(
@@ -289,7 +291,17 @@ public class DashboardCtrl implements Initializable {
         collections.addListener((ListChangeListener<Collection>) change -> {
             while (change.next()) {
                 if (change.wasAdded()) {
+                    TreeItem<Object> collectionItem = new TreeItem<>(change.getAddedSubList().getFirst());
+                    virtualRoot.getChildren().add(collectionItem);
 
+                    List<Note> notes = allNotes.stream().filter(note -> note.collection.equals(collectionItem.getValue())).collect(Collectors.toList());
+                    if (notes.isEmpty()) {
+                        collectionItem.getChildren().add(noNotesItem);
+                    } else {
+                        for (Note note : notes) {
+                            collectionItem.getChildren().add(new TreeItem<>(note));
+                        }
+                    }
                 }
                 if (change.wasRemoved()) {
                     TreeItem<Object> toRemove = findItem(change.getRemoved().getFirst());
@@ -515,9 +527,12 @@ public class DashboardCtrl implements Initializable {
 
     public void conectToCollection(Collection collection) {
         List<Note> newCollectionNotes = server.getNotesByCollection(collection);
-        collectionNotes = FXCollections.observableArrayList(newCollectionNotes);
         allNotes.addAll(newCollectionNotes);
-        currentCollection = collection;
+
+        if (currentCollection != null) {
+            collectionNotes = FXCollections.observableArrayList(newCollectionNotes);
+            currentCollection = collection;
+        }
 
         collections.add(collection);
         config.writeToFile(collection);
@@ -525,7 +540,7 @@ public class DashboardCtrl implements Initializable {
         // add entry in collections menu
         //right now in createCollectionButton they are not added to any menu
         RadioMenuItem radioMenuItem = createCollectionButton(collection, currentCollectionTitle, collectionSelect);
-        // collectionSelect.selectToggle(radioMenuItem);
+        collectionSelect.selectToggle(radioMenuItem);
 
         collectionCtrl.viewNotes(currentCollection, allNotes);
     }
