@@ -115,7 +115,9 @@ public class NoteCtrl {
         if (!allNotes.contains(note)) {
             allNotes.add(note);
         }
-        dashboardCtrl.getCollectionCtrl().viewNotes(currentCollection, allNotes);
+        if (currentCollection != null) {
+            dashboardCtrl.getCollectionCtrl().viewNotes(currentCollection, allNotes);
+        }
     }
 
     public void showCurrentNote(Note selectedNote) {
