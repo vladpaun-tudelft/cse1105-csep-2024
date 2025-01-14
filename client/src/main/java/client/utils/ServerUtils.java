@@ -62,6 +62,17 @@ public class ServerUtils {
 		collections = config.readFromFile();
 	}
 
+	// for testing purposes
+	public void setSession(StompSession s) {
+		session = s;
+	}
+	public void setEmbeddedFilesSubscription(StompSession.Subscription embeddedFilesSubscription) {
+		this.embeddedFilesSubscription = embeddedFilesSubscription;
+	}
+	public StompSession.Subscription getEmbeddedFilesSubscription() {
+		return embeddedFilesSubscription;
+	}
+
 	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<EmbeddedFile> consumer) {
 		if (embeddedFilesSubscription != null) {
 			embeddedFilesSubscription.unsubscribe();
@@ -89,6 +100,10 @@ public class ServerUtils {
 	}
 
 	public void getWebSocketURL(String serverURL) {
+		if (session != null) {
+			session.disconnect();
+		}
+
 		String webSocket = serverURL.replace("http", "ws");
 		webSocket += "websocket";
 		this.session = connect(webSocket);
