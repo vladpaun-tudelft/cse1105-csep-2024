@@ -185,7 +185,7 @@ public class CustomTreeCell extends TreeCell<Object> {
         setGraphic(collectionHBox);
     }
 
-    private void startEditing() {
+    public void startEditing() {
         Note note = (Note) getItem();
         if (note == null) return;
 
@@ -237,6 +237,10 @@ public class CustomTreeCell extends TreeCell<Object> {
             handleReferenceTitleChange(note, oldTitle, uniqueTitle);
             noteCtrl.saveAllPendingNotes();
             noteTitleLabel.setText(uniqueTitle);
+
+            dashboardCtrl.getNoteTitle().setText(uniqueTitle);
+            dashboardCtrl.getNoteTitleMD().setText(uniqueTitle);
+
             originalNoteTitle = newTitle;
         } catch (ClientErrorException e) {
             // Handle client errors

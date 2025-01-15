@@ -80,8 +80,7 @@ public class NoteCtrl {
     }
 
     public void addNote(Collection currentCollection,
-                        ObservableList<Note> allNotes,
-                        ObservableList<Note> collectionNotes) {
+                        ObservableList<Note> allNotes) {
         Collection collection = currentCollection != null ? currentCollection : dashboardCtrl.getDefaultCollection();
 
         // Generate a unique title
@@ -95,28 +94,22 @@ public class NoteCtrl {
 
         server.send("/app/notes", newNote);
 
-        if (currentCollection != null) {
-            collectionView.getSelectionModel().select(collectionNotes.size() - 1);
-            collectionView.getFocusModel().focus(collectionNotes.size() - 1);
-            collectionView.edit(collectionNotes.size() - 1);
-
-        }else {
-            dashboardCtrl.selectNoteInTreeView(newNote);
-        }
-
         noteTitle.setText(newTitle);
         noteTitleMd.setText(newTitle);
 
         noteBody.setText("");
-
     }
 
-    public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> allNotes, Note note) {
+    public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> allNotes,ObservableList<Note> collectionNotes, Note note) {
         if (!allNotes.contains(note)) {
             allNotes.add(note);
         }
         if (currentCollection != null) {
-            dashboardCtrl.getCollectionCtrl().viewNotes(currentCollection, allNotes);
+            if (!collectionNotes.contains(note)) collectionNotes.add(note);
+
+            collectionView.getSelectionModel().select(collectionNotes.size() - 1);
+            collectionView.getFocusModel().focus(collectionNotes.size() - 1);
+            collectionView.edit(collectionNotes.size() - 1);
         }
     }
 
@@ -159,7 +152,6 @@ public class NoteCtrl {
 
             if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
                 deleteNote(currentNote, collectionNotes, allNotes);
-                collectionView.getSelectionModel().clearSelection();
                 noteBody.clear();
             }
         }
@@ -170,21 +162,15 @@ public class NoteCtrl {
                            ObservableList<Note> allNotes) {
         updatePendingNotes.remove(currentNote);
         server.send("/app/deleteNote", currentNote);
-        collectionNotes.remove(currentNote);
-        allNotes.remove(currentNote);
-        if (currentNote == null) {
-            dashboardCtrl.refreshTreeView();
-        }
     }
 
     public void updateAfterDelete(Note currentNote,
-                                  Collection currentCollection,
-                                  ObservableList<Note> allNotes) {
+                                  ObservableList<Note> allNotes,
+                                  ObservableList<Note> collectionNotes) {
         updatePendingNotes.remove(currentNote);
-        while (allNotes.contains(currentNote)) {
-            allNotes.remove(currentNote);
-        }
-        dashboardCtrl.getCollectionCtrl().viewNotes(currentCollection, allNotes);
+
+        allNotes.remove(currentNote);
+        collectionNotes.remove(currentNote);
     }
 
     public void saveAllPendingNotes() {
