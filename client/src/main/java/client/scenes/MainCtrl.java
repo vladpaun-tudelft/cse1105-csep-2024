@@ -22,6 +22,7 @@ import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -78,6 +79,7 @@ public class MainCtrl {
 
         Scene scene = new Scene(FXML.load(EditCollectionsCtrl.class, "client", "scenes", "EditCollections.fxml").getValue());
         scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+scene.setFill(Color.TRANSPARENT);
         popupStage.setScene(scene);
 
         editCollectionsCtrl.setReferences(
