@@ -60,3 +60,48 @@
 - **Question round:** Does anyone have anything to add before the meeting closes?
 
 ---
+# Minutes
+
+## TA Announcments
+- Accessibility feedback published
+  - We need to test the app more
+  - Client was difficult to run (config file problems)
+  - The app is too dark, we need more contrast (we can add a contrast mode)
+  - Undo functionality must be added
+  - We should add some text on hover to the icons (so that it's clear what each button does)
+  - In general, more feedback for user
+
+## Last week's progress
+- We didn't fully complete everything we discussed
+- Web sockets: Note title, note body and moving notes between collections should also be synchronized
+- There was no progress on the live-language-switch feature
+- Tags are not done yet
+
+## Next steps
+- Refactor client code
+- We could add more front-end tests
+- Everyone should go over all issues they created and make sure they are good (labels, assignee, time-tracking)
+
+## Points of action
+- Vlad:
+  - Undo functionality
+  - Finish up HCI improvements
+  - Live-language switch
+
+- Koen:
+  - Finish up web sockets
+  - Front-end improvements
+  - Testing
+
+- Bartosz
+  - General improvements and bug-fixing
+
+- Dinu
+  - Handling errors for web sockets
+  - Improve embedded-files sync
+  - Add error for file size
+
+- Dhruvan
+  - Finish tags this week
+  - Live-language switch
+
