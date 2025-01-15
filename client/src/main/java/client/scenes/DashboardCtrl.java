@@ -521,7 +521,9 @@ public class DashboardCtrl implements Initializable {
     @FXML
     public void deleteCollection() {
         if (collectionCtrl.showDeleteConfirmation()) {
-            collectionCtrl.removeCollectionFromClient(true, currentCollection, collections, collectionNotes, allNotes);
+            Collection collectionToDelete = currentCollection;
+            viewAllNotes();
+            collectionCtrl.removeCollectionFromClient(true, collectionToDelete, collections, collectionNotes, allNotes);
         }
     }
 
