@@ -89,19 +89,37 @@ public class Config {
 
     public void setDefaultCollection(Collection defaultCollection) {
         List<Collection> collections = readFromFile();
-        if (collections == null || !collections.contains(defaultCollection)) {
+
+        // Check if collections list is null
+        if (collections == null) {
             dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,
                     "Default Collection Error",
-                    "Collection not found.",
-                    "The specified collection does not exist in the config file. Please try again."
+                    "Configuration file error.",
+                    "The configuration file could not be read. Please check the file and try again."
             ).showAndWait();
             return;
         }
+
+        // Handle null defaultCollection
+        long defaultCollectionId = -1;
+        if (defaultCollection != null) {
+            if (!collections.contains(defaultCollection)) {
+                dialogStyler.createStyledAlert(
+                        Alert.AlertType.ERROR,
+                        "Default Collection Error",
+                        "Collection not found.",
+                        "The specified collection does not exist in the config file. Please try again."
+                ).showAndWait();
+                return;
+            }
+            defaultCollectionId = defaultCollection.id;
+        }
+
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writerWithDefaultPrettyPrinter()
-                    .writeValue(configFile, new ConfigData(collections, defaultCollection.id));
+                    .writeValue(configFile, new ConfigData(collections, defaultCollectionId));
         } catch (IOException e) {
             dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,
@@ -111,6 +129,7 @@ public class Config {
             ).showAndWait();
         }
     }
+
 
     public Collection readDefaultCollection() {
         try {

@@ -303,9 +303,6 @@ public class CollectionCtrl {
             treeView.setVisible(true);
             collectionView.getSelectionModel().clearSelection();
         } else {
-            server.getWebSocketURL(currentCollection.serverURL);
-            dashboardCtrl.noteAdditionSync();
-            dashboardCtrl.noteDeletionSync();
             collectionNotes = FXCollections.observableArrayList(
                     allNotes.stream()
                             .filter(note -> note.collection.equals(currentCollection))
@@ -327,37 +324,42 @@ public class CollectionCtrl {
         return collectionNotes!=null?collectionNotes : FXCollections.observableArrayList();
     }
 
-
-    public Collection deleteCollection(Collection currentCollection,
-                                       List<Collection> collections,
-                                       ObservableList<Note> collectionNotes,
-                                       ObservableList<Note> allNotes)
-    {
-        if (!showDeleteConfirmation()) return currentCollection;
-
+    public void removeCollectionFromClient(boolean delete, Collection collection, List<Collection> collections, ObservableList<Note> collectionNotes, ObservableList<Note> allNotes) {
         List<Note> notesToDelete = allNotes.stream()
-                .filter(note -> note.collection.equals(currentCollection))
+                .filter(note -> note.collection.equals(collection))
                 .collect(Collectors.toList());
         for (Note n : notesToDelete) {
-            noteCtrl.deleteNote(n,collectionNotes,allNotes);
-            collectionNotes.remove(n);
-            allNotes.remove(n);
+            if (delete) noteCtrl.deleteNote(n,collectionNotes,allNotes);
         }
+
+        Collection previousCollection = collections.stream().filter(c -> !c.equals(collection)).findFirst().orElse(null);
+        dashboardCtrl.setDefaultCollection(previousCollection);
+        config.setDefaultCollection(previousCollection);
+
         // delete collection from server
-        server.deleteCollection(currentCollection);
+        if (delete) server.deleteCollection(collection);
         // delete collection from config file
-        collections.remove(currentCollection);
+        collections.remove(collection);
 
         config.writeAllToFile(collections);
-        return null;
     }
 
-    private boolean showDeleteConfirmation() {
+    public boolean showDeleteConfirmation() {
         return dialogStyler.createStyledAlert(
                 Alert.AlertType.CONFIRMATION,
                 "Delete collection",
                 "Delete collection",
                 "Are you sure you want to delete this collection? All notes in the collection will be deleted as well."
+        ).showAndWait().filter(b -> b == ButtonType.OK).isPresent();
+    }
+
+    public boolean showForgetConfirmation() {
+        return dialogStyler.createStyledAlert(
+                Alert.AlertType.CONFIRMATION,
+                "Forget collection",
+                "Forget collection",
+                "Are you sure you want to forget this collection?" +
+                        "\nYou will lose access to it's notes, but may reconnect to it later."
         ).showAndWait().filter(b -> b == ButtonType.OK).isPresent();
     }
 

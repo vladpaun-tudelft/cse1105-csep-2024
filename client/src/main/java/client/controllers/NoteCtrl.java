@@ -80,8 +80,7 @@ public class NoteCtrl {
     }
 
     public void addNote(Collection currentCollection,
-                        ObservableList<Note> allNotes,
-                        ObservableList<Note> collectionNotes) {
+                        ObservableList<Note> allNotes) {
         Collection collection = currentCollection != null ? currentCollection : dashboardCtrl.getDefaultCollection();
 
         // Generate a unique title
@@ -99,7 +98,6 @@ public class NoteCtrl {
         noteTitleMd.setText(newTitle);
 
         noteBody.setText("");
-
     }
 
     public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> allNotes,ObservableList<Note> collectionNotes, Note note) {
@@ -173,7 +171,6 @@ public class NoteCtrl {
 
         allNotes.remove(currentNote);
         collectionNotes.remove(currentNote);
-
     }
 
     public void saveAllPendingNotes() {

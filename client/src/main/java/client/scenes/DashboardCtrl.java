@@ -291,6 +291,10 @@ public class DashboardCtrl implements Initializable {
         collections.addListener((ListChangeListener<Collection>) change -> {
             while (change.next()) {
                 if (change.wasAdded()) {
+                    server.getWebSocketURL(change.getAddedSubList().getFirst().serverURL);
+                    noteAdditionSync();
+                    noteDeletionSync();
+
                     TreeItem<Object> collectionItem = new TreeItem<>(change.getAddedSubList().getFirst());
                     virtualRoot.getChildren().add(collectionItem);
 
@@ -459,8 +463,7 @@ public class DashboardCtrl implements Initializable {
     public void addNote() {
         setSearchIsActive(false);
         noteCtrl.addNote(currentCollection,
-                allNotes,
-                collectionNotes);
+                allNotes);
     }
 
 
@@ -517,24 +520,23 @@ public class DashboardCtrl implements Initializable {
 
     @FXML
     public void deleteCollection() {
-        deleteCollection(currentCollection);
-    }
-    public void deleteCollection(Collection currentCollection) {
-        currentCollection = collectionCtrl.deleteCollection(currentCollection, collections,
-                collectionNotes, allNotes);
-        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+        if (collectionCtrl.showDeleteConfirmation()) {
+            collectionCtrl.removeCollectionFromClient(true, currentCollection, collections, collectionNotes, allNotes);
+        }
     }
 
-    public void conectToCollection(Collection collection) {
+    public void connectToCollection(Collection collection) {
+        collections.add(collection);
         List<Note> newCollectionNotes = server.getNotesByCollection(collection);
-        allNotes.addAll(newCollectionNotes);
+        for (Note note : newCollectionNotes) {
+            allNotes.add(note);
+        }
 
         if (currentCollection != null) {
             collectionNotes = FXCollections.observableArrayList(newCollectionNotes);
             currentCollection = collection;
         }
 
-        collections.add(collection);
         config.writeToFile(collection);
 
         // add entry in collections menu

@@ -220,47 +220,43 @@ public class EditCollectionsCtrl implements Initializable {
     public void deleteCollection() {
         if (deleteButton.isDisabled()) return;
         if (currentCollection == null) return;
+        if(dashboardCtrl.getCollectionCtrl().showDeleteConfirmation()) {
+            dashboardCtrl.getCollectionCtrl().removeCollectionFromClient(
+                    true,
+                    currentCollection,
+                    dashboardCtrl.getCollections(),
+                    dashboardCtrl.getCollectionNotes(),
+                    dashboardCtrl.getAllNotes()
+            );
 
-        dashboardCtrl.deleteCollection(currentCollection);
+            knownCollections.remove(currentCollection);
+            currentCollection = null;
+            dashboardCtrl.viewAllNotes();
 
-        knownCollections.remove(currentCollection);
-        currentCollection = null;
-        dashboardCtrl.viewAllNotes();
-
-        refreshListView();
+            refreshListView();
+        }
     }
     @FXML
     public void forgetCollection() {
         if (forgetButton.isDisabled()) return;
         if (currentCollection == null) return;
 
-        if (!dialogStyler.createStyledAlert(
-                Alert.AlertType.CONFIRMATION,
-                "Forget collection",
-                "Forget collection",
-                "Are you sure you want to forget this collection?" +
-                        "\nYou will lose access to it's notes, but may reconnect to it later."
-        ).showAndWait().filter(b -> b == ButtonType.OK).isPresent()) return;
+        if (dashboardCtrl.getCollectionCtrl().showForgetConfirmation()) {
+            dashboardCtrl.getCollectionCtrl().removeCollectionFromClient(
+                    false,
+                    currentCollection,
+                    dashboardCtrl.getCollections(),
+                    dashboardCtrl.getCollectionNotes(),
+                    dashboardCtrl.getAllNotes()
+            );
 
-        dashboardCtrl.setAllNotes(
-                FXCollections.observableArrayList(
-                    dashboardCtrl.getAllNotes().stream().filter(note ->
-                            !note.collection.title.equals(currentCollection.title)
-                    ).collect(Collectors.toList())
-                )
-        );
+            knownCollections.remove(currentCollection);
+            currentCollection = null;
+            dashboardCtrl.viewAllNotes();
 
-        collectionList.remove(currentCollection);
+            refreshListView();
+        }
 
-        knownCollections.remove(currentCollection);
-        refreshListView();
-
-        dashboardCtrl.setCurrentCollection(null);
-        dashboardCtrl.viewAllNotes();
-
-
-        // delete collection from config file
-        config.writeAllToFile(collectionList);
     }
 
     @FXML
@@ -274,7 +270,7 @@ public class EditCollectionsCtrl implements Initializable {
                 "Are you sure you want to connect to this collection? All notes in the collection will be copied as well."
         ).showAndWait().filter(b -> b == ButtonType.OK).isPresent()) return;
 
-        dashboardCtrl.conectToCollection(
+        dashboardCtrl.connectToCollection(
                 serverUtils.getCollectionsOnServer(serverField.getText().trim()).stream()
                         .filter(collection -> collection.title.equals(titleField.getText().trim()))
                         .findFirst().get()
