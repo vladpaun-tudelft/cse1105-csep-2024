@@ -64,6 +64,18 @@ public class NoteController {
         return embeddedFile;
     }
 
+    @MessageMapping("/notes/{noteId}/files/deleteFile")
+    @SendTo("/topic/notes/{noteId}/files/deleteFile")
+    public EmbeddedFile sendMessageAfterDelete(@DestinationVariable Long noteId, EmbeddedFile embeddedFile) {
+        return embeddedFile;
+    }
+
+    @MessageMapping("/notes/{noteId}/files/renameFile")
+    @SendTo("/topic/notes/{noteId}/files/rename/File")
+    public EmbeddedFile sendMessageAfterRename(@DestinationVariable Long noteId, EmbeddedFile embeddedFile) {
+        return embeddedFile;
+    }
+
     @PostMapping(path = {"/", ""})
     public ResponseEntity<Note> createNote(@RequestBody Note note) {
         if (note == null || note.collection == null || note.title.isBlank()) {

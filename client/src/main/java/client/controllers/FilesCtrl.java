@@ -85,11 +85,23 @@ public class FilesCtrl {
                 alert.showAndWait();
                 return null;
             }
-            EmbeddedFile e = serverUtils.addFile(currentNote, uploadedFile);
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", e);
-            currentNote.getEmbeddedFiles().add(e);
-            showFiles(currentNote);
-            return e;
+            EmbeddedFile e = null;
+            try {
+                e = serverUtils.addFile(currentNote, uploadedFile);
+                serverUtils.send("/app/notes/" + currentNote.getId() + "/files", e);
+                currentNote.getEmbeddedFiles().add(e);
+                showFiles(currentNote);
+                return e;
+            } catch (Exception exception) {
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        "Upload error!",
+                        "Upload error!",
+                        "There was an error uploading this file, please try again."
+                );
+                alert.showAndWait();
+                return null;
+            }
         }
         return null;
     }
