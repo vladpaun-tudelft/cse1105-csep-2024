@@ -5,6 +5,7 @@ import client.scenes.DashboardCtrl;
 import commons.Collection;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.*;
@@ -94,12 +95,25 @@ public class CustomTreeCell extends TreeCell<Object> {
 
     private void configureNoteEventHandlers() {
         // Delete button functionality
-        deleteNoteButton.setOnAction(event -> {
+
+        /*deleteNoteButton.setOnAction(event -> {
             Note note = (Note) getItem();
             if (note != null) {
                 dashboardCtrl.deleteSelectedNote();
             }
+        });*/
+        deleteNoteButton.setOnAction(event -> {
+            ObservableList<TreeItem<Note>> treeItems = dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems();
+            if (treeItems.size() > 1) {
+                noteCtrl.deleteMultipleNotesInTreeView(dashboardCtrl.getAllNotes(), treeItems, dashboardCtrl.getCollectionNotes());
+            } else {
+                Note note = (Note) getItem();
+                if (note != null) {
+                    dashboardCtrl.deleteSelectedNote();
+                }
+            }
         });
+
 
         // Edit button functionality
         editNoteButton.setOnAction(event -> startEditing());

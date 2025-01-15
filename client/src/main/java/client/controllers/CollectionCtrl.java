@@ -15,6 +15,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,7 +90,7 @@ public class CollectionCtrl {
                 for (Toggle toggle : collectionSelect.getToggles()) {
                     if (toggle instanceof RadioMenuItem) {
                         RadioMenuItem item = (RadioMenuItem) toggle;
-                        if (item.getText().equals(selectedCollection.title)) {
+                        if (selectedCollection != null && item.getText().equals(selectedCollection.title)) {
                             collectionSelect.selectToggle(item);
                             item.fire();
                             currentCollectionTitle.hide();
@@ -159,7 +160,31 @@ public class CollectionCtrl {
                     if (item.getText().equals(selectedCollection.title)) {
                         Note currentNote = dashboardCtrl.getCurrentNote();
 
-                        moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
+                        //here I check if we are in list view or tree view
+                        boolean isInTreeView = false;
+                        if (dashboardCtrl.getCurrentCollection() == null) {
+                            isInTreeView = true;
+                        }
+                        if (isInTreeView) {
+                            if (dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size() > 1) {
+                                moveMultipleNotesInTreeView(selectedCollection);
+                            } else {
+                                moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
+                            }
+
+                            if (dashboardCtrl.getCollectionView().getSelectionModel().getSelectedItems().size() > 1) {
+                                moveMultipleNotes(dashboardCtrl.getCurrentCollection(), selectedCollection);
+                            } else {
+                                moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
+                            }
+                        } else {
+                            if (dashboardCtrl.getCollectionView().getSelectionModel().getSelectedItems().size() > 1) {
+                                moveMultipleNotes(dashboardCtrl.getCurrentCollection(), selectedCollection);
+                            } else {
+                                moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
+                            }
+                        }
+
                         if(dashboardCtrl.getCurrentCollection() != null ) {
                             item.fire();   // If not in all note view
                             dashboardCtrl.collectionView.getSelectionModel().select(currentNote);
@@ -426,6 +451,43 @@ public class CollectionCtrl {
         dashboardCtrl.getMainCtrl().showEditCollections();
     }
 
+    /**
+     * moving multiple notes in the collection view
+     *
+     * @param currentCollection     current collection
+     * @param destinationCollection destination collection
+     */
+    public void moveMultipleNotes(Collection currentCollection,
+                                  Collection destinationCollection) {
 
+        if (dashboardCtrl.getCollectionView() != null &&
+                dashboardCtrl.getCollectionView().getSelectionModel().getSelectedItems().size() > 1) {
+            ObservableList<Note> selectedItems = dashboardCtrl.getCollectionView().getSelectionModel().getSelectedItems();
+            List<Note> notesToMove = new ArrayList<>(selectedItems);
+            for (Note note : notesToMove) {
+                moveNoteFromCollection(note, currentCollection, destinationCollection);
+            }
+        }
+        collectionView.getSelectionModel().clearSelection();
+    }
+
+    /**
+     * moving multiple notes in the all notes view
+     *
+     * @param destinationCollection destination collection
+     */
+    public void moveMultipleNotesInTreeView(Collection destinationCollection) {
+        if (dashboardCtrl.allNotesView != null &&
+                dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size() > 1) {
+            ObservableList<TreeItem<Note>> selectedItems = dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems();
+            List<TreeItem<Note>> notesToMove = new ArrayList<>(selectedItems);
+            for (TreeItem<Note> treeItem : notesToMove) {
+                moveNoteFromCollection(treeItem.getValue(), treeItem.getValue().collection, destinationCollection);
+            }
+            dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
+        }
+        dashboardCtrl.refreshTreeView();
+    }
 
 }
+

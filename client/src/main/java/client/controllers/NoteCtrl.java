@@ -220,4 +220,58 @@ public class NoteCtrl {
                 .anyMatch(note -> note != newNote && note.getTitle().equals(title));
     }
 
+    /**
+     * Method that delete multiple notes in the collection view
+     * @param allNotes all notes
+     * @param selectedItems selected notes
+     * @param collectionNotes collection notes
+     */
+    public void deleteMultipleNotes(ObservableList<Note> allNotes, ObservableList<Note> selectedItems, ObservableList<Note> collectionNotes) {
+        if (selectedItems != null) {
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.CONFIRMATION,
+                    "Confirm deletion",
+                    "Confirm deletion",
+                    "Do you really want to delete selected notes?"
+            );
+            Optional<ButtonType> buttonType = alert.showAndWait();
+            List<Note> notesToDelete = new ArrayList<>(selectedItems);
+            if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
+                for (Note note : notesToDelete) {
+                    deleteNote(note, collectionNotes, allNotes);
+                    noteBody.clear();
+                }
+                collectionView.getSelectionModel().clearSelection();
+
+            }
+        }
+    }
+
+
+    /**
+     * Method that delete multiple notes in the all notes view
+     * @param allNotes all notes
+     * @param selectedItems selected notes
+     * @param collectionNotes collection notes
+     */
+    public void deleteMultipleNotesInTreeView(ObservableList<Note> allNotes, ObservableList<TreeItem<Note>> selectedItems, ObservableList<Note> collectionNotes) {
+        if (selectedItems != null) {
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.CONFIRMATION,
+                    "Confirm deletion",
+                    "Confirm deletion",
+                    "Do you really want to delete selected notes?"
+            );
+            Optional<ButtonType> buttonType = alert.showAndWait();
+            List<TreeItem<Note>> notesToDelete = new ArrayList<>(selectedItems);
+            if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
+                for (TreeItem<Note> treeItem:  notesToDelete) {
+                    deleteNote(treeItem.getValue(), collectionNotes, allNotes);
+                    noteBody.clear();
+                }
+                dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
+            }
+        }
+        dashboardCtrl.refreshTreeView();
+    }
 }

@@ -41,51 +41,101 @@ public class DashboardCtrl implements Initializable {
     // Utilities
     //TODO: This is just a temporary solution, to be changed with something smarter
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    @Getter private final ServerUtils server;
-    @Getter private final MainCtrl mainCtrl;
-    @Getter private final Config config;
-    @Getter private final DialogStyler dialogStyler;
+    @Getter
+    private final ServerUtils server;
+    @Getter
+    private final MainCtrl mainCtrl;
+    @Getter
+    private final Config config;
+    @Getter
+    private final DialogStyler dialogStyler;
 
     // Controllers
     @Inject
-    @Getter private final MarkdownCtrl markdownCtrl;
-    @Getter private final CollectionCtrl collectionCtrl;
-    @Getter private final NoteCtrl noteCtrl;
-    @Getter private final SearchCtrl searchCtrl;
-    @Getter private final FilesCtrl filesCtrl;
+    @Getter
+    private final MarkdownCtrl markdownCtrl;
+    @Getter
+    private final CollectionCtrl collectionCtrl;
+    @Getter
+    private final NoteCtrl noteCtrl;
+    @Getter
+    private final SearchCtrl searchCtrl;
+    @Getter
+    private final FilesCtrl filesCtrl;
 
     // FXML Components
-    @FXML private Label contentBlocker;
-    @FXML @Getter private TextArea noteBody;
-    @FXML private WebView markdownView;
-    @FXML private Label markdownViewBlocker;
-    @FXML @Getter private Label noteTitle;
-    @FXML public ListView collectionView;
-    @FXML public TreeView allNotesView;
-    @FXML @Getter Button addButton;
-    @FXML @Getter private Label noteTitleMD;
-    @FXML private Button deleteButton;
-    @FXML private Button clearSearchButton;
-    @FXML @Getter private TextField searchField;
-    @FXML private MenuButton currentCollectionTitle;
-    @FXML private MenuItem allNotesButton;
-    @FXML private ToggleGroup collectionSelect;
-    @FXML private Button deleteCollectionButton;
-    @FXML private MenuItem editCollectionTitle;
-    @FXML private MenuButton moveNotesButton;
-    @FXML private Button addFileButton;
-    @FXML private HBox filesView;
-    @FXML private Label filesViewBlocker;
+    @FXML
+    private Label contentBlocker;
+    @FXML
+    @Getter
+    private TextArea noteBody;
+    @FXML
+    private WebView markdownView;
+    @FXML
+    private Label markdownViewBlocker;
+    @FXML
+    @Getter
+    private Label noteTitle;
+    @FXML
+    @Getter
+    public ListView collectionView;
+    @FXML
+    public TreeView allNotesView;
+    @FXML
+    @Getter
+    Button addButton;
+    @FXML
+    @Getter
+    private Label noteTitleMD;
+    @FXML
+    private Button deleteButton;
+    @FXML
+    private Button clearSearchButton;
+    @FXML
+    @Getter
+    private TextField searchField;
+    @FXML
+    private MenuButton currentCollectionTitle;
+    @FXML
+    private MenuItem allNotesButton;
+    @FXML
+    private ToggleGroup collectionSelect;
+    @FXML
+    private Button deleteCollectionButton;
+    @FXML
+    private MenuItem editCollectionTitle;
+    @FXML
+    private MenuButton moveNotesButton;
+    @FXML
+    private Button addFileButton;
+    @FXML
+    private HBox filesView;
+    @FXML
+    private Label filesViewBlocker;
 
 
     // Variables
-    @Getter @Setter private Note currentNote = null;
-    @Getter @Setter private Collection currentCollection = null;
-    @Getter @Setter private Collection defaultCollection = null;
-    @Getter @Setter private Collection destinationCollection = null;
-    @Getter @Setter public ObservableList<Collection> collections;
-    @Getter @Setter private ObservableList<Note> allNotes;
-    @Getter @Setter public ObservableList<Note> collectionNotes;
+    @Getter
+    @Setter
+    private Note currentNote = null;
+    @Getter
+    @Setter
+    private Collection currentCollection = null;
+    @Getter
+    @Setter
+    private Collection defaultCollection = null;
+    @Getter
+    @Setter
+    private Collection destinationCollection = null;
+    @Getter
+    @Setter
+    public ObservableList<Collection> collections;
+    @Getter
+    @Setter
+    private ObservableList<Note> allNotes;
+    @Getter
+    @Setter
+    public ObservableList<Note> collectionNotes;
 
     private TreeItem<Object> noNotesItem = new TreeItem<>(" - no notes in collection.");
 
@@ -156,6 +206,7 @@ public class DashboardCtrl implements Initializable {
 
         collectionCtrl.setUp();
 
+        collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         BooleanBinding isNoteSelected = collectionView.getSelectionModel().selectedItemProperty().isNull()
                 .and(allNotesView.getSelectionModel().selectedItemProperty().isNull()
@@ -181,7 +232,7 @@ public class DashboardCtrl implements Initializable {
 
         // Temporary solution
         scheduler.scheduleAtFixedRate(() -> noteCtrl.saveAllPendingNotes(),
-                10,10, TimeUnit.SECONDS);
+                10, 10, TimeUnit.SECONDS);
     }
 
     public void noteAdditionSync() {
@@ -212,7 +263,7 @@ public class DashboardCtrl implements Initializable {
         collectionView.setCellFactory(TextFieldListCell.forListView());
 
         // Set ListView entry as Title (editable)
-        collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl));
+        collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl));
 
         collectionView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -268,7 +319,7 @@ public class DashboardCtrl implements Initializable {
                 }
                 if (change.wasRemoved()) {
                     TreeItem<Object> toRemove = findItem(change.getRemoved().getFirst());
-                    TreeItem<Object> toSelect = findValidItemInDirection(virtualRoot,toRemove, -1);
+                    TreeItem<Object> toSelect = findValidItemInDirection(virtualRoot, toRemove, -1);
                     if (toRemove != null) {
                         // Locate the parent of the item to remove
                         TreeItem<Object> parent = toRemove.getParent();
@@ -309,7 +360,7 @@ public class DashboardCtrl implements Initializable {
                 }
                 if (change.wasRemoved()) {
                     TreeItem<Object> toRemove = findItem(change.getRemoved().getFirst());
-                    TreeItem<Object> toSelect = findValidItemInDirection(virtualRoot,toRemove, -1);
+                    TreeItem<Object> toSelect = findValidItemInDirection(virtualRoot, toRemove, -1);
                     if (toRemove != null) {
                         toRemove.getChildren().clear();
                         TreeItem<Object> parent = toRemove.getParent();
@@ -324,13 +375,16 @@ public class DashboardCtrl implements Initializable {
                 allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
             }
         });
+        //multiple selection in all notes view
+        allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
 
         // Add selection change listener
         allNotesView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             // If the selected item is a note, show it,
             // Content blockers otherwise
-            if (newValue != null && ((TreeItem)newValue).getValue() instanceof Note) {
-                currentNote = (Note)((TreeItem)newValue).getValue();
+            if (newValue != null && ((TreeItem) newValue).getValue() instanceof Note) {
+                currentNote = (Note) ((TreeItem) newValue).getValue();
                 noteCtrl.showCurrentNote(currentNote);
 
                 markdownViewBlocker.setVisible(false);
@@ -365,6 +419,7 @@ public class DashboardCtrl implements Initializable {
 
     /**
      * This method populates a treeItem root with the collections and notes in the app.
+     *
      * @param virtualRoot the root we want to populate
      */
     public void populateTreeView(TreeItem<Object> virtualRoot, List<Collection> filteredCollections, List<Note> filteredNotes, boolean expanded) {
@@ -392,6 +447,7 @@ public class DashboardCtrl implements Initializable {
             }
         }
     }
+
     public void populateTreeView(TreeItem<Object> virtualRoot) {
         populateTreeView(virtualRoot, collections, allNotes, false);
     }
@@ -405,6 +461,7 @@ public class DashboardCtrl implements Initializable {
         populateTreeView(allNotesView.getRoot(), filteredCollections, filteredNotes, expanded);
         allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl));
     }
+
     public void refreshTreeView() {
         refreshTreeView(collections, allNotes, false);
     }
@@ -412,6 +469,7 @@ public class DashboardCtrl implements Initializable {
 
     /**
      * This method is used to pars through and select a note from the tree view
+     *
      * @param targetNote the targeted note
      */
     public void selectNoteInTreeView(Note targetNote) {
@@ -426,13 +484,14 @@ public class DashboardCtrl implements Initializable {
     /**
      * This method takes in the current TreeItem that is selected in the treeView
      * And a target object that we want to find and it returns the targets respective TreeItem
-     * @param currentItem currently selected TreeItem
+     *
+     * @param currentItem  currently selected TreeItem
      * @param targetObject object to be found
      * @return the TreeItem that represents the targetObject
      */
     private TreeItem<Object> findItem(TreeItem<Object> currentItem, Object targetObject) {
         // Check if the current item matches the target note
-        if (currentItem.getValue() != null){
+        if (currentItem.getValue() != null) {
             if (currentItem.getValue() instanceof Note currentNote &&
                     targetObject instanceof Note targetNote &&
                     currentNote.title.equals(targetNote.title)) {
@@ -456,6 +515,7 @@ public class DashboardCtrl implements Initializable {
 
         return null; // If no match is found
     }
+
     private TreeItem<Object> findItem(Object targetObject) {
         return findItem(allNotesView.getRoot(), targetObject);
     }
@@ -468,11 +528,12 @@ public class DashboardCtrl implements Initializable {
 
 
     @FXML
-    public void addCollection(){
+    public void addCollection() {
         collectionCtrl.addCollection();
     }
+
     // This overloaded method is used when you already have the collection from the editCollections stage
-    public void addCollection(Collection collection){
+    public void addCollection(Collection collection) {
         currentCollection = collectionCtrl.addInputtedCollection(collection, currentCollection, collections);
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
     }
@@ -500,9 +561,11 @@ public class DashboardCtrl implements Initializable {
         searchCtrl.search(collectionNotes);
         searchCtrl.searchInTreeView(this, allNotes, collections);
     }
+
     public void setSearchIsActive(boolean b) {
         searchCtrl.setSearchIsActive(b, collectionNotes);
     }
+
     public void clearSearch() {
         searchCtrl.setSearchIsActive(false, collectionNotes);
         refreshTreeView();
@@ -549,7 +612,7 @@ public class DashboardCtrl implements Initializable {
         collectionCtrl.viewNotes(currentCollection, allNotes);
     }
 
-    public void addFile(){
+    public void addFile() {
         // Make sure notes are saved on the server
         noteCtrl.saveAllPendingNotes();
         EmbeddedFile newFile = filesCtrl.addFile(currentNote);
@@ -652,7 +715,6 @@ public class DashboardCtrl implements Initializable {
     }
 
 
-
     // ----------------------- HCI - Helper methods -----------------------
 
     private void selectNoteInDirection(int direction) {
@@ -736,5 +798,14 @@ public class DashboardCtrl implements Initializable {
         for (TreeItem<Object> child : node.getChildren()) {
             flattenTreeRecursive(child, items);
         }
+    }
+
+    /**
+     * A method used for deleting multiple notes in a collection view
+     *
+     * @param selectedItems selected notes
+     */
+    public void deleteMultipleNotes(ObservableList<Note> selectedItems) {
+        noteCtrl.deleteMultipleNotes(allNotes, selectedItems, collectionNotes);
     }
 }

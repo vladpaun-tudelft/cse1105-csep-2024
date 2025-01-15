@@ -74,7 +74,14 @@ public class NoteListItem extends ListCell<Note> {
 
     private void configureEventHandlers() {
         deleteButton.setOnAction(event -> {
-            controller.deleteSelectedNote();  // getItem()
+            if (controller.getCollectionView().getSelectionModel().getSelectedItems().size() > 1) {
+                controller.deleteMultipleNotes(controller.getCollectionView().getSelectionModel().getSelectedItems());
+            } else {
+                Note note = (Note) getItem();
+                if (note != null) {
+                    controller.deleteSelectedNote();
+                }
+            }
         });
         editButton.setOnAction(event -> {
             startEditing();
