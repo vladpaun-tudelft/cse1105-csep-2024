@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -85,12 +86,9 @@ public class FilesCtrl {
                 alert.showAndWait();
                 return null;
             }
-            EmbeddedFile e = null;
             try {
-                e = serverUtils.addFile(currentNote, uploadedFile);
-                serverUtils.send("/app/notes/" + currentNote.getId() + "/files", e);
-                currentNote.getEmbeddedFiles().add(e);
-                showFiles(currentNote);
+                EmbeddedFile e = serverUtils.addFile(currentNote, uploadedFile);
+                serverUtils.send("/app/notes/" + currentNote.getId() + "/files", e.getId());
                 return e;
             } catch (Exception exception) {
                 Alert alert = dialogStyler.createStyledAlert(
@@ -110,7 +108,7 @@ public class FilesCtrl {
      * Checks if a file with the name fileName already exists for the current note
      */
     public boolean checkFileName(Note currentNote, String fileName) {
-        List<EmbeddedFile> files = serverUtils.getFilesByNote(currentNote);
+        List<EmbeddedFile> files = currentNote.getEmbeddedFiles();
         List<EmbeddedFile> filteredFiles = files.stream().filter(e -> e.getFileName().equals(fileName)).toList();
         return filteredFiles.isEmpty();
     }
@@ -126,6 +124,49 @@ public class FilesCtrl {
             );
         }
         filesView.getChildren().add(new Region());
+    }
+
+    public void updateView(Note currentNote) {
+        List<EmbeddedFile> files = currentNote.getEmbeddedFiles();
+        filesView.getChildren().clear();
+        for (EmbeddedFile file : files) {
+            filesView.getChildren().add(
+                    createFileEntry(currentNote, file)
+            );
+        }
+        filesView.getChildren().add(new Region());
+    }
+
+    public void updateViewAfterAdd(Note currentNote, Long fileId) {
+        if (currentNote == null) {
+            return;
+        }
+        EmbeddedFile e = serverUtils.getFileById(currentNote, fileId);
+        currentNote.getEmbeddedFiles().add(e);
+        updateView(currentNote);
+    }
+
+    public void updateViewAfterDelete(Note currentNote, Long fileId) {
+        if (currentNote == null) {
+            return;
+        }
+        EmbeddedFile fileToRemove = new EmbeddedFile(currentNote, "", "", null);
+        fileToRemove.setId(fileId);
+        currentNote.getEmbeddedFiles().remove(fileToRemove);
+        updateView(currentNote);
+    }
+
+    public void updateViewAfterRename(Note currentNote, Long fileId) {
+        if (currentNote == null) {
+            return;
+        }
+        String newFileName = serverUtils.getFileById(currentNote, fileId).getFileName();
+        for (EmbeddedFile file : currentNote.getEmbeddedFiles()) {
+            if (Objects.equals(file.getId(), fileId)) {
+                file.setFileName(newFileName);
+            }
+        }
+        updateView(currentNote);
     }
 
     public HBox createFileEntry(Note currentNote, EmbeddedFile file) {
@@ -166,10 +207,8 @@ public class FilesCtrl {
         );
         Optional<ButtonType> buttonType = alert.showAndWait();
         if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)){
-            currentNote.getEmbeddedFiles().remove(file);
             serverUtils.deleteFile(currentNote, file);
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", file);
-            showFiles(currentNote);
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/deleteFile", file.getId());
         }
     }
 
@@ -191,12 +230,10 @@ public class FilesCtrl {
                 alert.showAndWait();
                 return;
             }
-            currentNote.getEmbeddedFiles().remove(file);
+            // currentNote.getEmbeddedFiles().remove(file);
             EmbeddedFile e = serverUtils.renameFile(currentNote, file, fileName.get());
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", e);
-            currentNote.getEmbeddedFiles().add(e);
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", e.getId());
             persistFileName(currentNote, file.getFileName(), fileName.get());
-            showFiles(currentNote);
         }
     }
 

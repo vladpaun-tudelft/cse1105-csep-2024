@@ -2,6 +2,7 @@ package server.api;
 
 import commons.EmbeddedFile;
 import commons.Note;
+import javafx.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -60,20 +61,20 @@ public class NoteController {
 
     @MessageMapping("/notes/{noteId}/files")
     @SendTo("/topic/notes/{noteId}/files")
-    public EmbeddedFile sendEmbeddedFileUpdate(@DestinationVariable Long noteId, EmbeddedFile embeddedFile) {
-        return embeddedFile;
+    public Long sendEmbeddedFileUpdate(@DestinationVariable Long noteId, Long embeddedFileId) {
+        return embeddedFileId;
     }
 
     @MessageMapping("/notes/{noteId}/files/deleteFile")
     @SendTo("/topic/notes/{noteId}/files/deleteFile")
-    public EmbeddedFile sendMessageAfterDelete(@DestinationVariable Long noteId, EmbeddedFile embeddedFile) {
-        return embeddedFile;
+    public Long sendMessageAfterDelete(@DestinationVariable Long noteId, Long embeddedFileId) {
+        return embeddedFileId;
     }
 
     @MessageMapping("/notes/{noteId}/files/renameFile")
-    @SendTo("/topic/notes/{noteId}/files/rename/File")
-    public EmbeddedFile sendMessageAfterRename(@DestinationVariable Long noteId, EmbeddedFile embeddedFile) {
-        return embeddedFile;
+    @SendTo("/topic/notes/{noteId}/files/renameFile")
+    public Long sendMessageAfterRename(@DestinationVariable Long noteId, Long embeddedFileId) {
+        return embeddedFileId;
     }
 
     @PostMapping(path = {"/", ""})
@@ -160,6 +161,15 @@ public class NoteController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(files.getFirst().getFileType()))
                 .body(files.getFirst().getFileContent());
+    }
+
+    @GetMapping("/{noteId}/files/{fileId}/getFile")
+    public ResponseEntity<EmbeddedFile> getFileById(@PathVariable Long noteId, @PathVariable Long fileId) {
+        Optional<EmbeddedFile> file = embeddedFileService.findById(fileId);
+        if (file.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(file.get());
     }
 
     @GetMapping("/{id}/files")

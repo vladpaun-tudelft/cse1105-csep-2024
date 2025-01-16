@@ -27,11 +27,13 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
 import javafx.scene.control.Alert;
+import javafx.util.Pair;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.*;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
@@ -40,6 +42,7 @@ import java.lang.reflect.Type;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -54,6 +57,8 @@ public class ServerUtils {
 
 	private static StompSession session;
 	private StompSession.Subscription embeddedFilesSubscription;
+	private StompSession.Subscription embeddedFilesDeleteUpdates;
+	private StompSession.Subscription embeddedFilesRenameUpdates;
 
 	@Inject
 	public ServerUtils(Config config, DialogStyler dialogStyler) {
@@ -73,7 +78,7 @@ public class ServerUtils {
 		return embeddedFilesSubscription;
 	}
 
-	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<EmbeddedFile> consumer) {
+	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<Long> consumer) {
 		if (embeddedFilesSubscription != null) {
 			embeddedFilesSubscription.unsubscribe();
 		}
@@ -82,12 +87,50 @@ public class ServerUtils {
 		embeddedFilesSubscription = session.subscribe(topic, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {
-				return EmbeddedFile.class;
+				return Long.TYPE;
 			}
 
 			@Override
 			public void handleFrame(StompHeaders headers, Object payload) {
-				consumer.accept((EmbeddedFile) payload);
+				consumer.accept((Long) payload);
+			}
+		});
+	}
+
+	public void registerForEmbeddedFilesDeleteUpdates(Note selectedNote, Consumer<Long> consumer) {
+		if (embeddedFilesDeleteUpdates != null) {
+			embeddedFilesDeleteUpdates.unsubscribe();
+		}
+
+		String topic = "/topic/notes/" + selectedNote.getId() + "/files/deleteFile";
+		embeddedFilesDeleteUpdates = session.subscribe(topic, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return Long.TYPE;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((Long) payload);
+			}
+		});
+	}
+
+	public void registerForEmbeddedFilesRenameUpdates(Note selectedNote, Consumer<Long> consumer) {
+		if (embeddedFilesRenameUpdates != null) {
+			embeddedFilesRenameUpdates.unsubscribe();
+		}
+
+		String topic = "/topic/notes/" + selectedNote.getId() + "/files/renameFile";
+		embeddedFilesRenameUpdates = session.subscribe(topic, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return Long.TYPE;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((Long) payload);
 			}
 		});
 	}
@@ -96,6 +139,14 @@ public class ServerUtils {
 		if (embeddedFilesSubscription != null) {
 			embeddedFilesSubscription.unsubscribe();
 			embeddedFilesSubscription = null;
+		}
+		if (embeddedFilesDeleteUpdates != null) {
+			embeddedFilesDeleteUpdates.unsubscribe();
+			embeddedFilesDeleteUpdates = null;
+		}
+		if (embeddedFilesRenameUpdates != null) {
+			embeddedFilesRenameUpdates.unsubscribe();
+			embeddedFilesRenameUpdates = null;
 		}
 	}
 
@@ -106,7 +157,7 @@ public class ServerUtils {
 
 		String webSocket = serverURL.replace("http", "ws");
 		webSocket += "websocket";
-		this.session = connect(webSocket);
+		session = connect(webSocket);
 	}
 
 	public StompSession connect(String url) {
@@ -269,6 +320,14 @@ public class ServerUtils {
 				.queryParam("newFileName", newFileName)
 				.request(APPLICATION_JSON)
 				.put(Entity.entity(file, APPLICATION_JSON), EmbeddedFile.class);
+	}
+
+	public EmbeddedFile getFileById(Note note, Long fileId) {
+		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(note.collection.serverURL).path("api/notes/" + note.id + "/files/" + fileId + "/getFile")
+				.request(APPLICATION_JSON)
+				.get(new GenericType<EmbeddedFile>() {});
 	}
 
 	public List<EmbeddedFile> getFilesByNote(Note note) {
