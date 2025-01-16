@@ -17,9 +17,7 @@ import server.service.EmbeddedFileService;
 import server.service.NoteService;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
@@ -73,8 +71,9 @@ public class NoteController {
 
     @MessageMapping("/notes/{noteId}/files/renameFile")
     @SendTo("/topic/notes/{noteId}/files/renameFile")
-    public Long sendMessageAfterRename(@DestinationVariable Long noteId, Long embeddedFileId) {
-        return embeddedFileId;
+    public Object[] sendMessageAfterRename(@DestinationVariable Long noteId,
+                                                                        Object[] newFileName) {
+        return newFileName;
     }
 
     @PostMapping(path = {"/", ""})

@@ -10,13 +10,12 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 
 public class FilesCtrl {
@@ -86,6 +85,18 @@ public class FilesCtrl {
                 alert.showAndWait();
                 return null;
             }
+
+            if (uploadedFile.length() > 10 * 1024 * 1024 /*10MB*/) {
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        "Upload error",
+                        "Upload error",
+                        "This file is too large!"
+                );
+                alert.showAndWait();
+                return null;
+            }
+
             try {
                 EmbeddedFile e = serverUtils.addFile(currentNote, uploadedFile);
                 serverUtils.send("/app/notes/" + currentNote.getId() + "/files", e.getId());
@@ -156,14 +167,15 @@ public class FilesCtrl {
         updateView(currentNote);
     }
 
-    public void updateViewAfterRename(Note currentNote, Long fileId) {
+    public void updateViewAfterRename(Note currentNote, Object[] newFileName) {
         if (currentNote == null) {
             return;
         }
-        String newFileName = serverUtils.getFileById(currentNote, fileId).getFileName();
+        Long fileId = ((Number) newFileName[0]).longValue();
+        String fileName = (String) newFileName[1];
         for (EmbeddedFile file : currentNote.getEmbeddedFiles()) {
             if (Objects.equals(file.getId(), fileId)) {
-                file.setFileName(newFileName);
+                file.setFileName(fileName);
             }
         }
         updateView(currentNote);
@@ -232,7 +244,8 @@ public class FilesCtrl {
             }
             // currentNote.getEmbeddedFiles().remove(file);
             EmbeddedFile e = serverUtils.renameFile(currentNote, file, fileName.get());
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", e.getId());
+            Object[] renameRequest = {e.getId(), fileName.get()};
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", renameRequest);
             persistFileName(currentNote, file.getFileName(), fileName.get());
         }
     }

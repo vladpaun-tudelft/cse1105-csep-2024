@@ -224,9 +224,9 @@ public class DashboardCtrl implements Initializable {
                         filesCtrl.updateViewAfterDelete(currentNote, embeddedFileId);
                     });
                 });
-                server.registerForEmbeddedFilesRenameUpdates(currentNote, embeddedFileId -> {
+                server.registerForEmbeddedFilesRenameUpdates(currentNote, newFileName -> {
                     Platform.runLater(() -> {
-                        filesCtrl.updateViewAfterRename(currentNote, embeddedFileId);
+                        filesCtrl.updateViewAfterRename(currentNote, newFileName);
                     });
                 });
 
@@ -288,9 +288,9 @@ public class DashboardCtrl implements Initializable {
                         filesCtrl.updateViewAfterDelete(currentNote, embeddedFileId);
                     });
                 });
-                server.registerForEmbeddedFilesRenameUpdates(currentNote, embeddedFileId -> {
+                server.registerForEmbeddedFilesRenameUpdates(currentNote, newFileName -> {
                     Platform.runLater(() -> {
-                        filesCtrl.updateViewAfterRename(currentNote, embeddedFileId);
+                        filesCtrl.updateViewAfterRename(currentNote, newFileName);
                     });
                 });
 

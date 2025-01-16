@@ -40,9 +40,7 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -116,7 +114,8 @@ public class ServerUtils {
 		});
 	}
 
-	public void registerForEmbeddedFilesRenameUpdates(Note selectedNote, Consumer<Long> consumer) {
+	public void registerForEmbeddedFilesRenameUpdates(Note selectedNote,
+													  Consumer<Object[]> consumer) {
 		if (embeddedFilesRenameUpdates != null) {
 			embeddedFilesRenameUpdates.unsubscribe();
 		}
@@ -125,12 +124,14 @@ public class ServerUtils {
 		embeddedFilesRenameUpdates = session.subscribe(topic, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {
-				return Long.TYPE;
+				return Object[].class;
 			}
 
 			@Override
 			public void handleFrame(StompHeaders headers, Object payload) {
-				consumer.accept((Long) payload);
+				consumer.accept(
+						(Object[]) payload
+				);
 			}
 		});
 	}
