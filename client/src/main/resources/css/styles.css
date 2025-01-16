@@ -526,11 +526,14 @@
     -fx-border-radius: 4px 4px 0 0 ;
 }
 
-.popup-button:hover{
-    -fx-background-color: #C42B1C;
+.close-button:hover{
+    -fx-background-color: #553C3B;
 }
 
-.delete-button:hover{
+.popup-button:hover{
+    -fx-background-color: #553C3B;
+}
+.popup-button:focused{
     -fx-background-color: #553C3B;
 }
 

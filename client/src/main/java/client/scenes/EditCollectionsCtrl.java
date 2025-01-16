@@ -49,6 +49,7 @@ public class EditCollectionsCtrl implements Initializable {
     @FXML private Button saveButton;
     @FXML private Button createButton;
     @FXML private Button connectButton;
+    @FXML private Button addButton;
 
     public List<Collection> addPending;
     private ObservableList<Collection> knownCollections;
@@ -129,6 +130,7 @@ public class EditCollectionsCtrl implements Initializable {
     }
 
     @FXML public void createCollection() {
+        if (createButton.isDisabled()) return;
         addPending.remove(currentCollection);
 
         currentCollection.title = titleField.getText().trim();
@@ -145,6 +147,7 @@ public class EditCollectionsCtrl implements Initializable {
 
     @FXML
     public void saveCollection() {
+        if (saveButton.isDisabled()) return;
         if (currentCollection == null || !checkStatus()) return;
 
         String newTitle = titleField.getText().trim();
@@ -215,77 +218,50 @@ public class EditCollectionsCtrl implements Initializable {
 
     @FXML
     public void deleteCollection() {
+        if (deleteButton.isDisabled()) return;
         if (currentCollection == null) return;
+        if(dashboardCtrl.getCollectionCtrl().showDeleteConfirmation()) {
+            dashboardCtrl.getCollectionCtrl().removeCollectionFromClient(
+                    true,
+                    currentCollection,
+                    dashboardCtrl.getCollections(),
+                    dashboardCtrl.getCollectionNotes(),
+                    dashboardCtrl.getAllNotes()
+            );
 
-        if (!dialogStyler.createStyledAlert(
-                Alert.AlertType.CONFIRMATION,
-                "Delete collection",
-                "Delete collection",
-                "Are you sure you want to delete this collection? All notes in the collection will be deleted as well."
-        ).showAndWait().filter(b -> b == ButtonType.OK).isPresent()) return;
+            knownCollections.remove(currentCollection);
+            currentCollection = null;
+            dashboardCtrl.viewAllNotes();
 
-        dashboardCtrl.setAllNotes(
-                FXCollections.observableArrayList(
-                        dashboardCtrl.getAllNotes().stream().filter(note ->
-                                !note.collection.title.equals(currentCollection.title)
-                        ).collect(Collectors.toList())
-                )
-        );
-
-        List<Note> notesToDelete = dashboardCtrl.getAllNotes().stream()
-                .filter(note -> note.collection.equals(currentCollection)).collect(Collectors.toList());
-        for (Note n : notesToDelete) {
-            noteCtrl.deleteNote(n, FXCollections.observableArrayList(notesToDelete), dashboardCtrl.getAllNotes());
+            refreshListView();
         }
-        // delete collection from server
-        serverUtils.deleteCollection(currentCollection);
-
-        collectionList.remove(currentCollection);
-        knownCollections.remove(currentCollection);
-
-        dashboardCtrl.setCurrentCollection(null);
-        dashboardCtrl.viewAllNotes();
-
-        // delete collection from config file
-        config.writeAllToFile(collectionList);
-
-        refreshListView();
     }
     @FXML
     public void forgetCollection() {
+        if (forgetButton.isDisabled()) return;
         if (currentCollection == null) return;
 
-        if (!dialogStyler.createStyledAlert(
-                Alert.AlertType.CONFIRMATION,
-                "Forget collection",
-                "Forget collection",
-                "Are you sure you want to forget this collection?" +
-                        "\nYou will lose access to it's notes, but may reconnect to it later."
-        ).showAndWait().filter(b -> b == ButtonType.OK).isPresent()) return;
+        if (dashboardCtrl.getCollectionCtrl().showForgetConfirmation()) {
+            dashboardCtrl.getCollectionCtrl().removeCollectionFromClient(
+                    false,
+                    currentCollection,
+                    dashboardCtrl.getCollections(),
+                    dashboardCtrl.getCollectionNotes(),
+                    dashboardCtrl.getAllNotes()
+            );
 
-        dashboardCtrl.setAllNotes(
-                FXCollections.observableArrayList(
-                    dashboardCtrl.getAllNotes().stream().filter(note ->
-                            !note.collection.title.equals(currentCollection.title)
-                    ).collect(Collectors.toList())
-                )
-        );
+            knownCollections.remove(currentCollection);
+            currentCollection = null;
+            dashboardCtrl.viewAllNotes();
 
-        collectionList.remove(currentCollection);
+            refreshListView();
+        }
 
-        knownCollections.remove(currentCollection);
-        refreshListView();
-
-        dashboardCtrl.setCurrentCollection(null);
-        dashboardCtrl.viewAllNotes();
-
-
-        // delete collection from config file
-        config.writeAllToFile(collectionList);
     }
 
     @FXML
     public void connectToCollection() {
+        if (connectButton.isDisabled()) return;
         if (currentCollection == null) return;
         if (!dialogStyler.createStyledAlert(
                 Alert.AlertType.CONFIRMATION,
@@ -294,7 +270,7 @@ public class EditCollectionsCtrl implements Initializable {
                 "Are you sure you want to connect to this collection? All notes in the collection will be copied as well."
         ).showAndWait().filter(b -> b == ButtonType.OK).isPresent()) return;
 
-        dashboardCtrl.conectToCollection(
+        dashboardCtrl.connectToCollection(
                 serverUtils.getCollectionsOnServer(serverField.getText().trim()).stream()
                         .filter(collection -> collection.title.equals(titleField.getText().trim()))
                         .findFirst().get()
@@ -474,6 +450,8 @@ public class EditCollectionsCtrl implements Initializable {
     @FXML
     public void onExitCollections()
     {
+        currentCollection = null;
+        listView.getSelectionModel().clearSelection();
         if (stage != null) {
             stage.close(); // Close the popup window
         }
@@ -495,4 +473,133 @@ public class EditCollectionsCtrl implements Initializable {
     public void refreshTreeView() {
         Platform.runLater(() -> dashboardCtrl.refreshTreeView());
     }
+
+
+    // ----------------------- HCI - Keyboard shortcuts -----------------------
+
+    /**
+     * DOWN ARROW - cycles through collections
+     */
+    public void selectNextCollection() {
+        selectCollectionInDirection(1);
+    }
+
+    /**
+     * ALT + UP ARROW - cycles through notes
+     */
+    public void selectPreviousCollection() {
+        selectCollectionInDirection(-1);
+    }
+
+    /**
+     * Selects the next JFX element.
+     */
+    public void selectNextJFXElement() {
+        selectJFXElement(1);
+    }
+
+    /**
+     * Selects the previous JFX element.
+     */
+    public void selectPreviousJFXElement() {
+        selectJFXElement(-1);
+    }
+
+    /**
+     * Handles navigation between UI elements in forward or backward direction.
+     *
+     * @param direction 1 for forward, -1 for backward
+     */
+    public void selectJFXElement(int direction) {
+
+        if (currentCollection == null) {
+            selectCollectionInDirection(direction);
+            return;
+        }
+
+        // List of focusable elements in order
+        List<Control> focusableElements = Arrays.asList(
+                titleField,
+                serverField,
+                forgetButton,
+                deleteButton,
+                saveButton,
+                connectButton,
+                createButton
+        );
+
+        // Get the currently focused element
+        Control focusedElement = (Control) focusableElements.stream()
+                .filter(Control::isFocused)
+                .findFirst()
+                .orElse(null);
+
+        // Find the index of the focused element
+        int currentIndex = focusableElements.indexOf(focusedElement);
+
+        // Loop through the elements in the specified direction
+        for (int i = 1; i <= focusableElements.size(); i++) {
+            int nextIndex = (currentIndex + (i * direction) + focusableElements.size()) % focusableElements.size();
+            Control nextElement = focusableElements.get(nextIndex);
+
+            // If the element is not disabled, request focus
+            if (!nextElement.isDisabled()) {
+                nextElement.requestFocus();
+                break;
+            }
+        }
+    }
+
+
+    /**
+     * Selects the next or previous collection in the list and handles edge cases.
+     *
+     * @param direction 1 for next, -1 for previous
+     */
+    public void selectCollectionInDirection(int direction) {
+        if (knownCollections.isEmpty()) return; // No collections to navigate
+
+        if (currentCollection == null) {
+            if (addButton.isFocused()) {
+                // Navigate from addButton to the first or last collection
+                if (direction > 0) {
+                    currentCollection = knownCollections.getFirst();
+                } else {
+                    currentCollection = knownCollections.getLast();
+                }
+                listView.getSelectionModel().select(currentCollection);
+                titleField.requestFocus();
+            } else {
+                // If no collection is selected and addButton is not focused
+                if (direction > 0) {
+                    currentCollection = knownCollections.getFirst();
+                    listView.getSelectionModel().select(currentCollection);
+                } else {
+                    addButton.requestFocus();
+                }
+            }
+        } else {
+            int currentIndex = knownCollections.indexOf(currentCollection);
+            int nextIndex = currentIndex + direction;
+
+            if (nextIndex >= knownCollections.size()) {
+                // If navigating past the last collection, focus the addButton
+                addButton.requestFocus();
+                currentCollection = null;
+                listView.getSelectionModel().clearSelection();
+            } else if (nextIndex < 0) {
+                // If navigating before the first collection, focus the addButton
+                addButton.requestFocus();
+                currentCollection = null;
+                listView.getSelectionModel().clearSelection();
+            } else {
+                // Navigate to the next or previous collection
+                currentCollection = knownCollections.get(nextIndex);
+                listView.getSelectionModel().select(currentCollection);
+            }
+        }
+    }
+
+
+
 }

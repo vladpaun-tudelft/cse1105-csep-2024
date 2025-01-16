@@ -15,14 +15,22 @@
  */
 package client.scenes;
 
+import client.MyFXML;
+import client.MyModule;
+import com.google.inject.Injector;
 import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Pair;
 
 import javafx.scene.input.KeyEvent;
+
+import static com.google.inject.Guice.createInjector;
 
 public class MainCtrl {
 
@@ -31,6 +39,8 @@ public class MainCtrl {
     private DashboardCtrl dashboardCtrl;
     private Scene dashboard;
 
+    private static final Injector INJECTOR = createInjector(new MyModule());
+    private static final MyFXML FXML = new MyFXML(INJECTOR);
 
     public void initialize(Stage primaryStage,
                            Pair<DashboardCtrl, Parent> dashboard) {
@@ -47,6 +57,121 @@ public class MainCtrl {
     }
 
     /**
+     * Method to load scenes without caching.
+     */
+    public <T> T loadScene(Class<T> controllerClass, String... fxmlPath) {
+        var fxml = FXML.load(controllerClass, fxmlPath);
+        Scene scene = new Scene(fxml.getValue());
+        scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        return controllerClass.cast(fxml.getKey());
+    }
+
+    /**
+     * Opens the EditCollections scene as a popup.
+     */
+    public EditCollectionsCtrl showEditCollections() {
+        var editCollectionsCtrl = loadScene(EditCollectionsCtrl.class, "client", "scenes", "EditCollections.fxml");
+
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.initStyle(StageStyle.TRANSPARENT);
+        popupStage.setTitle("Edit Collections");
+
+        Scene scene = new Scene(FXML.load(EditCollectionsCtrl.class, "client", "scenes", "EditCollections.fxml").getValue());
+        scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+scene.setFill(Color.TRANSPARENT);
+        popupStage.setScene(scene);
+
+        editCollectionsCtrl.setReferences(
+                popupStage,
+                dashboardCtrl.getCollectionCtrl(),
+                dashboardCtrl,
+                dashboardCtrl.getServer(),
+                dashboardCtrl.getNoteCtrl(),
+                dashboardCtrl.getConfig(),
+                dashboardCtrl.getDialogStyler()
+        );
+        editCollectionsCtrl.setCollectionList(dashboardCtrl.getCollections());
+
+        configureCollectionsKeyboardShortcuts(scene, popupStage, editCollectionsCtrl);
+
+        Platform.runLater(() -> popupStage.showAndWait());
+
+        return editCollectionsCtrl;
+    }
+
+
+    /**
+     * Configures various keyboard shortcuts used in the edit collections stage
+     */
+    private void configureCollectionsKeyboardShortcuts(Scene scene, Stage popupStage, EditCollectionsCtrl editCollectionsCtrl) {
+        // Add keyboard shortcuts for the new stage
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            switch (event.getCode()) {
+
+
+                // CLOSE POPUP
+                case ESCAPE -> {
+                    popupStage.close(); // Close the stage on ESC
+                    event.consume();
+                }
+
+                // NAVIGATION
+                case DOWN -> {
+                    editCollectionsCtrl.selectNextCollection();
+                    event.consume();
+                }
+                case UP -> {
+                    editCollectionsCtrl.selectPreviousCollection();
+                    event.consume();
+                }
+                case TAB -> {
+                    if (event.isShiftDown()) {
+                        editCollectionsCtrl.selectPreviousJFXElement();;
+                    } else {
+                        editCollectionsCtrl.selectNextJFXElement();
+                    }
+                    event.consume();
+                }
+
+                case N -> {
+                    if (event.isControlDown() || event.isAltDown()) {
+                        editCollectionsCtrl.addCollection();
+                        event.consume();
+                    }
+                }
+                case S -> {
+                    if (event.isControlDown() || event.isAltDown()) {
+                        editCollectionsCtrl.saveCollection();
+                        event.consume();
+                    }
+                }
+                case C -> {
+                    if (event.isAltDown()) {
+                        editCollectionsCtrl.connectToCollection();
+                        editCollectionsCtrl.createCollection();
+                        event.consume();
+                    }
+                }
+                case DELETE -> {
+                    if (event.isAltDown()) {
+                        if (event.isShiftDown()) {
+                            editCollectionsCtrl.forgetCollection();
+                        } else {
+                            editCollectionsCtrl.deleteCollection();
+                        }
+                        event.consume();
+                    }
+                }
+
+                default -> {
+                }
+            }
+        });
+
+    }
+
+    /**
      * Configures various keyboard shortcuts used in the dashboard
      */
     private void configureKeyboardShortcuts() {
@@ -55,32 +180,65 @@ public class MainCtrl {
 
                 // NAVIGATION
                 case  RIGHT -> {
-                    if (event.isAltDown()) dashboardCtrl.selectNextCollection();
-                    event.consume();
+                    if (event.isAltDown()) {
+                        dashboardCtrl.selectNextCollection();
+                        event.consume();
+                    }
                 }
                 case LEFT -> {
-                    if (event.isAltDown()) dashboardCtrl.selectPreviousCollection();
-                    event.consume();
+                    if (event.isAltDown()) {
+                        dashboardCtrl.selectPreviousCollection();
+                        event.consume();
+                    }
                 }
                 case DOWN -> {
-                    if (event.isAltDown()) dashboardCtrl.selectNextNote();
-                    event.consume();
+                    if (event.isAltDown()) {
+                        dashboardCtrl.selectNextNote();
+                        event.consume();
+                    }
                 }
                 case UP -> {
-                    if (event.isAltDown()) dashboardCtrl.selectPreviousNote();
-                    event.consume();
+                    if (event.isAltDown()){
+                        dashboardCtrl.selectPreviousNote();
+                        event.consume();
+                    }
+                }
+                case TAB -> {
+
+                }
+
+                // DELETING NOTES
+                case DELETE -> {
+                    if (event.isAltDown()) {
+                        dashboardCtrl.deleteSelectedNote();
+                        event.consume();
+                    }
+                }
+
+                // EDITING
+                case E -> {
+                    if (event.isAltDown() || event.isControlDown()) {
+                        if (event.isShiftDown()) {
+                            dashboardCtrl.openEditCollections();
+                            event.consume();
+                        } else {
+                            dashboardCtrl.editCurrentNoteName();
+                            event.consume();
+                        }
+                    }
                 }
 
                 // ADDING NOTES AND COLLECTIONS
                 case N -> {
-                    if (event.isControlDown()) {
+                    if (event.isControlDown() || event.isAltDown()) {
                         if (event.isShiftDown()) {
                             dashboardCtrl.addCollection();
+                            event.consume();
                         } else {
                             dashboardCtrl.addNote();
+                            event.consume();
                         }
                     }
-                    event.consume();
                 }
 
                 // SEARCHING
@@ -90,7 +248,13 @@ public class MainCtrl {
                     event.consume();
                 }
 
-                //FULLSCREEN
+                // REFRESH
+                case F5 -> {
+                    dashboardCtrl.refresh();
+                    event.consume();
+                }
+
+                // FULLSCREEN
                 case F11 -> primaryStage.setFullScreen(!primaryStage.isFullScreen());
                 case ENTER -> {
                     if (event.isAltDown()) {
