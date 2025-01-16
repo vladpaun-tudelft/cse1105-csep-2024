@@ -309,6 +309,10 @@ public class CollectionCtrl {
                             .distinct()
                             .collect(Collectors.toList())
             );
+            server.getWebSocketURL(currentCollection.serverURL);
+            dashboardCtrl.noteAdditionSync();
+            dashboardCtrl.noteDeletionSync();
+
             currentCollectionTitle.setText(currentCollection.title);
             collectionView.setVisible(true);
             treeView.setVisible(false);
