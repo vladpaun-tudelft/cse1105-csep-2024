@@ -2,7 +2,6 @@ package server.api;
 
 import commons.EmbeddedFile;
 import commons.Note;
-import javafx.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

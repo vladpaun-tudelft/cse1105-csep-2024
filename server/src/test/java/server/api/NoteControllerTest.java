@@ -3,6 +3,7 @@ package server.api;
 import commons.Collection;
 import commons.EmbeddedFile;
 import commons.Note;
+import net.minidev.json.JSONUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -182,6 +183,75 @@ class NoteControllerTest {
     }
 
     @Test
+    public void addMessage() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        Note result = noteController.addMessage(note1);
+
+        assertNotNull(result);
+        assertEquals(note1, result);
+    }
+
+    @Test
+    public void deleteNoteHandler() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        Note result = noteController.deleteNoteHandler(note1);
+
+        assertNotNull(result);
+        assertEquals(note1, result);
+    }
+
+    @Test
+    public void sendEmbeddedFileUpdate() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
+        EmbeddedFile file = (EmbeddedFile) noteController.uploadFile(1L, mockFile).getBody();
+        file.setId(1L);
+
+        Long result = noteController.sendEmbeddedFileUpdate(note1.id, file.getId());
+
+        assertEquals(file.getId(), result);
+    }
+
+    @Test
+    public void sendMessageAfterDelete() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
+        EmbeddedFile file = (EmbeddedFile) noteController.uploadFile(1L, mockFile).getBody();
+        file.setId(1L);
+
+        Long result = noteController.sendMessageAfterDelete(note1.id, file.getId());
+
+        assertEquals(file.getId(), result);
+    }
+
+    @Test
+    public void sendMessageAfterRename() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
+        EmbeddedFile file = (EmbeddedFile) noteController.uploadFile(1L, mockFile).getBody();
+        file.setId(1L);
+
+        String newFileName = "newName.txt";
+
+        Object[] result = noteController.sendMessageAfterRename(note1.id, new Object[]{file.getId(), newFileName});
+        Long returnedId = (Long) result[0];
+        String returnedFileName = (String) result[1];
+
+        assertEquals(file.getId(), returnedId);
+        assertEquals(newFileName, returnedFileName);
+    }
+
+    @Test
     public void getFilesTest() {
         collectionController.createCollection(collection1);
         noteController.createNote(note1);
@@ -205,6 +275,27 @@ class NoteControllerTest {
         var response = noteController.getFiles(999L);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    public void getFileById() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
+        var uploadResponse = noteController.uploadFile(1L, mockFile);
+        EmbeddedFile expected = (EmbeddedFile) uploadResponse.getBody();
+        expected.setId(1L);
+
+        var response = noteController.getFileById(note1.id, expected.getId());
+        EmbeddedFile actual = response.getBody();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(expected, actual);
+        assertEquals(expected.getFileName(), actual.getFileName());
+        assertEquals(expected.getFileType(), actual.getFileType());
+        assertEquals(expected.getFileContent(), actual.getFileContent());
     }
 
     @Test

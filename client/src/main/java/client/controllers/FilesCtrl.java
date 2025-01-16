@@ -10,7 +10,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.io.File;
 import java.io.FileOutputStream;

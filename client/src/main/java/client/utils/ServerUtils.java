@@ -34,7 +34,6 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.*;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
@@ -58,7 +57,9 @@ public class ServerUtils {
 	private static StompSession session;
 	@Getter @Setter
 	private StompSession.Subscription embeddedFilesSubscription;
+	@Getter @Setter
 	private StompSession.Subscription embeddedFilesDeleteUpdates;
+	@Getter @Setter
 	private StompSession.Subscription embeddedFilesRenameUpdates;
 
 	@Inject

@@ -62,7 +62,13 @@ class ServerUtilsTest {
     @Mock
     private StompSession.Subscription subscriptionMock;
     @Mock
-    private Consumer<EmbeddedFile> consumerMock;
+    private StompSession.Subscription deleteSubscriptionMock;
+    @Mock
+    private StompSession.Subscription renameSubsciptionMock;
+    @Mock
+    private Consumer<Long> consumerMock;
+    @Mock
+    private Consumer<Object[]> renameConsumerMock;
 
     private MockedStatic<ClientBuilder> clientBuilderMockStatic;
 
@@ -299,6 +305,25 @@ class ServerUtilsTest {
     }
 
     @Test
+    void getFileById() {
+        Collection collection = new Collection("Collection Title", "http://mock-server.com");
+        Note note = new Note("Note", "Body", collection);
+        note.id = 1L;
+        EmbeddedFile file = new EmbeddedFile(note, "file.txt", "text/plain", new byte[0]);
+        file.setId(1L);
+
+        when(clientMock.target("http://mock-server.com")).thenReturn(targetMock);
+        when(targetMock.path("api/notes/" + note.id + "/files/" + file.getId() + "/getFile")).thenReturn(targetMock);
+        when(builderMock.get(any(GenericType.class))).thenReturn(file);
+
+        ServerUtils spyServerUtils = spy(serverUtils);
+        doReturn(true).when(spyServerUtils).isServerAvailableWithAlert(anyString());
+
+        EmbeddedFile e = spyServerUtils.getFileById(note, file.getId());
+        assertEquals(file, e);
+    }
+
+    @Test
     void deleteFile() {
         Collection collection = new Collection("Collection Title", "http://mock-server.com");
         Note note = new Note("Note", "Body", collection);
@@ -418,13 +443,49 @@ class ServerUtilsTest {
     }
 
     @Test
+    void registerForEmbeddedFilesDeleteUpdates() {
+        Note note = new Note("note", "", null);
+        note.id = 1L;
+        String expectedTopic = "/topic/notes/1/files/deleteFile";
+
+        when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
+                .thenReturn(deleteSubscriptionMock);
+
+        serverUtils.setSession(sessionMock);
+        serverUtils.registerForEmbeddedFilesDeleteUpdates(note, consumerMock);
+
+        verify(sessionMock).subscribe(eq(expectedTopic), any(StompFrameHandler.class));
+    }
+
+    @Test
+    void registerForEmbeddedFilesRenameUpdates() {
+        Note note = new Note("note", "", null);
+        note.id = 1L;
+        String expectedTopic = "/topic/notes/1/files/renameFile";
+
+        when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
+                .thenReturn(renameSubsciptionMock);
+
+        serverUtils.setSession(sessionMock);
+        serverUtils.registerForEmbeddedFilesRenameUpdates(note, renameConsumerMock);
+
+        verify(sessionMock).subscribe(eq(expectedTopic), any(StompFrameHandler.class));
+    }
+
+    @Test
     void unregisterFromEmbeddedFileUpdates() {
         serverUtils.setEmbeddedFilesSubscription(subscriptionMock);
+        serverUtils.setEmbeddedFilesRenameUpdates(renameSubsciptionMock);
+        serverUtils.setEmbeddedFilesDeleteUpdates(deleteSubscriptionMock);
 
         serverUtils.unregisterFromEmbeddedFileUpdates();
 
         verify(subscriptionMock).unsubscribe();
+        verify(renameSubsciptionMock).unsubscribe();
+        verify(deleteSubscriptionMock).unsubscribe();
         assertNull(serverUtils.getEmbeddedFilesSubscription());
+        assertNull(serverUtils.getEmbeddedFilesRenameUpdates());
+        assertNull(serverUtils.getEmbeddedFilesDeleteUpdates());
     }
 
     @Test
@@ -444,13 +505,12 @@ class ServerUtilsTest {
     @Test
     void registerForMessages() {
         String destination = "/topic/messages";
-        Class<EmbeddedFile> type = EmbeddedFile.class;
 
         when(sessionMock.subscribe(eq(destination), any(StompFrameHandler.class)))
                 .thenReturn(subscriptionMock);
 
         serverUtils.setSession(sessionMock);
-        serverUtils.registerForMessages(destination, type, consumerMock);
+        serverUtils.registerForMessages(destination, Long.class, consumerMock);
 
         verify(sessionMock).subscribe(eq(destination), any(StompFrameHandler.class));
     }
