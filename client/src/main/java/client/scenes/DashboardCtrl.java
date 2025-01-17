@@ -1,6 +1,10 @@
 package client.scenes;
 
 import client.controllers.*;
+import client.services.CollectionFilter;
+import client.services.NoteFilterProcessor;
+import client.services.SearchFilter;
+import client.services.TagFilter;
 import client.ui.CustomTreeCell;
 import client.ui.DialogStyler;
 import client.ui.NoteListItem;
@@ -182,7 +186,7 @@ public class DashboardCtrl implements Initializable {
         filesCtrl.setDashboardCtrl(this);
         filesCtrl.setReferences(filesView);
 
-        tagCtrl.setReferences(tagsBox, allNotes);
+        tagCtrl.setReferences(this, tagsBox, allNotes);
 
         viewAllNotes();
 
@@ -756,5 +760,39 @@ public class DashboardCtrl implements Initializable {
 
     public void selectTag(String tag) {
         tagCtrl.selectTag(tag);
+    }
+
+    /**
+     * Updates the view with filtered notes using all filters
+     */
+    public void updateFilteredNotes() {
+        NoteFilterProcessor filterProcessor = new NoteFilterProcessor();
+        filterProcessor.addFilter(new CollectionFilter(currentCollection));
+        filterProcessor.addFilter(new TagFilter(tagCtrl.getSelectedTags(), tagCtrl.getTagService()));
+        filterProcessor.addFilter(new SearchFilter(searchField.getText().trim().toLowerCase()));
+
+        List<Note> filteredNotes = filterProcessor.applyFilters(allNotes);
+//        updateCollectionView(FXCollections.observableArrayList(filteredNotes));
+        updateTagList();
+    }
+
+    /**
+     * Returns notes filtered by all criteria
+     */
+    public List<Note> getFilteredNotesWithCustomTags(List<String> tags) {
+        NoteFilterProcessor filterProcessor = new NoteFilterProcessor();
+        filterProcessor.addFilter(new CollectionFilter(currentCollection));
+        filterProcessor.addFilter(new TagFilter(tags, tagCtrl.getTagService()));
+
+        return filterProcessor.applyFilters(allNotes);
+    }
+
+    /**
+     * Returns notes filtered by collection only
+     */
+    public List<Note> getFilteredNotesByCollection() {
+        NoteFilterProcessor filterProcessor = new NoteFilterProcessor();
+        filterProcessor.addFilter(new CollectionFilter(currentCollection));
+        return filterProcessor.applyFilters(allNotes);
     }
 }

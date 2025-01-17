@@ -1,8 +1,10 @@
 package client.controllers;
 
+import client.scenes.DashboardCtrl;
 import client.services.TagService;
 import client.ui.DialogStyler;
 import commons.Note;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -10,6 +12,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,16 +22,19 @@ import java.util.List;
  */
 public class TagCtrl {
 
+    private DashboardCtrl dashboardCtrl;
+
     private HBox tagsBox;
     private ObservableList<Note> allNotes;
 
-    private TagService tagService;
+    @Getter private TagService tagService;
 
     public TagCtrl() {
         this.tagService = new TagService();
     }
 
-    public void setReferences(HBox tagsBox, ObservableList<Note> allNotes) {
+    public void setReferences(DashboardCtrl dashboardCtrl, HBox tagsBox, ObservableList<Note> allNotes) {
+        this.dashboardCtrl = dashboardCtrl;
         this.tagsBox = tagsBox;
         this.allNotes = allNotes;
 
@@ -65,20 +71,23 @@ public class TagCtrl {
      * The method also re selects the previously selected tags if they are still available
      */
     public void updateTagList() {
-        List<String> uniqueTags = tagService.getUniqueTags(allNotes);
+        if (dashboardCtrl == null) {
+            return;
+        }
+        List<String> uniqueTags = tagService.getUniqueTags(dashboardCtrl.getFilteredNotesByCollection());
         List<String> selectedTags = new ArrayList<>();
+        List<Note> filteredNotes = dashboardCtrl.getFilteredNotesWithCustomTags(selectedTags);
 
         for (int i = 0; i < tagsBox.getChildren().size(); i++) {
             if (tagsBox.getChildren().get(i) instanceof ComboBox) {
                 ComboBox<String> comboBox = (ComboBox<String>) tagsBox.getChildren().get(i);
-
                 String selectedItem = comboBox.getSelectionModel().getSelectedItem();
 
-                List<String> availableTags = new ArrayList<>(uniqueTags);
-                availableTags.removeAll(selectedTags);
+                filteredNotes = tagService.filterNotesByTags(filteredNotes, selectedTags);
 
-                comboBox.getItems().clear();
-                comboBox.getItems().addAll(availableTags);
+                List<String> availableTags = tagService.getAvailableTagsForRemainingNotes(filteredNotes, selectedTags);
+
+                comboBox.getItems().setAll(availableTags);
 
                 // reselect the previously selected item if it's still in the new list
                 if (selectedItem != null && uniqueTags.contains(selectedItem)) {
@@ -131,8 +140,10 @@ public class TagCtrl {
         }
     }
 
-    private List<String> getSelectedTags() {
+    public List<String> getSelectedTags() {
         List<String> selectedTags = new ArrayList<>();
+        if (tagsBox == null) return selectedTags;
+
         for (Node node : tagsBox.getChildren()) {
             if (node instanceof ComboBox) {
                 ComboBox<String> comboBox = (ComboBox<String>) node;
@@ -147,11 +158,15 @@ public class TagCtrl {
 
     private void onTagSelectionChanged(ComboBox<String> comboBox) {
         if (isLastDropdown(comboBox) && comboBox.getSelectionModel().getSelectedItem() != null) {
-            if (isLastDropdown(comboBox)) {
-                addTagDropdown(comboBox);
-            }
-            updateTagList();
+            Platform.runLater(() -> {
+                if (isLastDropdown(comboBox)) {
+                    addTagDropdown(comboBox);
+                }
+                updateTagList();
+            });
         }
+
+        Platform.runLater(() -> dashboardCtrl.updateFilteredNotes());
     }
 
     private boolean isLastDropdown(ComboBox<String> dropdown) {

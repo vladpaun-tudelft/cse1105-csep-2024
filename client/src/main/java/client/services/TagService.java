@@ -5,9 +5,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Service responsible for managing tags in the application.
@@ -22,7 +24,7 @@ public class TagService {
      */
     public List<String> extractTagsFromBody(String body) {
         List<String> tags = new ArrayList<>();
-        Pattern pattern = Pattern.compile("#(\\w+)");
+        Pattern pattern = Pattern.compile("#(\\S+)");
         Matcher matcher = pattern.matcher(body);
 
         while (matcher.find()) {
@@ -40,6 +42,7 @@ public class TagService {
      */
     public List<String> getUniqueTags(List<Note> allNotes) {
         ObservableList<String> tags = FXCollections.observableArrayList();
+        if (allNotes == null) return tags;
 
         for (Note note : allNotes) {
             if (note.getBody() != null) {
@@ -49,6 +52,27 @@ public class TagService {
         }
 
         return new ArrayList<>(tags.stream().distinct().toList());
+    }
+
+    /**
+     * Filters the notes based on the currently selected tags.
+     */
+    public List<Note> filterNotesByTags(List<Note> notes, List<String> selectedTags) {
+        return notes.stream()
+                .filter(note -> noteHasAllSelectedTags(note, selectedTags))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the available tags for the remaining notes, excluding the selected ones.
+     */
+    public List<String> getAvailableTagsForRemainingNotes(List<Note> filteredNotes, List<String> selectedTags) {
+        List<String> availableTags = new ArrayList<>(getUniqueTags(filteredNotes));
+
+        // Remove all selected tags from the available tags
+        availableTags.removeAll(selectedTags);
+
+        return availableTags;
     }
 
     /**
@@ -69,5 +93,10 @@ public class TagService {
         }
 
         return markdown;
+    }
+
+    public boolean noteHasAllSelectedTags(Note note, List<String> selectedTags) {
+        List<String> noteTags = extractTagsFromBody(note.getBody());
+        return new HashSet<>(noteTags).containsAll(selectedTags);
     }
 }
