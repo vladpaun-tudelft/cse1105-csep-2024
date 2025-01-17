@@ -32,6 +32,8 @@ Once this is working, you can try importing the project into your favorite IDE.
 
 - ```ALT + DELETE``` - Delete current note
 
+- ```CTRL + Z```or ```ALT + Z``` - Undo last note action
+
 
 - ```ALT + DOWN ARROW``` - Show next note
 - ```ALT + UP ARROW``` - Show previous note
