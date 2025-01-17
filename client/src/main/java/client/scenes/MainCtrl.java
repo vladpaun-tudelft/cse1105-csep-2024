@@ -241,6 +241,13 @@ scene.setFill(Color.TRANSPARENT);
                     }
                 }
 
+                // UNDO
+                case Z -> {
+                    if (event.isControlDown() || event.isAltDown()) {
+                        dashboardCtrl.undoLastAction(event);
+                    }
+                }
+
                 // SEARCHING
                 case ESCAPE -> {
                     dashboardCtrl.clearSearch();
