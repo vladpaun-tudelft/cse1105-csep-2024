@@ -221,9 +221,20 @@ public class DashboardCtrl implements Initializable {
 
                 markdownViewBlocker.setVisible(false);
 
-                server.registerForEmbeddedFileUpdates(currentNote, embeddedFile -> {
+                server.registerForEmbeddedFileUpdates(currentNote, embeddedFileId -> {
                     Platform.runLater(() -> {
-                        filesCtrl.showFiles(currentNote);
+//                        filesCtrl.showFiles(currentNote);
+                        filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId);
+                    });
+                });
+                server.registerForEmbeddedFilesDeleteUpdates(currentNote, embeddedFileId -> {
+                    Platform.runLater(() -> {
+                        filesCtrl.updateViewAfterDelete(currentNote, embeddedFileId);
+                    });
+                });
+                server.registerForEmbeddedFilesRenameUpdates(currentNote, newFileName -> {
+                    Platform.runLater(() -> {
+                        filesCtrl.updateViewAfterRename(currentNote, newFileName);
                     });
                 });
 
@@ -336,9 +347,20 @@ public class DashboardCtrl implements Initializable {
                 markdownViewBlocker.setVisible(false);
                 allNotesView.getFocusModel().focus(0);
 
-                server.registerForEmbeddedFileUpdates(currentNote, embeddedFile -> {
+                server.registerForEmbeddedFileUpdates(currentNote, embeddedFileId -> {
                     Platform.runLater(() -> {
-                        filesCtrl.showFiles(currentNote);
+//                        filesCtrl.showFiles(currentNote);
+                        filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId);
+                    });
+                });
+                server.registerForEmbeddedFilesDeleteUpdates(currentNote, embeddedFileId -> {
+                    Platform.runLater(() -> {
+                        filesCtrl.updateViewAfterDelete(currentNote, embeddedFileId);
+                    });
+                });
+                server.registerForEmbeddedFilesRenameUpdates(currentNote, newFileName -> {
+                    Platform.runLater(() -> {
+                        filesCtrl.updateViewAfterRename(currentNote, newFileName);
                     });
                 });
 
