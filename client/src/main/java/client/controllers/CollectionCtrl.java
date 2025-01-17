@@ -1,6 +1,7 @@
 package client.controllers;
 
 import client.entities.Action;
+import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
 import client.scenes.EditCollectionsCtrl;
 import client.ui.DialogStyler;
@@ -157,7 +158,7 @@ public class CollectionCtrl {
         listView.setOnMouseClicked(event -> {
             Note currentNote = dashboardCtrl.getCurrentNote();
             Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
-            dashboardCtrl.getActionHistory().push(new Action("moveNote", currentNote, currentNote.collection, selectedCollection));
+            dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_NOTE, currentNote, currentNote.collection, selectedCollection));
             moveNoteFromCollection(currentNote, selectedCollection);
         });
     }

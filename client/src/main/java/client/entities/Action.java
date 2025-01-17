@@ -6,7 +6,7 @@ import commons.Note;
  * Represents an undoable action.
  */
 public class Action {
-    private final String type;
+    private final ActionType type;
     private final Note note;
     private final Object previousState;
     private Object newState;
@@ -21,14 +21,14 @@ public class Action {
                 '}';
     }
 
-    public Action(String type, Note note, Object previousState, Object newState) {
+    public Action(ActionType type, Note note, Object previousState, Object newState) {
         this.type = type;
         this.note = note;
         this.previousState = previousState;
         this.newState = newState;
     }
 
-    public String getType() {
+    public ActionType getType() {
         return type;
     }
 

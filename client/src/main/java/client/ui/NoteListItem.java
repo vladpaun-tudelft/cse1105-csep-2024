@@ -2,6 +2,7 @@ package client.ui;
 
 import client.controllers.NoteCtrl;
 import client.entities.Action;
+import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
@@ -182,7 +183,7 @@ public class NoteListItem extends ListCell<Note> {
 
             noteCtrl.saveAllPendingNotes();
 
-            controller.getActionHistory().push(new Action("editTitle", item, oldTitle, uniqueTitle));
+            controller.getActionHistory().push(new Action(ActionType.EDIT_TITLE, item, oldTitle, uniqueTitle));
         } catch (ClientErrorException e) {
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,

@@ -2,6 +2,7 @@ package client.ui;
 
 import client.controllers.NoteCtrl;
 import client.entities.Action;
+import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
 import commons.Collection;
 import commons.Note;
@@ -246,7 +247,7 @@ public class CustomTreeCell extends TreeCell<Object> {
 
             originalNoteTitle = newTitle;
 
-            dashboardCtrl.getActionHistory().push(new Action("editTitle", note, oldTitle, uniqueTitle));
+            dashboardCtrl.getActionHistory().push(new Action(ActionType.EDIT_TITLE, note, oldTitle, uniqueTitle));
         } catch (ClientErrorException e) {
             // Handle client errors
             Alert alert = dialogStyler.createStyledAlert(

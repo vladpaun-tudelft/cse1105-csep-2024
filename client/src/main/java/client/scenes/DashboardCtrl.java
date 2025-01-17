@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.controllers.*;
 import client.entities.Action;
+import client.entities.ActionType;
 import client.ui.CustomTreeCell;
 import client.ui.DialogStyler;
 import client.ui.NoteListItem;
@@ -538,14 +539,14 @@ public class DashboardCtrl implements Initializable {
                 if (isWithinWord) {
                     // Merge changes into the last action if they are within a word
                     Action lastAction = actionHistory.pop();
-                    actionHistory.push(new Action("editBody", currentNote, lastAction.getPreviousState(), newBody));
+                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, lastAction.getPreviousState(), newBody));
                 } else {
                     // Create a new action for changes across words or lines
-                    actionHistory.push(new Action("editBody", currentNote, previousBody, newBody));
+                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, newBody));
                 }
             } else {
                 // Create a new action for the first change
-                actionHistory.push(new Action("editBody", currentNote, previousBody, newBody));
+                actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, newBody));
             }
         }
 
@@ -616,7 +617,7 @@ public class DashboardCtrl implements Initializable {
         if (newFile != null) {
             filesCtrl.showFiles(currentNote);
             // Save the file addition action to the history
-            actionHistory.push(new Action("addFile", currentNote, newFile, null));
+            actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, newFile, null));
         }
     }
 
@@ -724,7 +725,7 @@ public class DashboardCtrl implements Initializable {
         Action lastAction = actionHistory.pop();
     
         switch (lastAction.getType()) {
-            case "editBody" -> {
+            case ActionType.EDIT_BODY -> {
                 isUndoBodyChange = true; // Set the flag
                 currentNote.setBody((String) lastAction.getPreviousState());
                 noteBody.setText(currentNote.getBody());
@@ -734,7 +735,7 @@ public class DashboardCtrl implements Initializable {
                 }
                 noteBody.positionCaret(currentNote.getBody().length());
             }
-            case "editTitle" -> {
+            case ActionType.EDIT_TITLE -> {
                 String oldTitle = (String) lastAction.getPreviousState();
                 currentNote.setTitle(oldTitle);
                 noteTitle.setText(oldTitle);
@@ -742,11 +743,11 @@ public class DashboardCtrl implements Initializable {
                 refreshTreeView();
                 collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl));
             }
-            case "addFile" -> {
+            case ActionType.ADD_FILE -> {
                 EmbeddedFile addedFile = (EmbeddedFile) lastAction.getPreviousState();
                 filesCtrl.deleteFile(currentNote, addedFile);
             }
-            case "moveNote" -> {
+            case ActionType.MOVE_NOTE -> {
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
             }
             default -> throw new UnsupportedOperationException("Undo action not supported for type: " + lastAction.getType());
