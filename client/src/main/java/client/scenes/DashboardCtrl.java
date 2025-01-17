@@ -16,6 +16,7 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -53,6 +54,7 @@ public class DashboardCtrl implements Initializable {
     @Getter private final NoteCtrl noteCtrl;
     @Getter private final SearchCtrl searchCtrl;
     @Getter private final FilesCtrl filesCtrl;
+    @Getter private final TagCtrl tagCtrl;
 
     // FXML Components
     @FXML private Label contentBlocker;
@@ -76,6 +78,7 @@ public class DashboardCtrl implements Initializable {
     @FXML private Button addFileButton;
     @FXML private HBox filesView;
     @FXML private Label filesViewBlocker;
+    @FXML private HBox tagsBox;
 
 
     // Variables
@@ -98,7 +101,8 @@ public class DashboardCtrl implements Initializable {
                          NoteCtrl noteCtrl,
                          SearchCtrl searchCtrl,
                          FilesCtrl filesCtrl,
-                         DialogStyler dialogStyler) {
+                         DialogStyler dialogStyler,
+                         TagCtrl tagCtrl) {
         this.mainCtrl = mainCtrl;
         this.server = server;
         this.config = config;
@@ -108,6 +112,7 @@ public class DashboardCtrl implements Initializable {
         this.searchCtrl = searchCtrl;
         this.filesCtrl = filesCtrl;
         this.dialogStyler = dialogStyler;
+        this.tagCtrl = tagCtrl;
     }
 
     @SneakyThrows
@@ -176,6 +181,8 @@ public class DashboardCtrl implements Initializable {
 
         filesCtrl.setDashboardCtrl(this);
         filesCtrl.setReferences(filesView);
+
+        tagCtrl.setReferences(tagsBox, allNotes);
 
         viewAllNotes();
 
@@ -736,5 +743,14 @@ public class DashboardCtrl implements Initializable {
         for (TreeItem<Object> child : node.getChildren()) {
             flattenTreeRecursive(child, items);
         }
+    }
+
+    // =========================== Tags ===========================
+    public void updateTagList() {
+        tagCtrl.updateTagList();
+    }
+
+    public void clearTags(ActionEvent actionEvent) {
+        tagCtrl.clearTags();
     }
 }

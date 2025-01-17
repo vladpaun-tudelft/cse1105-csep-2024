@@ -60,6 +60,13 @@
 <VBox fx:id="root" prefHeight="600.0" prefWidth="900.0" stylesheets="@../../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
     <children>
         <MenuBar styleClass="options-bar" VBox.vgrow="NEVER" />
+        <HBox fx:id="tagsBox" alignment="CENTER_LEFT" spacing="10.0" VBox.vgrow="NEVER">
+            <children>
+                <Label styleClass="label" text="Tags:" />
+                <!-- Combo Boxes will be added here dynamically -->
+                <Button fx:id="clearTagsButton" text="Clear Tags" onAction="#clearTags" />
+            </children>
+        </HBox>
         <SplitPane dividerPositions="0.2506" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="content-view" VBox.vgrow="ALWAYS">
             <items>
                 <AnchorPane layoutY="1.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" styleClass="foreground-element">

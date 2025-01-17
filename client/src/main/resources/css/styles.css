@@ -555,3 +555,44 @@
     -fx-background-color: #161619;
     -fx-text-fill: white;
 }
+
+/* ============================= */
+/* Styles for tag management */
+#tagsBox {
+    -fx-padding: 5;
+    -fx-background-color: #151617;
+}
+
+.label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+.tag-dropdown {
+    -fx-background-color: #3b3e43;
+    -fx-border-color: #1f2022;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-text-fill: white;
+    -fx-opacity: 0.9;
+}
+
+.tag-dropdown .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+}
+
+.tag-dropdown .list-cell:hover {
+    -fx-background-color: #1f77b4;
+    -fx-text-fill: white;
+}
+
+.tag-dropdown .list-cell:focused {
+    -fx-background-color: #3b3e43;
+    -fx-text-fill: white;
+}
+
+.combo-box .text {
+    -fx-fill: white;
+}
+/* ============================= */
