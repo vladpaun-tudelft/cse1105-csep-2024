@@ -270,7 +270,11 @@ public class DashboardCtrl implements Initializable {
                     TreeItem<Object> toRemove = findItem(change.getRemoved().getFirst());
                     TreeItem<Object> toSelect = findValidItemInDirection(virtualRoot,toRemove, -1);
                     syncTreeView(virtualRoot, collections, allNotes, false);
-                    selectNoteInTreeView(toSelect.getValue() instanceof Note ? (Note) toSelect.getValue() : null);
+                    if (toSelect != null && toSelect.getValue() instanceof Note) {
+                        selectNoteInTreeView((Note) toSelect.getValue());
+                    } else {
+                        allNotesView.getSelectionModel().clearSelection();
+                    }
                 }
             }
         });
@@ -504,7 +508,7 @@ public class DashboardCtrl implements Initializable {
         noteCtrl.onBodyChanged(currentNote);
         String newBody = currentNote.getBody(); // Get the new body after change
 
-        if (!previousBody.equals(newBody)) {
+        if (!previousBody.equals(newBody) && currentNote != null) {
             // Compute the diff between the previous body and the new body
             int startIndex = 0;
             int endIndexPrev = previousBody.length();
