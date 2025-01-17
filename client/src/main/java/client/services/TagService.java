@@ -50,4 +50,24 @@ public class TagService {
 
         return new ArrayList<>(tags.stream().distinct().toList());
     }
+
+    /**
+     * Replaces tags in the markdown body with custom HTML elements for further processing.
+     *
+     * @param markdown The markdown body to process
+     * @return The markdown with tags replaced by custom HTML
+     */
+    public String replaceTagsInMarkdown(String markdown) {
+        List<String> tags = extractTagsFromBody(markdown);
+
+        for (String tag : tags) {
+            if (!tag.isBlank()) {
+                String tagHtml = "<button class='custom-tag-button' data-tag='" + tag +
+                        "' onclick='handleTagClick(\"" + tag + "\")'>" + tag + "</button>";
+                markdown = markdown.replace("#" + tag, tagHtml);
+            }
+        }
+
+        return markdown;
+    }
 }

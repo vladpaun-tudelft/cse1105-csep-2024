@@ -58,4 +58,37 @@ class TagServiceTest {
 
         assertTrue(uniqueTags.isEmpty());
     }
+
+    @Test
+    public void testReplaceTagsInMarkdown() {
+        String markdown = "This is a #tag1 and here is #tag2. Also, check #tag3.";
+
+        String expected = "This is a <button class='custom-tag-button' data-tag='tag1' onclick='handleTagClick(\"tag1\")'>tag1</button> and here is <button class='custom-tag-button' data-tag='tag2' onclick='handleTagClick(\"tag2\")'>tag2</button>. Also, check <button class='custom-tag-button' data-tag='tag3' onclick='handleTagClick(\"tag3\")'>tag3</button>.";
+
+        String result = tagService.replaceTagsInMarkdown(markdown);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testReplaceTagsInMarkdownWithEmptyTags() {
+        String markdown = "This is a markdown with no tags.";
+
+        String expected = "This is a markdown with no tags.";
+
+        String result = tagService.replaceTagsInMarkdown(markdown);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testReplaceTagsInMarkdownWithBlankTag() {
+        String markdown = "This is a markdown with a # tag.";
+
+        String expected = "This is a markdown with a # tag.";
+
+        String result = tagService.replaceTagsInMarkdown(markdown);
+
+        assertEquals(expected, result);
+    }
 }

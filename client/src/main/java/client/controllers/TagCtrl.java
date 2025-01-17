@@ -1,9 +1,12 @@
 package client.controllers;
 
 import client.services.TagService;
+import client.ui.DialogStyler;
 import commons.Note;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
@@ -88,6 +91,58 @@ public class TagCtrl {
                 }
             }
         }
+    }
+
+    /**
+     * Selects a tag in the last dropdown if it hasn't already been selected.
+     *
+     * @param tag The tag to be selected
+     */
+    public void selectTag(String tag) {
+        List<String> allTags = tagService.getUniqueTags(allNotes);
+
+        if (!allTags.contains(tag)) {
+            DialogStyler dialogStyler = new DialogStyler();
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.ERROR,
+                    "Tag Not Found",
+                    "The tag you selected could not be found.",
+                    "Please make sure the tag exists or add it manually."
+            );
+            alert.showAndWait();
+            return;
+        }
+
+        // check if the tag is already selected in any of the dropdowns
+        List<String> selectedTags = getSelectedTags();
+        if (selectedTags.contains(tag)) {
+            return;
+        }
+
+        ComboBox<String> lastDropdown = null;
+        for (Node node : tagsBox.getChildren()) {
+            if (node instanceof ComboBox) {
+                lastDropdown = (ComboBox<String>) node;
+            }
+        }
+
+        if (lastDropdown != null) {
+            lastDropdown.getSelectionModel().select(tag);
+        }
+    }
+
+    private List<String> getSelectedTags() {
+        List<String> selectedTags = new ArrayList<>();
+        for (Node node : tagsBox.getChildren()) {
+            if (node instanceof ComboBox) {
+                ComboBox<String> comboBox = (ComboBox<String>) node;
+                String selectedItem = comboBox.getSelectionModel().getSelectedItem();
+                if (selectedItem != null) {
+                    selectedTags.add(selectedItem);
+                }
+            }
+        }
+        return selectedTags;
     }
 
     private void onTagSelectionChanged(ComboBox<String> comboBox) {

@@ -51,3 +51,7 @@ function positionTooltip(event) {
 function hideTooltip() {
     tooltip.style.display = 'none';
 }
+
+function handleTagClick(tag) {
+    window.alert('tag://' + tag);
+}

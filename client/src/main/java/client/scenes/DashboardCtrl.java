@@ -753,4 +753,8 @@ public class DashboardCtrl implements Initializable {
     public void clearTags(ActionEvent actionEvent) {
         tagCtrl.clearTags();
     }
+
+    public void selectTag(String tag) {
+        tagCtrl.selectTag(tag);
+    }
 }
