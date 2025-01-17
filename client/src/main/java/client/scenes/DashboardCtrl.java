@@ -126,7 +126,7 @@ public class DashboardCtrl implements Initializable {
         collectionNotes = allNotes;
         markdownCtrl.setReferences(collectionView, allNotesView, markdownView, markdownViewBlocker, noteBody);
         markdownCtrl.setDashboardCtrl(this);
-        searchCtrl.setReferences(searchField, collectionView, allNotesView, noteBody);
+        searchCtrl.setReferences(this, searchField);
         searchField.setOnKeyPressed(event -> {
             switch (event.getCode()) {
                 case ENTER -> {
@@ -481,11 +481,13 @@ public class DashboardCtrl implements Initializable {
     @FXML
     public void addCollection(){
         collectionCtrl.addCollection();
+        updateTagList();
     }
     // This overloaded method is used when you already have the collection from the editCollections stage
     public void addCollection(Collection collection){
         currentCollection = collectionCtrl.addInputtedCollection(collection, currentCollection, collections);
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+        updateTagList();
     }
 
 
@@ -496,27 +498,29 @@ public class DashboardCtrl implements Initializable {
     public void viewAllNotes() {
         currentCollection = null;
         collectionNotes = collectionCtrl.viewNotes(null, allNotes);
+        updateTagList();
     }
 
     @FXML
     public void onBodyChanged() {
         noteCtrl.onBodyChanged(currentNote);
+        updateTagList();
     }
 
     public void deleteSelectedNote() {
         noteCtrl.deleteSelectedNote(currentNote, collectionNotes, allNotes);
+        updateTagList();
     }
 
     public void search() {
-        searchCtrl.search(collectionNotes);
-        searchCtrl.searchInTreeView(this, allNotes, collections);
+        filter();
     }
     public void setSearchIsActive(boolean b) {
-        searchCtrl.setSearchIsActive(b, collectionNotes);
+        searchCtrl.setSearchIsActive(b);
     }
     public void clearSearch() {
-        searchCtrl.setSearchIsActive(false, collectionNotes);
-        refreshTreeView();
+        searchCtrl.setSearchIsActive(false);
+        updateTagList();
     }
 
     public void refresh() {
@@ -526,6 +530,8 @@ public class DashboardCtrl implements Initializable {
         filesCtrl.showFiles(currentNote);
         viewAllNotes();
         clearSearch();
+        filter();
+        updateTagList();
         allNotesView.requestFocus();
     }
 
@@ -536,6 +542,8 @@ public class DashboardCtrl implements Initializable {
             viewAllNotes();
             collectionCtrl.removeCollectionFromClient(true, collectionToDelete, collections, collectionNotes, allNotes);
         }
+        filter();
+        updateTagList();
     }
 
     public void connectToCollection(Collection collection) {
@@ -749,7 +757,7 @@ public class DashboardCtrl implements Initializable {
         }
     }
 
-    // =========================== Tags ===========================
+    // ----------------------- Tag - Methods -----------------------
     public void updateTagList() {
         tagCtrl.updateTagList();
     }
@@ -762,18 +770,17 @@ public class DashboardCtrl implements Initializable {
         tagCtrl.selectTag(tag);
     }
 
+    // ----------------------- Filtering - Collection & Search & Tag -----------------------
     /**
      * Updates the view with filtered notes using all filters
      */
-    public void updateFilteredNotes() {
+    public List<Note> getFilteredNotes() {
         NoteFilterProcessor filterProcessor = new NoteFilterProcessor();
         filterProcessor.addFilter(new CollectionFilter(currentCollection));
         filterProcessor.addFilter(new TagFilter(tagCtrl.getSelectedTags(), tagCtrl.getTagService()));
         filterProcessor.addFilter(new SearchFilter(searchField.getText().trim().toLowerCase()));
 
-        List<Note> filteredNotes = filterProcessor.applyFilters(allNotes);
-//        updateCollectionView(FXCollections.observableArrayList(filteredNotes));
-        updateTagList();
+        return filterProcessor.applyFilters(allNotes);
     }
 
     /**
@@ -794,5 +801,17 @@ public class DashboardCtrl implements Initializable {
         NoteFilterProcessor filterProcessor = new NoteFilterProcessor();
         filterProcessor.addFilter(new CollectionFilter(currentCollection));
         return filterProcessor.applyFilters(allNotes);
+    }
+
+    public void filter() {
+        List<Note> filteredNotes = getFilteredNotes();
+        List<Collection> filteredCollections = collections.stream()
+                .filter(collection -> filteredNotes.stream()
+                        .anyMatch(note -> note.collection.equals(collection)))
+                .toList();
+
+        refreshTreeView(filteredCollections, filteredNotes, true);
+
+        collectionView.getSelectionModel().clearSelection();
     }
 }

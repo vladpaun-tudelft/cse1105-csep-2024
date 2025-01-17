@@ -16,7 +16,7 @@ class TagServiceTest {
 
     @Test
     public void testExtractTagsFromBody() {
-        String body = "This is a note with #tag1 and #tag2 .";
+        String body = "This is a note with #tag1 and #tag2.";
 
         List<String> tags = tagService.extractTagsFromBody(body);
 
@@ -27,12 +27,31 @@ class TagServiceTest {
 
     @Test
     public void testExtractTagsFromBodySpecialCharacters() {
-        String body = "This is a note with special #tags-@1234";
+        String body = "This is a note with special #tags-1234";
 
         List<String> tags = tagService.extractTagsFromBody(body);
 
         assertEquals(1, tags.size());
-        assertTrue(tags.contains("tags-@1234"));
+        assertTrue(tags.contains("tags-1234"));
+    }
+
+    @Test
+    public void testExtractTagsFromBodyMultipleHashtags() {
+        String body = "This is a note with special #tags-1234";
+
+        List<String> tags = tagService.extractTagsFromBody(body);
+
+        assertEquals(1, tags.size());
+        assertTrue(tags.contains("tags-1234"));
+    }
+
+    @Test
+    public void testExtractTagsFromBodyHeaders() {
+        String body = "This is a note with special ### tags # hello";
+
+        List<String> tags = tagService.extractTagsFromBody(body);
+
+        assertTrue(tags.isEmpty());
     }
 
     @Test
@@ -47,8 +66,8 @@ class TagServiceTest {
     @Test
     public void testGetUniqueTags() {
         Collection collection = new Collection("test-collection", "url");
-        Note note1 = new Note("1", "First note with #tag1 and #tag2 .", collection);
-        Note note2 = new Note("2", "Second note with #tag2 and #tag3 .", collection);
+        Note note1 = new Note("1", "First note with #tag1 and #tag2.", collection);
+        Note note2 = new Note("2", "Second note with #tag2 and #tag3.", collection);
         List<Note> notes = List.of(note1, note2);
 
         List<String> uniqueTags = tagService.getUniqueTags(notes);
@@ -73,9 +92,9 @@ class TagServiceTest {
 
     @Test
     public void testReplaceTagsInMarkdown() {
-        String markdown = "This is a #tag1 and here is #tag2 . Also, check #tag3 .";
+        String markdown = "This is a #tag1 and here is #tag2. Also, check #tag3.";
 
-        String expected = "This is a <button class='custom-tag-button' data-tag='tag1' onclick='handleTagClick(\"tag1\")'>tag1</button> and here is <button class='custom-tag-button' data-tag='tag2' onclick='handleTagClick(\"tag2\")'>tag2</button> . Also, check <button class='custom-tag-button' data-tag='tag3' onclick='handleTagClick(\"tag3\")'>tag3</button> .";
+        String expected = "This is a <button class='custom-tag-button' data-tag='tag1' onclick='handleTagClick(\"tag1\")'>tag1</button> and here is <button class='custom-tag-button' data-tag='tag2' onclick='handleTagClick(\"tag2\")'>tag2</button>. Also, check <button class='custom-tag-button' data-tag='tag3' onclick='handleTagClick(\"tag3\")'>tag3</button>.";
 
         String result = tagService.replaceTagsInMarkdown(markdown);
 
@@ -108,7 +127,7 @@ class TagServiceTest {
     public void testNoteHasAllSelectedTags() {
         Collection collection = new Collection("test-collection", "url");
         ObservableList<Note> allNotes = FXCollections.observableArrayList(
-                new Note("Note 1", "This is a note with #tag1 and #tag2 .", collection),
+                new Note("Note 1", "This is a note with #tag1 and #tag2.", collection),
                 new Note("Note 2", "This is another note with #tag2 only.", collection),
                 new Note("Note 3", "No tags here!", collection)
         );
@@ -128,8 +147,8 @@ class TagServiceTest {
     @Test
     public void testFilterNotesByTags() {
         Collection collection = new Collection("test-collection", "url");
-        Note note1 = new Note("1", "First note with #tag1 and #tag2 .", collection);
-        Note note2 = new Note("2", "Second note with #tag2 and #tag3 .", collection);
+        Note note1 = new Note("1", "First note with #tag1 and #tag2.", collection);
+        Note note2 = new Note("2", "Second note with #tag2 and #tag3.", collection);
         Note note3 = new Note("3", "Third note with #tag1 only.", collection);
         List<Note> notes = List.of(note1, note2, note3);
 
@@ -146,8 +165,8 @@ class TagServiceTest {
     @Test
     public void testGetAvailableTagsForRemainingNotes() {
         Collection collection = new Collection("test-collection", "url");
-        Note note1 = new Note("1", "First note with #tag1 and #tag2 .", collection);
-        Note note2 = new Note("2", "Second note with #tag2 and #tag3 .", collection);
+        Note note1 = new Note("1", "First note with #tag1 and #tag2.", collection);
+        Note note2 = new Note("2", "Second note with #tag2 and #tag3.", collection);
         Note note3 = new Note("3", "Third note with #tag1 only.", collection);
         List<Note> filteredNotes = List.of(note1, note2, note3);
 
@@ -163,8 +182,8 @@ class TagServiceTest {
     @Test
     public void testGetAvailableTagsForRemainingNotesWithNoTagsSelected() {
         Collection collection = new Collection("test-collection", "url");
-        Note note1 = new Note("1", "First note with #tag1 and #tag2 .", collection);
-        Note note2 = new Note("2", "Second note with #tag2 and #tag3 .", collection);
+        Note note1 = new Note("1", "First note with #tag1 and #tag2.", collection);
+        Note note2 = new Note("2", "Second note with #tag2 and #tag3.", collection);
         Note note3 = new Note("3", "Third note with #tag1 only.", collection);
         List<Note> filteredNotes = List.of(note1, note2, note3);
 
@@ -181,8 +200,8 @@ class TagServiceTest {
     @Test
     public void testGetAvailableTagsForRemainingNotesWithAllTagsSelected() {
         Collection collection = new Collection("test-collection", "url");
-        Note note1 = new Note("1", "First note with #tag1 and #tag2 .", collection);
-        Note note2 = new Note("2", "Second note with #tag2 and #tag3 .", collection);
+        Note note1 = new Note("1", "First note with #tag1 and #tag2.", collection);
+        Note note2 = new Note("2", "Second note with #tag2 and #tag3.", collection);
         Note note3 = new Note("3", "Third note with #tag1 only.", collection);
         List<Note> filteredNotes = List.of(note1, note2, note3);
 

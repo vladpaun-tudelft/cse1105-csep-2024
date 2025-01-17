@@ -193,9 +193,6 @@ public class NoteCtrl {
             if (!updatePendingNotes.contains(currentNote)) {
                 updatePendingNotes.add(currentNote);
             }
-
-            // Update the list of tags
-            dashboardCtrl.updateTagList();
         }
     }
 

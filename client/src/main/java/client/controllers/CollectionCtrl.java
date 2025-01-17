@@ -98,6 +98,8 @@ public class CollectionCtrl {
                     }
                 }
             }
+            dashboardCtrl.filter();
+            dashboardCtrl.updateTagList();
         });
     }
 
@@ -175,6 +177,8 @@ public class CollectionCtrl {
                     }
                 }
             }
+            dashboardCtrl.filter();
+            dashboardCtrl.updateTagList();
         });
     }
     /**

@@ -39,7 +39,7 @@ public class TagCtrl {
         this.allNotes = allNotes;
 
         ComboBox<String> initialComboBox = createTagComboBox();
-        tagsBox.getChildren().add(1, initialComboBox);
+        tagsBox.getChildren().add(0, initialComboBox);
         initialComboBox.setOnAction(event -> onTagSelectionChanged(initialComboBox));
 
         updateTagList();
@@ -57,9 +57,10 @@ public class TagCtrl {
 
         // Add the initial combo box back
         ComboBox<String> initialComboBox = createTagComboBox();
-        tagsBox.getChildren().add(1, initialComboBox);
+        tagsBox.getChildren().add(0, initialComboBox);
         initialComboBox.setOnAction(event -> onTagSelectionChanged(initialComboBox));
 
+        dashboardCtrl.filter();
         updateTagList();
     }
 
@@ -88,6 +89,17 @@ public class TagCtrl {
                 List<String> availableTags = tagService.getAvailableTagsForRemainingNotes(filteredNotes, selectedTags);
 
                 comboBox.getItems().setAll(availableTags);
+
+                // add "No tags" to the dropdown when no tags are available
+                if (availableTags.isEmpty()) {
+                    comboBox.setPromptText("No more tags");
+                    comboBox.setStyle("-fx-text-fill: #f5f5f5; -fx-font-style: italic;");
+                    comboBox.setDisable(true);
+                } else {
+                    comboBox.setPromptText("Select a tag");
+                    comboBox.setStyle("");
+                    comboBox.setDisable(false);
+                }
 
                 // reselect the previously selected item if it's still in the new list
                 if (selectedItem != null && uniqueTags.contains(selectedItem)) {
@@ -157,20 +169,35 @@ public class TagCtrl {
     }
 
     private void onTagSelectionChanged(ComboBox<String> comboBox) {
-        if (isLastDropdown(comboBox) && comboBox.getSelectionModel().getSelectedItem() != null) {
-            Platform.runLater(() -> {
-                if (isLastDropdown(comboBox)) {
-                    addTagDropdown(comboBox);
-                }
-                updateTagList();
-            });
-        }
+        Platform.runLater(() -> {
+            // add new dropdown if this was the last one
+            if (isLastDropdown(comboBox) && comboBox.getSelectionModel().getSelectedItem() != null) {
+                addTagDropdown(comboBox);
+            }
 
-        Platform.runLater(() -> dashboardCtrl.updateFilteredNotes());
+            int changedIndex = tagsBox.getChildren().indexOf(comboBox);
+
+            // delete subsequent dropdowns
+            while (tagsBox.getChildren().size() > changedIndex + 2) {
+                tagsBox.getChildren().remove(tagsBox.getChildren().size() - 1);
+            }
+
+            // unselect the next dropdown
+            if (tagsBox.getChildren().size() > changedIndex + 1) {
+                Node nextNode = tagsBox.getChildren().get(changedIndex + 1);
+                if (nextNode instanceof ComboBox) {
+                    ComboBox<String> nextDropdown = (ComboBox<String>) nextNode;
+                    nextDropdown.getSelectionModel().clearSelection();
+                }
+            }
+
+            dashboardCtrl.filter();
+            updateTagList();
+        });
     }
 
     private boolean isLastDropdown(ComboBox<String> dropdown) {
-        return tagsBox.getChildren().indexOf(dropdown) == tagsBox.getChildren().size() - 2;
+        return tagsBox.getChildren().indexOf(dropdown) == tagsBox.getChildren().size() - 1;
     }
 
     @FXML
@@ -185,7 +212,7 @@ public class TagCtrl {
 
     private static ComboBox<String> createTagComboBox() {
         ComboBox<String> newDropdown = new ComboBox<>();
-        newDropdown.setPrefWidth(200.0);
+        newDropdown.setPrefWidth(150.0);
         newDropdown.setPromptText("Select a tag");
         newDropdown.getStyleClass().add("tag-dropdown");
 

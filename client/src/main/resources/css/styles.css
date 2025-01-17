@@ -69,9 +69,12 @@
     -fx-background-color: white;
 }
 
+.mainView {
+    -fx-border-color: -main-background;
+}
+
 /* Content view styles */
 .content-view {
-    -fx-border-color: -main-background;
     -fx-background-insets: 0;
     -fx-padding: 0;
 }
@@ -558,14 +561,37 @@
 
 /* ============================= */
 /* Styles for tag management */
-#tagsBox {
-    -fx-padding: 5;
-    -fx-background-color: #151617;
+#tagsRow {
+    -fx-padding: 0 5;
+    -fx-background-color: -main-foreground;
+    -fx-border-color: -main-selected;
+    -fx-spacing: 5;
+    -fx-alignment: CENTER_LEFT;
 }
 
-.label {
-    -fx-text-fill: white;
+#tagsBox {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+#tagLabel {
+    -fx-text-fill: #ffffff;
     -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+#clearTagsButton {
+    -fx-background-color: #3b3e43;
+    -fx-border-color: #1f2022;
+    -fx-text-fill: white;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 5 15;
+    -fx-cursor: hand;
+}
+
+#clearTagsButton:hover {
+    -fx-background-color: -main-selected;
 }
 
 .tag-dropdown {
@@ -594,5 +620,48 @@
 
 .combo-box .text {
     -fx-fill: white;
+}
+
+/* Scrollbar styles */
+#tagsScrollPane {
+    -fx-background-color: -main-background;
+    -fx-border-color: transparent;
+    -fx-border-radius: 5;
+}
+
+#tagsScrollPane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:horizontal {
+    -fx-pref-height: 6;
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:horizontal .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+}
+
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #656565;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: #808080;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 0 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
 }
 /* ============================= */

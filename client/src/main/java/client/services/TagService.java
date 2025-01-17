@@ -18,13 +18,15 @@ public class TagService {
 
     /**
      * Extracts tags from a note's body using a regular expression.
+     * Tags are identified as words prefixed with a `#` character.
+     * Valid tag characters include letters, digits, underscores, plus signs and hyphens.
      *
      * @param body The body of the note.
      * @return A list of tags extracted from the body.
      */
     public List<String> extractTagsFromBody(String body) {
         List<String> tags = new ArrayList<>();
-        Pattern pattern = Pattern.compile("#(\\S+)");
+        Pattern pattern = Pattern.compile("#([a-zA-Z0-9_+-]+)");
         Matcher matcher = pattern.matcher(body);
 
         while (matcher.find()) {
