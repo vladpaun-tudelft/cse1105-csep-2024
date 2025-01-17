@@ -505,18 +505,46 @@ public class DashboardCtrl implements Initializable {
         String newBody = currentNote.getBody(); // Get the new body after change
 
         if (!previousBody.equals(newBody)) {
-            if (!actionHistory.isEmpty() && "editBody".equals(actionHistory.peek().getType()) && actionHistory.peek().getNote().equals(currentNote)) {
-                char lastChar = newBody.charAt(newBody.length()-1);
-                if (lastChar == ' ' || lastChar == '\n') {
-                    actionHistory.push(new Action("editBody", currentNote, previousBody, newBody));
-                } else {
+            // Compute the diff between the previous body and the new body
+            int startIndex = 0;
+            int endIndexPrev = previousBody.length();
+            int endIndexNew = newBody.length();
+
+            // Find the first differing character from the start
+            while (startIndex < endIndexPrev && startIndex < endIndexNew &&
+                    previousBody.charAt(startIndex) == newBody.charAt(startIndex)) {
+                startIndex++;
+            }
+
+            // Find the first differing character from the end
+            while (endIndexPrev > startIndex && endIndexNew > startIndex &&
+                    previousBody.charAt(endIndexPrev - 1) == newBody.charAt(endIndexNew - 1)) {
+                endIndexPrev--;
+                endIndexNew--;
+            }
+
+            String removedSegment = previousBody.substring(startIndex, endIndexPrev);
+            String addedSegment = newBody.substring(startIndex, endIndexNew);
+
+            boolean isWithinWord = removedSegment.matches("\\w*") && addedSegment.matches("\\w*");
+
+            if (!newBody.isBlank() && (!actionHistory.isEmpty() && "editBody".equals(actionHistory.peek().getType()) &&
+                    actionHistory.peek().getNote().equals(currentNote))) {
+
+                if (isWithinWord) {
+                    // Merge changes into the last action if they are within a word
                     Action lastAction = actionHistory.pop();
                     actionHistory.push(new Action("editBody", currentNote, lastAction.getPreviousState(), newBody));
+                } else {
+                    // Create a new action for changes across words or lines
+                    actionHistory.push(new Action("editBody", currentNote, previousBody, newBody));
                 }
             } else {
+                // Create a new action for the first change
                 actionHistory.push(new Action("editBody", currentNote, previousBody, newBody));
             }
         }
+
     }
 
 
@@ -685,11 +713,6 @@ public class DashboardCtrl implements Initializable {
      * CTRL + Z - Undoes the last action done to a note
      */
     public void undoLastAction(KeyEvent event) {
-        int index = 0;
-        System.out.println("ActionHistory: ");
-        for (Action action : actionHistory) {
-            System.out.println("\t\tAction " + (++index) + ": " + action.getType());
-        }
         if (actionHistory.isEmpty()) {
             return; // No actions to undo
         }
@@ -705,6 +728,7 @@ public class DashboardCtrl implements Initializable {
                 if (!noteCtrl.getUpdatePendingNotes().contains(currentNote)) {
                     noteCtrl.getUpdatePendingNotes().add(currentNote);
                 }
+                noteBody.positionCaret(currentNote.getBody().length());
             }
             case "editTitle" -> {
                 String oldTitle = (String) lastAction.getPreviousState();
