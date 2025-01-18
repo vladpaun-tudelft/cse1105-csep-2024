@@ -62,7 +62,9 @@ public class DashboardCtrl implements Initializable {
     @FXML private WebView markdownView;
     @FXML private Label markdownViewBlocker;
     @FXML @Getter private Label noteTitle;
-    @FXML public ListView collectionView;
+    @FXML
+    @Getter
+    ListView collectionView;
     @FXML public TreeView allNotesView;
     @FXML @Getter Button addButton;
     @FXML @Getter private Label noteTitleMD;
@@ -537,7 +539,8 @@ public class DashboardCtrl implements Initializable {
 
         String previousBody = currentNote != null? currentNote.getBody() : ""; // Get the current body before change
         noteCtrl.onBodyChanged(currentNote);
-        String newBody = currentNote.getBody(); // Get the new body after change
+            String newBody = currentNote.getBody(); // Get the new body after change
+
 
         if (!previousBody.equals(newBody) && currentNote != null) {
             // Compute the diff between the previous body and the new body
@@ -780,6 +783,12 @@ public class DashboardCtrl implements Initializable {
             }
             case ActionType.MOVE_NOTE -> {
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
+            }
+            case ActionType.MOVE_MULTIPLE_NOTES -> {
+                collectionCtrl.moveMultipleNotes(destinationCollection);
+            }
+            case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
+                collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
             }
             default -> throw new UnsupportedOperationException("Undo action not supported for type: " + lastAction.getType());
         }

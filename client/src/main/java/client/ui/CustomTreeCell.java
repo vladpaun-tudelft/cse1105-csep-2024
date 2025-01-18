@@ -166,7 +166,7 @@ public class CustomTreeCell extends TreeCell<Object> {
         editNoteButton.setVisible(isSelected());
 
         if (isSelected()) {
-            noteTitleLabel.maxWidthProperty().bind(dashboardCtrl.collectionView.widthProperty().subtract(100));
+            noteTitleLabel.maxWidthProperty().bind(dashboardCtrl.getCollectionView().widthProperty().subtract(100));
             if (!noteHBox.getChildren().contains(editNoteButton) || !noteHBox.getChildren().contains(deleteNoteButton)) {
                 if (!noteHBox.getChildren().contains(editNoteButton)) {
                     noteHBox.getChildren().add(editNoteButton);

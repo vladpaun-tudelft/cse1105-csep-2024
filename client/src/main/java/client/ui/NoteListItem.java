@@ -112,7 +112,7 @@ public class NoteListItem extends ListCell<Note> {
             editButton.setVisible(isSelected());
 
             if (isSelected()) {
-                noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(60));
+                noteTitle.maxWidthProperty().bind(controller.getCollectionView().widthProperty().subtract(60));
                 if (!hBox.getChildren().contains(editButton) || !hBox.getChildren().contains(deleteButton)) {
                     if (!hBox.getChildren().contains(editButton)) {
                         hBox.getChildren().add(editButton);
@@ -122,7 +122,7 @@ public class NoteListItem extends ListCell<Note> {
                     }
                 }
             } else {
-                noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(10));
+                noteTitle.maxWidthProperty().bind(controller.getCollectionView().widthProperty().subtract(10));
                 hBox.getChildren().remove(editButton);
                 hBox.getChildren().remove(deleteButton);
             }
