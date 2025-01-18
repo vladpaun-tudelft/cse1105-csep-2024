@@ -117,7 +117,7 @@ public class NoteCtrl {
         if (!allNotes.contains(note)) {
             allNotes.add(note);
         }
-        if (currentCollection != null) {
+        if (currentCollection != null && currentCollection.equals(note.collection)) {
             if (!collectionNotes.contains(note)) collectionNotes.add(note);
 
             collectionView.getSelectionModel().select(collectionNotes.size() - 1);

@@ -48,6 +48,7 @@ public class FilesCtrlTest {
 
         sampleNote = new Note("Sample Note", "This is a test note.", null);
         sampleFile = new EmbeddedFile(sampleNote, "test.txt", "text/plain", new byte[]{});
+        sampleFile.setId(1L);
         sampleNote.getEmbeddedFiles().add(sampleFile);
     }
 
@@ -70,16 +71,24 @@ public class FilesCtrlTest {
         FileChooser mockFileChooser = mock(FileChooser.class);
         File mockFile = mock(File.class);
 
-        when(mockFileChooser.showOpenDialog(any())).thenReturn(mockFile); // Simulate file selection
+        when(mockFileChooser.showOpenDialog(any())).thenReturn(mockFile);
         when(mockFile.getName()).thenReturn("valid.txt");
         when(mockFile.isDirectory()).thenReturn(false);
 
         EmbeddedFile embeddedFile = new EmbeddedFile(sampleNote, "valid.txt", "text/plain", new byte[]{});
+        embeddedFile.setId(2L);
         when(serverUtils.addFile(eq(sampleNote), eq(mockFile))).thenReturn(embeddedFile);
 
         filesCtrl.setFileChooser(mockFileChooser);
 
-        EmbeddedFile result = filesCtrl.addFile(sampleNote);
+        FilesCtrl filesCtrlSpy = spy(filesCtrl);
+        doNothing().when(filesCtrlSpy).updateView(any());
+        doAnswer(invocationOnMock -> {
+            sampleNote.getEmbeddedFiles().add(embeddedFile);
+            return null;
+        }).when(serverUtils).send(any(), any());
+
+        EmbeddedFile result = filesCtrlSpy.addFile(sampleNote);
 
         assertNotNull(result);
         assertEquals("valid.txt", result.getFileName());
@@ -164,14 +173,25 @@ public class FilesCtrlTest {
 
     @Test
     void deleteFile() {
+        EmbeddedFile sampleFile2 = new EmbeddedFile(sampleNote, "test.txt", "text/plain", new byte[]{});
+        sampleFile2.setId(2L);
+        sampleNote.getEmbeddedFiles().add(sampleFile2);
+
         Alert mockAlert = mock(Alert.class);
         when(mockAlert.showAndWait()).thenReturn(Optional.of(ButtonType.OK));
         when(dialogStyler.createStyledAlert(any(), any(), any(), any())).thenReturn(mockAlert);
 
-        filesCtrl.deleteFile(sampleNote, sampleFile);
+        FilesCtrl filesCtrlSpy = spy(filesCtrl);
+        doNothing().when(filesCtrlSpy).updateView(any());
+        doAnswer(invocationOnMock -> {
+            filesCtrlSpy.updateViewAfterDelete(sampleNote, sampleFile2.getId());
+            return null;
+        }).when(serverUtils).send(any(), any());
 
-        assertFalse(sampleNote.getEmbeddedFiles().contains(sampleFile));
-        verify(serverUtils, times(1)).deleteFile(eq(sampleNote), eq(sampleFile));
+        filesCtrl.deleteFile(sampleNote, sampleFile2);
+
+        assertFalse(sampleNote.getEmbeddedFiles().contains(sampleFile2));
+        verify(serverUtils, times(1)).deleteFile(eq(sampleNote), eq(sampleFile2));
     }
 
     @Test
@@ -192,6 +212,7 @@ public class FilesCtrlTest {
 
     @Test
     void renameFile() {
+        String originalFileName = sampleFile.getFileName();
         TextInputDialog mockDialog = mock(TextInputDialog.class);
         when(mockDialog.showAndWait()).thenReturn(Optional.of("newfile.txt"));
         when(dialogStyler.createStyledTextInputDialog(any(), any(), any())).thenReturn(mockDialog);
@@ -201,6 +222,11 @@ public class FilesCtrlTest {
 
         FilesCtrl filesCtrlSpy = spy(filesCtrl);
         doNothing().when(filesCtrlSpy).persistFileName(any(), any(), any());
+        doNothing().when(filesCtrlSpy).updateView(any());
+        doAnswer(invocationOnMock -> {
+            filesCtrlSpy.updateViewAfterRename(sampleNote, new Object[]{sampleFile.getId(), "newfile.txt"});
+            return null;
+        }).when(serverUtils).send(any(), any());
 
         filesCtrlSpy.renameFile(sampleNote, sampleFile);
 
@@ -211,7 +237,7 @@ public class FilesCtrlTest {
         );
         assertTrue(
                 sampleNote.getEmbeddedFiles()
-                        .stream().filter(e -> e.getFileName().equals(sampleFile.getFileName()))
+                        .stream().filter(e -> e.getFileName().equals(originalFileName))
                         .toList().isEmpty()
         );
     }
@@ -242,4 +268,72 @@ public class FilesCtrlTest {
         assertEquals("![File](otherfile.txt)", sampleNote.getBody());
     }
 
+    @Test
+    void updateView() {
+        FilesCtrl filesCtrlSpy = spy(filesCtrl);
+        doReturn(new HBox()).when(filesCtrlSpy).createFileEntry(any(Note.class), any(EmbeddedFile.class));
+
+        filesView = mock(HBox.class);
+        ObservableList<Node> mockChildren = mock(ObservableList.class);
+        when(filesView.getChildren()).thenReturn(mockChildren);  // mock getChildren method
+
+        filesCtrlSpy.setReferences(filesView);
+
+        doReturn(new HBox()).when(filesCtrlSpy).createFileEntry(sampleNote, sampleFile);
+
+        filesCtrlSpy.updateView(sampleNote);
+
+
+        verify(filesView, times(3)).getChildren();
+        verify(filesView.getChildren(), times(1)).clear();
+        verify(filesView.getChildren(), times(2)).add(any());
+    }
+
+    @Test
+    void updateViewAfterAdd() {
+        FilesCtrl filesCtrlSpy = spy(filesCtrl);
+
+        Long fileId = 2L;
+        EmbeddedFile newFile = new EmbeddedFile();
+        newFile.setId(fileId);
+        when(serverUtils.getFileById(sampleNote, fileId)).thenReturn(newFile);
+        doNothing().when(filesCtrlSpy).updateView(any());
+
+        filesCtrlSpy.updateViewAfterAdd(sampleNote, fileId);
+
+        assertTrue(sampleNote.getEmbeddedFiles().contains(newFile));
+        verify(filesCtrlSpy, times(1)).updateView(sampleNote);
+    }
+
+    @Test
+    void updateViewAfterDelete() {
+        FilesCtrl filesCtrlSpy = spy(filesCtrl);
+
+        Long fileId = 2L;
+        EmbeddedFile fileToRemove = new EmbeddedFile(sampleNote, "test.txt", "text/plain", new byte[]{});
+        fileToRemove.setId(fileId);
+
+        doNothing().when(filesCtrlSpy).updateView(any());
+
+        filesCtrlSpy.updateViewAfterDelete(sampleNote, fileId);
+
+        assertFalse(sampleNote.getEmbeddedFiles().contains(fileToRemove));
+        verify(filesCtrlSpy, times(1)).updateView(sampleNote);
+    }
+
+    @Test
+    void updateViewAfterRename() {
+        FilesCtrl filesCtrlSpy = spy(filesCtrl);
+
+        long fileId = 1L;
+        String newFileName = "new_name.txt";
+        Object[] newFileNameArray = {fileId, newFileName};
+
+        doNothing().when(filesCtrlSpy).updateView(any());
+
+        filesCtrlSpy.updateViewAfterRename(sampleNote, newFileNameArray);
+
+        assertEquals(sampleNote.getEmbeddedFiles().getFirst().getFileName(), newFileName);
+        verify(filesCtrlSpy, times(1)).updateView(sampleNote);
+    }
 }

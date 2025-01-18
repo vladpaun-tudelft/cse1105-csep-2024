@@ -6,6 +6,7 @@ import client.utils.Config;
 import client.utils.ServerUtils;
 import commons.Collection;
 import commons.Note;
+import javafx.scene.control.ListView;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -74,7 +75,7 @@ public class CollectionCtrlTest {
         Collection collection2 = new Collection("testCollection2", "https://localhost:8080/");
         Note note = new Note("test1", "body", collection1);
         assertEquals(note.collection, collection1);
-        collectionCtrl.moveNoteFromCollection(note, collection1, collection2);
+        collectionCtrl.moveNote(note, collection2);
         assertEquals(note.collection, collection2);
     }
 }
