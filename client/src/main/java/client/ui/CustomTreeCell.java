@@ -1,6 +1,8 @@
 package client.ui;
 
 import client.controllers.NoteCtrl;
+import client.entities.Action;
+import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
 import commons.Collection;
 import commons.Note;
@@ -37,10 +39,12 @@ public class CustomTreeCell extends TreeCell<Object> {
     private String originalNoteTitle;
     private long lastClickTime = 0;
     private static final int DOUBLE_CLICK_TIMEFRAME = 400;
+    private DialogStyler dialogStyler;
 
-    public CustomTreeCell(DashboardCtrl dashboardCtrl, NoteCtrl noteCtrl) {
+    public CustomTreeCell(DashboardCtrl dashboardCtrl, NoteCtrl noteCtrl, DialogStyler dialogStyler) {
         this.dashboardCtrl = dashboardCtrl;
         this.noteCtrl = noteCtrl;
+        this.dialogStyler = dialogStyler;
 
         // Initialize Note components
         noteTitleLabel = new Label();
@@ -237,7 +241,7 @@ public class CustomTreeCell extends TreeCell<Object> {
     }
 
     private void commitTitleChange(Note note, String newTitle) {
-        if (note == null || newTitle.isBlank()) {
+        if (note == null) {
             revertToNoteLabel();
             return;
         }
@@ -256,9 +260,16 @@ public class CustomTreeCell extends TreeCell<Object> {
             dashboardCtrl.getNoteTitleMD().setText(uniqueTitle);
 
             originalNoteTitle = newTitle;
+
+            dashboardCtrl.getActionHistory().push(new Action(ActionType.EDIT_TITLE, note, oldTitle, uniqueTitle));
         } catch (ClientErrorException e) {
             // Handle client errors
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to update note title: " + e.getMessage());
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.ERROR,
+                    "Error",
+                    "Error",
+                    e.getResponse().readEntity(String.class)
+            );
             alert.showAndWait();
             note.setTitle(originalNoteTitle);
         }

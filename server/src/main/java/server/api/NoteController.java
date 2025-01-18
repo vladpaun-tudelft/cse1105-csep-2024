@@ -16,9 +16,7 @@ import server.service.EmbeddedFileService;
 import server.service.NoteService;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
@@ -60,8 +58,21 @@ public class NoteController {
 
     @MessageMapping("/notes/{noteId}/files")
     @SendTo("/topic/notes/{noteId}/files")
-    public EmbeddedFile sendEmbeddedFileUpdate(@DestinationVariable Long noteId, EmbeddedFile embeddedFile) {
-        return embeddedFile;
+    public Long sendEmbeddedFileUpdate(@DestinationVariable Long noteId, Long embeddedFileId) {
+        return embeddedFileId;
+    }
+
+    @MessageMapping("/notes/{noteId}/files/deleteFile")
+    @SendTo("/topic/notes/{noteId}/files/deleteFile")
+    public Long sendMessageAfterDelete(@DestinationVariable Long noteId, Long embeddedFileId) {
+        return embeddedFileId;
+    }
+
+    @MessageMapping("/notes/{noteId}/files/renameFile")
+    @SendTo("/topic/notes/{noteId}/files/renameFile")
+    public Object[] sendMessageAfterRename(@DestinationVariable Long noteId,
+                                                                        Object[] newFileName) {
+        return newFileName;
     }
 
     @PostMapping(path = {"/", ""})
@@ -148,6 +159,15 @@ public class NoteController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(files.getFirst().getFileType()))
                 .body(files.getFirst().getFileContent());
+    }
+
+    @GetMapping("/{noteId}/files/{fileId}/getFile")
+    public ResponseEntity<EmbeddedFile> getFileById(@PathVariable Long noteId, @PathVariable Long fileId) {
+        Optional<EmbeddedFile> file = embeddedFileService.findById(fileId);
+        if (file.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(file.get());
     }
 
     @GetMapping("/{id}/files")

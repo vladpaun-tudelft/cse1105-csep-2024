@@ -1,5 +1,7 @@
 package client.controllers;
 
+import client.entities.Action;
+import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
 import client.scenes.EditCollectionsCtrl;
 import client.ui.DialogStyler;
@@ -14,6 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +44,7 @@ public class CollectionCtrl {
     private Button deleteCollectionButton;
     private MenuButton moveNotesButton;
 
-
-
+    @Getter @Setter ListView moveNotesListView;
 
     @Inject
     public CollectionCtrl(ServerUtils server, Config config, NoteCtrl noteCtrl, SearchCtrl searchCtrl) {
@@ -68,6 +70,7 @@ public class CollectionCtrl {
         this.deleteCollectionButton = deleteCollectionButton;
         this.moveNotesButton = moveNotesButton;
         this.collectionSelect = new ToggleGroup();
+        this.moveNotesListView = new ListView();
     }
     /**
      * method used for selecting and switching the collection
@@ -90,7 +93,7 @@ public class CollectionCtrl {
                 for (Toggle toggle : collectionSelect.getToggles()) {
                     if (toggle instanceof RadioMenuItem) {
                         RadioMenuItem item = (RadioMenuItem) toggle;
-                        if (selectedCollection != null && item.getText().equals(selectedCollection.title)) {
+                        if (item.getText().equals(selectedCollection.title)) {
                             collectionSelect.selectToggle(item);
                             item.fire();
                             currentCollectionTitle.hide();
@@ -154,52 +157,10 @@ public class CollectionCtrl {
         listViewDisplayOnlyTitles(listView, collections, true);
         //switching to collection
         listView.setOnMouseClicked(event -> {
+            Note currentNote = dashboardCtrl.getCurrentNote();
             Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
-            for (Toggle toggle : collectionSelect.getToggles()) {
-                if (toggle instanceof RadioMenuItem item) {
-                    if (item.getText().equals(selectedCollection.title)) {
-                        Note currentNote = dashboardCtrl.getCurrentNote();
-
-                        //here I check if we are in list view or tree view
-                        boolean isInTreeView = false;
-                        if (dashboardCtrl.getCurrentCollection() == null) {
-                            isInTreeView = true;
-                        }
-                        if (isInTreeView) {
-                            if (dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size() > 1) {
-                                moveMultipleNotesInTreeView(selectedCollection);
-                            } else {
-                                moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
-                            }
-
-                            if (dashboardCtrl.getCollectionView().getSelectionModel().getSelectedItems().size() > 1) {
-                                moveMultipleNotes(dashboardCtrl.getCurrentCollection(), selectedCollection);
-                            } else {
-                                moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
-                            }
-                        } else {
-                            if (dashboardCtrl.getCollectionView().getSelectionModel().getSelectedItems().size() > 1) {
-                                moveMultipleNotes(dashboardCtrl.getCurrentCollection(), selectedCollection);
-                            } else {
-                                moveNoteFromCollection(dashboardCtrl.getCurrentNote(), dashboardCtrl.getCurrentCollection(), selectedCollection);
-                            }
-                        }
-
-                        if(dashboardCtrl.getCurrentCollection() != null ) {
-                            item.fire();   // If not in all note view
-                            dashboardCtrl.collectionView.getSelectionModel().select(currentNote);
-                        }
-                        else {
-                            dashboardCtrl.refreshTreeView();
-                            dashboardCtrl.selectNoteInTreeView(currentNote);
-                        }
-
-                        collectionSelect.selectToggle(item);
-                        moveNotesButton.hide();
-                        break;
-                    }
-                }
-            }
+            dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_NOTE, currentNote, currentNote.collection, selectedCollection));
+            moveNoteFromCollection(currentNote, selectedCollection);
         });
     }
     /**
@@ -238,12 +199,9 @@ public class CollectionCtrl {
     }
 
     public void moveNotesInitialization() {
-
-
-        ListView<Collection> collectionListView2 = new ListView<>();
         ObservableList<Collection> collections = FXCollections.observableArrayList(dashboardCtrl.getCollections());
-        listViewSetupForMovingNotes(collectionListView2, collections);
-        CustomMenuItem scrollableCollectionsItem2 = new CustomMenuItem(collectionListView2, false);
+        listViewSetupForMovingNotes(moveNotesListView, collections);
+        CustomMenuItem scrollableCollectionsItem2 = new CustomMenuItem(moveNotesListView, false);
         Collection currentCollectionForNote = null;
         if (dashboardCtrl.getCurrentNote() != null) {
             currentCollectionForNote = dashboardCtrl.getCurrentNote().collection;
@@ -334,6 +292,10 @@ public class CollectionCtrl {
                             .distinct()
                             .collect(Collectors.toList())
             );
+            server.getWebSocketURL(currentCollection.serverURL);
+            dashboardCtrl.noteAdditionSync();
+            dashboardCtrl.noteDeletionSync();
+
             currentCollectionTitle.setText(currentCollection.title);
             collectionView.setVisible(true);
             treeView.setVisible(false);
@@ -391,19 +353,38 @@ public class CollectionCtrl {
     /**
      * A method used to move note from one collection to the other
      */
-    public Collection moveNoteFromCollection(Note currentNote, Collection currentCollection,
-                                             Collection destinationCollection){
-        if (currentNote == null) {
-            return currentCollection;
+    public void moveNoteFromCollection(Note currentNote, Collection selectedCollection) {
+        RadioMenuItem selectedRadioMenuItem = collectionSelect.getToggles().stream()
+                .filter(toggle -> toggle instanceof RadioMenuItem item && item.getText().equals(selectedCollection.title))
+                .map(toggle -> (RadioMenuItem) toggle)
+                .findFirst().orElse(null);
+        if (selectedRadioMenuItem != null && dashboardCtrl.getCurrentNote() != null) {
+
+            moveNote(currentNote, selectedCollection);
+
+            dashboardCtrl.setProgrammaticChange(true);
+            if(dashboardCtrl.getCurrentCollection() != null ) {
+                selectedRadioMenuItem.fire();   // If not in all note view
+                dashboardCtrl.collectionView.getSelectionModel().select(currentNote);
+            } else {
+                dashboardCtrl.refreshTreeView();
+                dashboardCtrl.selectNoteInTreeView(currentNote);
+            }
+            dashboardCtrl.setProgrammaticChange(false);
+
+            collectionSelect.selectToggle(selectedRadioMenuItem);
+            moveNotesButton.hide();
         }
-        currentNote.collection = destinationCollection;
+    }
+
+    public void moveNote(Note currentNote, Collection selectedCollection) {
+        currentNote.collection = selectedCollection;
+
         if(noteCtrl.isTitleDuplicate(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false)){
             currentNote.setTitle(noteCtrl.generateUniqueTitle(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false));
         }
         noteCtrl.getUpdatePendingNotes().add(currentNote);
         noteCtrl.saveAllPendingNotes();
-
-        return destinationCollection;
     }
 
 

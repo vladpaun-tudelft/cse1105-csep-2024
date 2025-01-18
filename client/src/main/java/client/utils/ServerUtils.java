@@ -40,8 +40,7 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -58,6 +57,10 @@ public class ServerUtils {
 	private static StompSession session;
 	@Getter @Setter
 	private StompSession.Subscription embeddedFilesSubscription;
+	@Getter @Setter
+	private StompSession.Subscription embeddedFilesDeleteUpdates;
+	@Getter @Setter
+	private StompSession.Subscription embeddedFilesRenameUpdates;
 
 	@Inject
 	public ServerUtils(Config config, DialogStyler dialogStyler) {
@@ -66,7 +69,7 @@ public class ServerUtils {
 		collections = config.readFromFile();
 	}
 
-	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<EmbeddedFile> consumer) {
+	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<Long> consumer) {
 		if (embeddedFilesSubscription != null) {
 			embeddedFilesSubscription.unsubscribe();
 		}
@@ -75,12 +78,53 @@ public class ServerUtils {
 		embeddedFilesSubscription = session.subscribe(topic, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {
-				return EmbeddedFile.class;
+				return Long.TYPE;
 			}
 
 			@Override
 			public void handleFrame(StompHeaders headers, Object payload) {
-				consumer.accept((EmbeddedFile) payload);
+				consumer.accept((Long) payload);
+			}
+		});
+	}
+
+	public void registerForEmbeddedFilesDeleteUpdates(Note selectedNote, Consumer<Long> consumer) {
+		if (embeddedFilesDeleteUpdates != null) {
+			embeddedFilesDeleteUpdates.unsubscribe();
+		}
+
+		String topic = "/topic/notes/" + selectedNote.getId() + "/files/deleteFile";
+		embeddedFilesDeleteUpdates = session.subscribe(topic, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return Long.TYPE;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((Long) payload);
+			}
+		});
+	}
+
+	public void registerForEmbeddedFilesRenameUpdates(Note selectedNote,
+													  Consumer<Object[]> consumer) {
+		if (embeddedFilesRenameUpdates != null) {
+			embeddedFilesRenameUpdates.unsubscribe();
+		}
+
+		String topic = "/topic/notes/" + selectedNote.getId() + "/files/renameFile";
+		embeddedFilesRenameUpdates = session.subscribe(topic, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return Object[].class;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept(
+						(Object[]) payload
+				);
 			}
 		});
 	}
@@ -89,6 +133,14 @@ public class ServerUtils {
 		if (embeddedFilesSubscription != null) {
 			embeddedFilesSubscription.unsubscribe();
 			embeddedFilesSubscription = null;
+		}
+		if (embeddedFilesDeleteUpdates != null) {
+			embeddedFilesDeleteUpdates.unsubscribe();
+			embeddedFilesDeleteUpdates = null;
+		}
+		if (embeddedFilesRenameUpdates != null) {
+			embeddedFilesRenameUpdates.unsubscribe();
+			embeddedFilesRenameUpdates = null;
 		}
 	}
 
@@ -99,7 +151,7 @@ public class ServerUtils {
 
 		String webSocket = serverURL.replace("http", "ws");
 		webSocket += "websocket";
-		this.session = connect(webSocket);
+		session = connect(webSocket);
 	}
 
 	// for testing purposes
@@ -270,6 +322,14 @@ public class ServerUtils {
 				.queryParam("newFileName", newFileName)
 				.request(APPLICATION_JSON)
 				.put(Entity.entity(file, APPLICATION_JSON), EmbeddedFile.class);
+	}
+
+	public EmbeddedFile getFileById(Note note, Long fileId) {
+		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
+		return ClientBuilder.newClient(new ClientConfig())
+				.target(note.collection.serverURL).path("api/notes/" + note.id + "/files/" + fileId + "/getFile")
+				.request(APPLICATION_JSON)
+				.get(new GenericType<EmbeddedFile>() {});
 	}
 
 	public List<EmbeddedFile> getFilesByNote(Note note) {
