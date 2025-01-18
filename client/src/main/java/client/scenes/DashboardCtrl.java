@@ -473,13 +473,25 @@ public class DashboardCtrl implements Initializable {
 
     public void addNote() {
         setSearchIsActive(false);
-        noteCtrl.addNote(currentCollection,
-                allNotes);
+        clearTags(null);
+        Note note = noteCtrl.addNote(currentCollection,
+                allNotes, collectionNotes);
+        Platform.runLater(() -> {
+            filter();
+            updateTagList();
+            Platform.runLater(() -> {
+                filter();
+                updateTagList();
+                collectionView.getSelectionModel().select(note);
+            });
+        });
     }
 
 
     @FXML
     public void addCollection(){
+        setSearchIsActive(false);
+        clearTags(null);
         collectionCtrl.addCollection();
         updateTagList();
     }
@@ -613,6 +625,7 @@ public class DashboardCtrl implements Initializable {
             }
         }
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+        updateTagList();
     }
 
     /**
@@ -803,7 +816,44 @@ public class DashboardCtrl implements Initializable {
         return filterProcessor.applyFilters(allNotes);
     }
 
-    public void filter() {
+    public ObservableList<Note> filter() {
+        filterInTreeView();
+        return filterInCollectionView();
+    }
+
+    private ObservableList<Note> filterInCollectionView() {
+        ObservableList<Note> collectionNotes;
+
+        if (currentCollection == null) {
+            collectionNotes = allNotes;
+            currentCollectionTitle.setText("All Notes");
+            collectionView.setVisible(false);
+            allNotesView.setVisible(true);
+            collectionView.getSelectionModel().clearSelection();
+        } else {
+            collectionNotes = FXCollections.observableList(getFilteredNotes());
+            currentCollectionTitle.setText(currentCollection.title);
+            collectionView.setVisible(true);
+            allNotesView.setVisible(false);
+            allNotesView.getSelectionModel().clearSelection();
+        }
+
+        collectionView.setItems(collectionNotes);
+        Platform.runLater(() -> {
+            collectionView.refresh();
+        });
+        collectionView.getSelectionModel().clearSelection();
+
+        deleteCollectionButton.setDisable(currentCollection == null);
+
+        collectionView.getSelectionModel().clearSelection();
+        return collectionNotes!=null? collectionNotes : FXCollections.observableArrayList();
+    }
+
+    private void filterInTreeView() {
+        if (searchField.getText().trim().isEmpty() && tagCtrl.getSelectedTags().isEmpty())
+            return;
+
         List<Note> filteredNotes = getFilteredNotes();
         List<Collection> filteredCollections = collections.stream()
                 .filter(collection -> filteredNotes.stream()

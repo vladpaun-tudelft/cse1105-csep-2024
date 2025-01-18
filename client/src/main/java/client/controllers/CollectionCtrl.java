@@ -299,33 +299,8 @@ public class CollectionCtrl {
 
     public ObservableList<Note> viewNotes(Collection currentCollection, ObservableList<Note> allNotes) {
         dashboardCtrl.setSearchIsActive(false);
-        ObservableList<Note> collectionNotes;
-        if (currentCollection == null) {
-            collectionNotes = allNotes;
-            currentCollectionTitle.setText("All Notes");
-            collectionView.setVisible(false);
-            treeView.setVisible(true);
-            collectionView.getSelectionModel().clearSelection();
-        } else {
-            collectionNotes = FXCollections.observableArrayList(
-                    allNotes.stream()
-                            .filter(note -> note.collection.equals(currentCollection))
-                            .distinct()
-                            .collect(Collectors.toList())
-            );
-            currentCollectionTitle.setText(currentCollection.title);
-            collectionView.setVisible(true);
-            treeView.setVisible(false);
-            treeView.getSelectionModel().clearSelection();
-        }
-
-        collectionView.setItems(collectionNotes);
-        collectionView.getSelectionModel().clearSelection();
-
-        deleteCollectionButton.setDisable(currentCollection == null);
-
-        collectionView.getSelectionModel().clearSelection();
-        return collectionNotes!=null?collectionNotes : FXCollections.observableArrayList();
+        dashboardCtrl.clearTags(null);
+        return dashboardCtrl.filter();
     }
 
     public void removeCollectionFromClient(boolean delete, Collection collection, List<Collection> collections, ObservableList<Note> collectionNotes, ObservableList<Note> allNotes) {
