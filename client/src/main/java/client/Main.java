@@ -17,6 +17,7 @@ package client;
 
 import client.scenes.DashboardCtrl;
 import client.scenes.MainCtrl;
+import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Injector;
 import javafx.application.Application;
@@ -32,16 +33,22 @@ public class Main extends Application {
 	private static final Injector INJECTOR = createInjector(new MyModule());
 	private static final MyFXML FXML = new MyFXML(INJECTOR);
 
+	public static MyFXML getFxml() {
+		return FXML;
+	}
+
 	public static void main(String[] args) throws URISyntaxException, IOException {
 		launch();
 	}
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-
 		var serverUtils = INJECTOR.getInstance(ServerUtils.class);
 
-		var dashboard = FXML.load(DashboardCtrl.class, "client", "scenes", "Dashboard.fxml");
+		Config config = INJECTOR.getInstance(Config.class);
+		LanguageManager languageManager = LanguageManager.getInstance(config);
+
+		var dashboard = FXML.load(DashboardCtrl.class, languageManager.getBundle(), "client", "scenes", "Dashboard.fxml");
 
 		var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
 		mainCtrl.initialize(primaryStage, dashboard);
