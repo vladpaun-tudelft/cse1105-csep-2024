@@ -1,5 +1,8 @@
 package client.scenes;
 
+import client.Language;
+import client.LanguageManager;
+import client.Main;
 import client.controllers.*;
 import client.entities.Action;
 import client.entities.ActionType;
@@ -25,11 +28,17 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import javafx.util.Pair;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -50,7 +59,8 @@ public class DashboardCtrl implements Initializable {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     @Getter private final ServerUtils server;
     @Getter private final MainCtrl mainCtrl;
-    @Getter private final Config config;
+    @Getter @Setter private Config config;
+    @Getter private LanguageManager languageManager;
     @Getter private final DialogStyler dialogStyler;
 
     // Controllers
@@ -63,6 +73,7 @@ public class DashboardCtrl implements Initializable {
     @Getter private final TagCtrl tagCtrl;
 
     // FXML Components
+    @FXML private VBox root;
     @FXML private Label contentBlocker;
     @FXML @Getter private TextArea noteBody;
     @FXML private WebView markdownView;
@@ -85,6 +96,7 @@ public class DashboardCtrl implements Initializable {
     @FXML private HBox filesView;
     @FXML private Label filesViewBlocker;
     @FXML private HBox tagsBox;
+    @FXML private MenuButton languageButton;
 
 
     // Variables
@@ -127,6 +139,9 @@ public class DashboardCtrl implements Initializable {
     @SneakyThrows
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
+        languageManager = LanguageManager.getInstance(config);
+        setupLanguageButton();
+
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = allNotes;
         markdownCtrl.setReferences(collectionView, allNotesView, markdownView, markdownViewBlocker, noteBody);
@@ -199,6 +214,56 @@ public class DashboardCtrl implements Initializable {
         // Temporary solution
         scheduler.scheduleAtFixedRate(() -> noteCtrl.saveAllPendingNotes(),
                 10,10, TimeUnit.SECONDS);
+    }
+
+    private void setupLanguageButton() {
+        ImageView currentFlag = createLanguageImageView(languageManager.getCurrentLanguage().getImagePath());
+        languageButton.setGraphic(currentFlag);
+        languageButton.setText(languageManager.getCurrentLanguage().getDisplayName());
+
+
+        for (Language lang : Language.values()) {
+            MenuItem item = new MenuItem(lang.getDisplayName());
+
+            ImageView flagImage = createLanguageImageView(lang.getImagePath());
+            item.setGraphic(flagImage);
+
+            item.setOnAction(e -> switchLanguage(lang));
+            languageButton.getItems().add(item);
+        }
+    }
+
+    private ImageView createLanguageImageView(String imagePath) {
+        Image flagImage = new Image(getClass().getResourceAsStream(imagePath));
+        ImageView imageView = new ImageView(flagImage);
+        imageView.setFitHeight(16);
+        imageView.setFitWidth(24);
+        imageView.setPreserveRatio(true);
+        return imageView;
+    }
+
+    private void switchLanguage(Language language) {
+        languageManager.switchLanguage(language);
+
+        ImageView newFlag = createLanguageImageView(language.getImagePath());
+        languageButton.setGraphic(newFlag);
+        languageButton.setText(language.getDisplayName());
+
+        updateLanguage();
+    }
+
+    private void updateLanguage() {
+        // Reload the FXML with new language
+        Scene scene = languageButton.getScene();
+        if (scene == null) return;
+
+        try {
+            Pair<DashboardCtrl, Parent> dashboard = Main.getFxml().load(DashboardCtrl.class, languageManager.getBundle(), "client", "scenes", "Dashboard.fxml");
+
+            scene.setRoot(dashboard.getValue());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void noteAdditionSync() {

@@ -73,7 +73,7 @@
                   <TreeView fx:id="allNotesView" layoutX="10.0" layoutY="296.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="33.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="73.0" />
                   <AnchorPane prefHeight="25.0" prefWidth="160.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="36.0">
                      <children>
-                              <TextField fx:id="searchField" onKeyTyped="#search" prefHeight="25.0" promptText="Search..." style="-fx-background-color: #1E1F22;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="50.0">
+                              <TextField fx:id="searchField" onKeyTyped="#search" prefHeight="25.0" promptText="%searchField.promptText" style="-fx-background-color: #1E1F22;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="50.0">
                                   <font>
                                       <Font size="12.0" />
                                   </font>
@@ -98,7 +98,7 @@
                            </cursor></Button>
                      </children>
                   </AnchorPane>
-                        <Button fx:id="deleteCollectionButton" layoutX="40.0" layoutY="539.0" mnemonicParsing="false" onAction="#deleteCollection" style="-fx-text-fill: #c73232;" text="Delete this collection" underline="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
+                        <Button fx:id="deleteCollectionButton" layoutX="40.0" layoutY="539.0" mnemonicParsing="false" onAction="#deleteCollection" style="-fx-text-fill: #c73232;" text="%deleteCollectionButton.text" underline="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor></Button>
@@ -110,16 +110,16 @@
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor></Button>
-                  <MenuButton fx:id="currentCollectionTitle" layoutX="31.0" layoutY="6.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" styleClass="current-collection-menuButton" text="CurrentCollectionName" AnchorPane.leftAnchor="35.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="0.0">
+                  <MenuButton fx:id="currentCollectionTitle" layoutX="31.0" layoutY="6.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" styleClass="current-collection-menuButton" text="%currentCollectionTitle.text" AnchorPane.leftAnchor="35.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="0.0">
 
                           <items>
-                        <MenuItem fx:id="addCollectionButton" mnemonicParsing="false" onAction="#addCollection" text="Add collection" />
-                        <MenuItem fx:id="editCollectionTitle" mnemonicParsing="false" onAction="#openEditCollections" text="Edit collections" />
-                        <MenuItem fx:id="allNotesButton" mnemonicParsing="false" onAction="#viewAllNotes" text="Show all notes" />
+                        <MenuItem fx:id="addCollectionButton" mnemonicParsing="false" onAction="#addCollection" text="%addCollectionButton.text" />
+                        <MenuItem fx:id="editCollectionTitle" mnemonicParsing="false" onAction="#openEditCollections" text="%editCollectionTitle.text" />
+                        <MenuItem fx:id="allNotesButton" mnemonicParsing="false" onAction="#viewAllNotes" text="%allNotesButton.text" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <CustomMenuItem mnemonicParsing="false" styleClass="current-collection-menuButton" text="Collection Title" />
+                        <CustomMenuItem mnemonicParsing="false" styleClass="current-collection-menuButton" text="%collectionTitle.text" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <CustomMenuItem mnemonicParsing="false" text="List of Collections" />
+                        <CustomMenuItem mnemonicParsing="false" text="%listOfCollections.text" />
                     </items>
                      <font>
                         <Font name="System Bold" size="15.0" />
@@ -137,7 +137,7 @@
                                             <font>
                                                 <Font size="14.0" />
                                             </font></TextArea>
-                                        <Label fx:id="noteTitle" layoutX="8.666666666666666" layoutY="6.666666666666666" style="&#10;" text="Note title" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                        <Label fx:id="noteTitle" layoutX="8.666666666666666" layoutY="6.666666666666666" style="&#10;" text="%noteBody.placeholder" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
                                             <font>
                                                 <Font size="18.0" fx:id="x1" />
                                             </font>
@@ -145,7 +145,7 @@
                                                 <Color red="0.624" green="0.624" blue="0.624" fx:id="x2" />
                                             </textFill>
                                         </Label>
-                                        <Label fx:id="contentBlocker" alignment="CENTER" layoutX="2.6666666666666665" layoutY="2.6666666666666665" prefHeight="572.0" prefWidth="326.0" text="No note selected" textAlignment="CENTER" textFill="#7e7e7e" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0">
+                                        <Label fx:id="contentBlocker" alignment="CENTER" layoutX="2.6666666666666665" layoutY="2.6666666666666665" prefHeight="572.0" prefWidth="326.0" text="%dashboard.noNoteSelected" textAlignment="CENTER" textFill="#7e7e7e" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0">
                                             <font>
                                                 <Font name="System Italic" size="12.0" />
                                             </font>
@@ -177,7 +177,7 @@
                                             </content>
                                         </ScrollPane>
                                         <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                              <MenuButton fx:id="moveNotesButton" alignment="CENTER" layoutX="176.66666666666669" layoutY="8.666666666666666" mnemonicParsing="false" styleClass="current-collection-menuButton" text="Move Note" textFill="WHITE" AnchorPane.rightAnchor="45.0" AnchorPane.topAnchor="5.0">
+                              <MenuButton fx:id="moveNotesButton" alignment="CENTER" layoutX="176.66666666666669" layoutY="7.0" mnemonicParsing="false" prefWidth="185.0" styleClass="current-collection-menuButton" text="%moveNotesButton.text" textFill="WHITE" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="6.0">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
@@ -192,8 +192,8 @@
                                     <CustomMenuItem mnemonicParsing="false" text="List of Collections" />
                                  </items>
                               </MenuButton>
-                              <Text fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Files:" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
-                              <Button fx:id="addFileButton" layoutX="280.0" layoutY="531.0" mnemonicParsing="false" onAction="#addFile" text="Add" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0">
+                              <Text fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%filesView.text" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
+                              <Button fx:id="addFileButton" layoutX="280.0" layoutY="531.0" mnemonicParsing="false" onAction="#addFile" text="%addFileButton.text" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0">
                                  <cursor>
                                     <Cursor fx:constant="HAND" />
                                  </cursor></Button>
@@ -211,7 +211,7 @@
                             <content>
                                 <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" styleClass="background-element">
                                     <children>
-                                        <Label fx:id="noteTitleMD" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" text="Note title" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                        <Label fx:id="noteTitleMD" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
                                             <font>
                                                 <Font name="System Bold" size="18.0" fx:id="x11" />
                                             </font>
@@ -229,6 +229,7 @@
                                                 <String fx:value="content-blocker" />
                                             </styleClass>
                                         </Label>
+                                        <MenuButton fx:id="languageButton" layoutX="288.0" layoutY="7.0" mnemonicParsing="false" AnchorPane.rightAnchor="14.0" />
                                     </children>
                                 </AnchorPane>
                             </content>
