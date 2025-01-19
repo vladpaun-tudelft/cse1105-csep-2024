@@ -180,6 +180,7 @@ public class NoteCtrl {
 
         allNotes.remove(currentNote);
         collectionNotes.remove(currentNote);
+        Platform.runLater(() -> dashboardCtrl.filter());
     }
 
     public void updateAfterDelete(Note currentNote,
