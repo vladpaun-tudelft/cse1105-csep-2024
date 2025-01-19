@@ -79,8 +79,9 @@ public class NoteCtrl {
         this.moveNotesButton = moveNotesButton;
     }
 
-    public void addNote(Collection currentCollection,
-                        ObservableList<Note> allNotes) {
+    public Note addNote(Collection currentCollection,
+                        ObservableList<Note> allNotes,
+                        ObservableList<Note> collectionNotes) {
         Collection collection = currentCollection != null ? currentCollection : dashboardCtrl.getDefaultCollection();
 
         // Generate a unique title
@@ -98,6 +99,18 @@ public class NoteCtrl {
         noteTitleMd.setText(newTitle);
 
         noteBody.setText("");
+
+        Platform.runLater(() -> {
+            dashboardCtrl.filter();
+            dashboardCtrl.updateTagList();
+            Platform.runLater(() -> {
+                dashboardCtrl.filter();
+                dashboardCtrl.updateTagList();
+                collectionView.getSelectionModel().select(newNote);
+            });
+        });
+
+        return newNote;
     }
 
     public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> allNotes,ObservableList<Note> collectionNotes, Note note) {
@@ -155,6 +168,8 @@ public class NoteCtrl {
                 noteBody.clear();
             }
         }
+
+        Platform.runLater(() -> dashboardCtrl.filter());
     }
 
     public void deleteNote(Note currentNote,
@@ -162,6 +177,9 @@ public class NoteCtrl {
                            ObservableList<Note> allNotes) {
         updatePendingNotes.remove(currentNote);
         server.send("/app/deleteNote", currentNote);
+
+        allNotes.remove(currentNote);
+        collectionNotes.remove(currentNote);
     }
 
     public void updateAfterDelete(Note currentNote,

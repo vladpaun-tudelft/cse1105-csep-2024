@@ -130,3 +130,31 @@ input:focus, textarea:focus {
     outline: none;
     border-color: #ffffff;
 }
+
+/* Tag */
+.custom-tag-button {
+    background-color: #3a3f44;
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 0 5px;
+    transition: background-color 0.3s, color 0.3s;
+    font-weight: bold;
+}
+
+.custom-tag-button:hover {
+    background-color: #007BFF;
+    color: #ffffff;
+}
+
+.custom-tag-button:active {
+    background-color: #0056b3;
+    color: #ffffff;
+}
+
+.custom-tag-button:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
