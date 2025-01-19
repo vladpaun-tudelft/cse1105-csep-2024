@@ -21,14 +21,14 @@ import com.google.inject.Injector;
 import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Pair;
-
-import javafx.scene.input.KeyEvent;
 
 import static com.google.inject.Guice.createInjector;
 
@@ -191,17 +191,40 @@ scene.setFill(Color.TRANSPARENT);
                         event.consume();
                     }
                 }
+
+
                 case DOWN -> {
-                    if (event.isAltDown()) {
+                    if (event.isAltDown() && !event.isShiftDown()) {
+                        dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+                        dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
                         dashboardCtrl.selectNextNote();
-                        event.consume();
+                        dashboardCtrl.allNotesView.getSelectionModel().clearSelection
+                                (dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()-1);
+
+                    } else if (event.isAltDown() && event.isShiftDown()) {
+                        dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                        dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                        dashboardCtrl.selectNextNote();
                     }
+                    dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                    dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                    event.consume();
                 }
                 case UP -> {
-                    if (event.isAltDown()){
+                    if (event.isAltDown() && !event.isShiftDown()) {
+                        dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+                        dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
                         dashboardCtrl.selectPreviousNote();
-                        event.consume();
+                        dashboardCtrl.allNotesView.getSelectionModel().clearSelection
+                                (dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()+1);
+                    } else if (event.isAltDown() && event.isShiftDown()) {
+                        dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                        dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                        dashboardCtrl.selectPreviousNote();
                     }
+                    dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                    dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                    event.consume();
                 }
                 case TAB -> {
 

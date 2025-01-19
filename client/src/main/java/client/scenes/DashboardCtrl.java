@@ -91,6 +91,7 @@ public class DashboardCtrl implements Initializable {
     @Getter @Setter private ObservableList<Note> allNotes;
     @Getter @Setter public ObservableList<Note> collectionNotes;
 
+
     private TreeItem<Object> noNotesItem = new TreeItem<>(" - no notes in collection.");
     @Getter @Setter private boolean isProgrammaticChange = false;
     @Getter @Setter private Deque<Action> actionHistory = new ArrayDeque<>();
@@ -304,8 +305,7 @@ public class DashboardCtrl implements Initializable {
                 syncTreeView(virtualRoot, collections, allNotes, false);
             }
         });
-        //multiple selection in all notes view
-        allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
 
 
         // Add selection change listener
@@ -314,6 +314,7 @@ public class DashboardCtrl implements Initializable {
             // Content blockers otherwise
             if (newValue != null && ((TreeItem)newValue).getValue() instanceof Note note) {
 
+                allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                 if (!isProgrammaticChange) actionHistory.clear();
 
                 currentNote = note;
@@ -341,6 +342,7 @@ public class DashboardCtrl implements Initializable {
 
             } else {
                 currentNote = null;
+                allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
@@ -538,6 +540,9 @@ public class DashboardCtrl implements Initializable {
         }
 
         String previousBody = currentNote != null? currentNote.getBody() : ""; // Get the current body before change
+        if (currentNote == null) {
+            return;
+        }
         noteCtrl.onBodyChanged(currentNote);
             String newBody = currentNote.getBody(); // Get the new body after change
 
@@ -784,12 +789,12 @@ public class DashboardCtrl implements Initializable {
             case ActionType.MOVE_NOTE -> {
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
             }
-            case ActionType.MOVE_MULTIPLE_NOTES -> {
+            /*case ActionType.MOVE_MULTIPLE_NOTES -> {
                 collectionCtrl.moveMultipleNotes(destinationCollection);
-            }
-            case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
+            }*/
+            /*case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
                 collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
-            }
+            }*/
             default -> throw new UnsupportedOperationException("Undo action not supported for type: " + lastAction.getType());
         }
         event.consume();
@@ -800,6 +805,8 @@ public class DashboardCtrl implements Initializable {
 
     private void selectNoteInDirection(int direction) {
         if (currentCollection == null) {
+            SelectionMode currentMode = allNotesView.getSelectionModel().getSelectionMode();
+
             TreeItem<Object> root = allNotesView.getRoot();
             if (root == null || root.getChildren().isEmpty()) {
                 return; // No items in the TreeView, do nothing
@@ -816,9 +823,13 @@ public class DashboardCtrl implements Initializable {
                 nextItem = findValidItemInDirection(root, selectedItem, direction);
             }
 
-            if (nextItem != null) {
-                allNotesView.getSelectionModel().select(nextItem);
 
+            if (nextItem != null) {
+                if(allNotesView.getSelectionModel().getSelectedItems().contains(nextItem)) {
+                    allNotesView.getSelectionModel().clearSelection(allNotesView.getSelectionModel().getSelectedIndex());
+                }
+
+                    allNotesView.getSelectionModel().select(nextItem);
                 // If the selected item is of type Note, set it as the current note and show it
                 if (nextItem.getValue() instanceof Note note) {
                     currentNote = note;
@@ -831,13 +842,23 @@ public class DashboardCtrl implements Initializable {
                 currentNote = (direction > 0) ? collectionNotes.getFirst() : collectionNotes.getLast();
             } else {
                 int currentIndex = collectionNotes.indexOf(currentNote);
+
                 int nextIndex = (currentIndex + direction + collectionNotes.size()) % collectionNotes.size();
+                if(collectionView.getSelectionModel().isSelected(nextIndex)){
+                    collectionView.getSelectionModel().clearSelection(currentIndex);
+                }
                 currentNote = collectionNotes.get(nextIndex);
             }
             collectionView.getSelectionModel().select(currentNote);
             noteCtrl.showCurrentNote(currentNote);
         }
     }
+
+
+
+
+
+
 
     private TreeItem<Object> findFirstValidItem(TreeItem<Object> root) {
         for (TreeItem<Object> child : flattenTree(root)) {
@@ -889,4 +910,6 @@ public class DashboardCtrl implements Initializable {
     public void deleteMultipleNotes(ObservableList<Note> selectedItems) {
         noteCtrl.deleteMultipleNotes(allNotes, selectedItems, collectionNotes);
     }
+
+
 }
