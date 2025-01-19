@@ -83,7 +83,7 @@ public class NoteCtrl {
                         ObservableList<Note> allNotes,
                         ObservableList<Note> collectionNotes) {
         Collection collection = currentCollection != null ? currentCollection : dashboardCtrl.getDefaultCollection();
-
+        dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
         // Generate a unique title
         String baseTitle = "New Note";
         Note newNote = new Note(baseTitle, "", collection);
@@ -100,6 +100,7 @@ public class NoteCtrl {
 
         noteBody.setText("");
 
+
         Platform.runLater(() -> {
             dashboardCtrl.filter();
             dashboardCtrl.updateTagList();
@@ -109,7 +110,6 @@ public class NoteCtrl {
                 collectionView.getSelectionModel().select(newNote);
             });
         });
-
         return newNote;
     }
 
@@ -260,7 +260,6 @@ public class NoteCtrl {
                     noteBody.clear();
                 }
                 collectionView.getSelectionModel().clearSelection();
-
             }
         }
     }

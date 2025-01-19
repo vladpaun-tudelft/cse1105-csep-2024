@@ -161,12 +161,13 @@ public class CollectionCtrl {
         listView.setOnMouseClicked(event -> {
             Note currentNote = dashboardCtrl.getCurrentNote();
             Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
-            dashboardCtrl.filter();
-            dashboardCtrl.updateTagList();
+
 
             if (collectionView.getSelectionModel().getSelectedItems().size() == 1
                     || treeView.getSelectionModel().getSelectedItems().size() == 1) {
                 dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_NOTE, currentNote, currentNote.collection, selectedCollection));
+                dashboardCtrl.filter();
+                dashboardCtrl.updateTagList();
                moveNoteFromCollection(currentNote, selectedCollection);
                 dashboardCtrl.refreshTreeView();
                dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
