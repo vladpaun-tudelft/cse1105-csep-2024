@@ -1,9 +1,11 @@
 package client.controllers;
 
+import client.LanguageManager;
 import client.scenes.DashboardCtrl;
 import client.services.ReferenceService;
 import client.services.TagService;
 import client.ui.DialogStyler;
+import client.utils.Config;
 import com.google.inject.Inject;
 import commons.Note;
 import javafx.animation.PauseTransition;
@@ -25,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,8 +63,16 @@ public class MarkdownCtrl {
     private final String cssPath;
     private final String scriptPath;
 
+    private Config config;
+    private LanguageManager languageManager;
+    private ResourceBundle bundle;
+
     @Inject
-    public MarkdownCtrl() {
+    public MarkdownCtrl(Config config) {
+        this.config = config;
+        this.languageManager = LanguageManager.getInstance(this.config);
+        this.bundle = this.languageManager.getBundle();
+
         this.referenceService = new ReferenceService(dashboardCtrl, noteBody, recommendationsMenu);
         this.tagService = new TagService();
         var extensions = Arrays.asList(
@@ -75,14 +86,14 @@ public class MarkdownCtrl {
         if (cssUrl != null) {
             cssPath = cssUrl.toExternalForm();
         } else {
-            throw new RuntimeException("Markdown CSS file not found.");
+            throw new RuntimeException(bundle.getString("markdownCssNotFound.text"));
         }
 
         URL scriptUrl = getClass().getResource("/script/referenceHandler.js");
         if (scriptUrl != null) {
             scriptPath = scriptUrl.toExternalForm();
         } else {
-            throw new RuntimeException("Reference javascript file not found.");
+            throw new RuntimeException(bundle.getString("referenceJsNotFound.text"));
         }
     }
 
@@ -247,13 +258,13 @@ public class MarkdownCtrl {
             try {
                 desktop.browse(new URI(url));
             } catch (IOException | URISyntaxException e) {
-                Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, "Error Opening URL",
-                        "Failed to open the URL: " + url, "Please check the URL format (missing protocol) or your connection");
+                Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, bundle.getString("errorOpeningUrl.text"),
+                        bundle.getString("failedToOpenUrl.text") + url, bundle.getString("checkUrlFormat.text"));
                 alert.showAndWait();
             }
         } else {
             Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, "Desktop Not Supported",
-                    "Unable to open the URL", "Desktop is not supported on this platform.");
+                    bundle.getString("unableToOpenUrl.text"), bundle.getString("desktopNotSupported.text"));
             alert.showAndWait();
         }
     }

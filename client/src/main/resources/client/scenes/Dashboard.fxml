@@ -45,7 +45,7 @@
         <MenuBar styleClass="options-bar" VBox.vgrow="NEVER" />
         <HBox fx:id="tagsRow" alignment="CENTER_LEFT" spacing="10.0" VBox.vgrow="NEVER">
             <children>
-                <Label fx:id="tagLabel" styleClass="tagLabel" text="Tags:" minWidth="-Infinity" />
+                <Label fx:id="tagLabel" styleClass="tagLabel" text="%tags.text" minWidth="-Infinity" />
                 <ScrollPane fx:id="tagsScrollPane" fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" HBox.hgrow="ALWAYS">
                     <content>
                         <HBox fx:id="tagsBox" alignment="CENTER_LEFT" spacing="10.0" minWidth="-Infinity">
@@ -53,7 +53,7 @@
                         </HBox>
                     </content>
                 </ScrollPane>
-                <Button fx:id="clearTagsButton" text="Clear Tags" onAction="#clearTags" minWidth="-Infinity" />
+                <Button fx:id="clearTagsButton" text="%clearTags.text" onAction="#clearTags" minWidth="-Infinity" />
             </children>
         </HBox>
         <SplitPane dividerPositions="0.2506" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="content-view" VBox.vgrow="ALWAYS">
@@ -220,7 +220,7 @@
                                             </textFill>
                                         </Label>
                                         <WebView fx:id="markdownView" prefHeight="571.0" prefWidth="441.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0" />
-                                        <Label fx:id="markdownViewBlocker" alignment="CENTER" text="No rendered markdown" textAlignment="CENTER" textFill="#7e7e7e" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                        <Label fx:id="markdownViewBlocker" alignment="CENTER" text="%noRenderedMarkdown.text" textAlignment="CENTER" textFill="#7e7e7e" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                             <font>
                                                 <Font name="System Italic" size="12.0" />
                                             </font>

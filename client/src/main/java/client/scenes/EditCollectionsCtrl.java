@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.LanguageManager;
 import client.controllers.CollectionCtrl;
 import client.controllers.NoteCtrl;
 import client.ui.CollectionListItem;
@@ -63,6 +64,8 @@ public class EditCollectionsCtrl implements Initializable {
     private PauseTransition debounceTimer = new PauseTransition(Duration.millis(500));
     private NoteCtrl noteCtrl;
     private Config config;
+    private LanguageManager languageManager;
+    private ResourceBundle bundle;
     private DialogStyler dialogStyler;
 
     @Override
@@ -70,7 +73,8 @@ public class EditCollectionsCtrl implements Initializable {
         setupDraggableWindow();
         titleField.textProperty().addListener((observable, oldValue, newValue) -> onInputChanged());
         serverField.textProperty().addListener((observable, oldValue, newValue) -> onInputChanged());
-
+        this.languageManager = LanguageManager.getInstance(this.config);
+        this.bundle = this.languageManager.getBundle();
     }
 
     public void setReferences(Stage stage, CollectionCtrl collectionCtrl,
@@ -140,7 +144,7 @@ public class EditCollectionsCtrl implements Initializable {
         refreshListView(); // Refresh ListView to reflect updates
 
         collectionStatusLabel.setTextFill(Paint.valueOf("GREEN"));
-        collectionStatusLabel.setText("Collection added successfully!");
+        collectionStatusLabel.setText(bundle.getString("collectionAddedSuccessfully.text"));
 
         Platform.runLater(this::onExitCollections);
     }
@@ -157,9 +161,9 @@ public class EditCollectionsCtrl implements Initializable {
             // Prompt user for confirmation of migration
             if (!dialogStyler.createStyledAlert(
                     Alert.AlertType.CONFIRMATION,
-                    "Migrate Collection",
-                    "Migrate Notes",
-                    "Changing the server will migrate all notes to the new server. Are you sure?"
+                    bundle.getString("migrateNotes.text"),
+                    bundle.getString("migrateNotes.text"),
+                    bundle.getString("migrateNotesConfirmation.text")
             ).showAndWait().filter(b -> b == ButtonType.OK).isPresent()) {
                 return;
             }
@@ -175,7 +179,7 @@ public class EditCollectionsCtrl implements Initializable {
             refreshListView();
 
             collectionStatusLabel.setTextFill(Paint.valueOf("GREEN"));
-            collectionStatusLabel.setText("Collection saved successfully!");
+            collectionStatusLabel.setText(bundle.getString("collectionSaved.text"));
         }
     }
 
@@ -212,7 +216,7 @@ public class EditCollectionsCtrl implements Initializable {
         }
 
         collectionStatusLabel.setTextFill(Paint.valueOf("GREEN"));
-        collectionStatusLabel.setText("Collection and notes migrated successfully!");
+        collectionStatusLabel.setText(bundle.getString("migratedSuccessfully.text"));
         oldServerLabel.setText(newServerURL);
     }
 
@@ -265,9 +269,9 @@ public class EditCollectionsCtrl implements Initializable {
         if (currentCollection == null) return;
         if (!dialogStyler.createStyledAlert(
                 Alert.AlertType.CONFIRMATION,
-                "Connect to collection",
-                "Connect to collection",
-                "Are you sure you want to connect to this collection? All notes in the collection will be copied as well."
+                bundle.getString("connectToCollection.text"),
+                bundle.getString("connectToCollection.text"),
+                bundle.getString("connectToCollectionConfirmation.text")
         ).showAndWait().filter(b -> b == ButtonType.OK).isPresent()) return;
 
         dashboardCtrl.connectToCollection(
@@ -301,7 +305,7 @@ public class EditCollectionsCtrl implements Initializable {
                 .collect(Collectors.toList());
 
         if (newTitle.isBlank()) {
-            collectionStatusLabel.setText("Collection name cannot be blank.");
+            collectionStatusLabel.setText(bundle.getString("blankCollectionName.text"));
             createButton.setDisable(true);
             saveButton.setDisable(true);
             connectButton.setDisable(true);
@@ -309,7 +313,7 @@ public class EditCollectionsCtrl implements Initializable {
         }
 
         if (!serverUtils.isServerAvailable(newServerUrl)) {
-            collectionStatusLabel.setText("Server is unreachable.");
+            collectionStatusLabel.setText(bundle.getString("serverUnreachable.text"));
             saveButton.setDisable(true);
             connectButton.setDisable(true);
             createButton.setDisable(true);
@@ -339,13 +343,13 @@ public class EditCollectionsCtrl implements Initializable {
 
             if (collectionNamesOnServer.contains(newTitle)) {
                 collectionStatusLabel.setTextFill(Paint.valueOf("ORANGE"));
-                collectionStatusLabel.setText("A collection with this name already exists on the new server. Edit name before migrating.");
+                collectionStatusLabel.setText(bundle.getString("collectionNameExists.text"));
                 saveButton.setDisable(true);
                 return false;
             } else {
                 isMigration = true; // Mark as migration
                 collectionStatusLabel.setTextFill(Paint.valueOf("ORANGE"));
-                collectionStatusLabel.setText("Server has changed. Saving will migrate notes to the new server.");
+                collectionStatusLabel.setText(bundle.getString("serverChanged.text"));
                 saveButton.setDisable(false);
                 return true;
             }
@@ -354,16 +358,16 @@ public class EditCollectionsCtrl implements Initializable {
         }
 
         if (collectionNamesOnServer.contains(newTitle)) {
-            collectionStatusLabel.setText("Collection already exists on the server. Cannot change name to this.");
+            collectionStatusLabel.setText(bundle.getString("collectionAlreadyExists.text"));
             saveButton.setDisable(true);
             return false;
         } else if (newTitle.equals(oldTitleLabel.getText()) && newServerUrl.equals(oldServerLabel.getText())) {
-            collectionStatusLabel.setText("Nothing changed.");
+            collectionStatusLabel.setText(bundle.getString("nothingChanged.text"));
             saveButton.setDisable(true);
             return false;
         } else {
             collectionStatusLabel.setTextFill(Paint.valueOf("GREEN"));
-            collectionStatusLabel.setText("Collection can be saved under new name.");
+            collectionStatusLabel.setText(bundle.getString("saveUnderNewName.text"));
             saveButton.setDisable(false);
             return true;
         }
@@ -372,7 +376,7 @@ public class EditCollectionsCtrl implements Initializable {
     private boolean validateCreation(List<String> collectionNames, List<String> collectionNamesOnServer, String newTitle, String newServerUrl) {
         if (collectionNames.contains(newTitle)) {
             collectionStatusLabel.setTextFill(Paint.valueOf("RED"));
-            collectionStatusLabel.setText("Collection already exists on the server. You cannot create it.");
+            collectionStatusLabel.setText(bundle.getString("youCannotCreateIt.text"));
             createButton.setDisable(true);
 
             return false;
@@ -380,14 +384,14 @@ public class EditCollectionsCtrl implements Initializable {
             createButton.setDisable(true);
             connectButton.setDisable(false);
             collectionStatusLabel.setTextFill(Paint.valueOf("GREEN"));
-            collectionStatusLabel.setText("Collection exists on the server. You can connect to it.");
+            collectionStatusLabel.setText(bundle.getString("cannotConnectToIt.text"));
 
             return true;
         } else {
             createButton.setDisable(false);
             connectButton.setDisable(true);
             collectionStatusLabel.setTextFill(Paint.valueOf("GREEN"));
-            collectionStatusLabel.setText("Collection can be created.");
+            collectionStatusLabel.setText(bundle.getString("collectionCanBeCreated.text"));
             return true;
         }
     }
@@ -399,8 +403,8 @@ public class EditCollectionsCtrl implements Initializable {
         Collection oldCollection = collectionList.stream().filter(collection -> collection.title.equals(currentCollection.title))
                 .findFirst().orElse(null);
         if (oldCollection == null) {
-            oldTitleLabel.setText("This is a new collection.");
-            oldServerLabel.setText("This is a new collection.");
+            oldTitleLabel.setText(bundle.getString("thisIsANewCollection.text"));
+            oldServerLabel.setText(bundle.getString("thisIsANewCollection.text"));
         } else {
             oldTitleLabel.setText(oldCollection.title);
             oldServerLabel.setText(oldCollection.serverURL);

@@ -85,7 +85,7 @@ public class MainCtrl {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.initStyle(StageStyle.TRANSPARENT);
-        popupStage.setTitle("Edit Collections");
+        popupStage.setTitle(manager.getBundle().getString("editCollections.text"));
 
         Scene scene = new Scene(FXML.load(EditCollectionsCtrl.class, manager.getBundle(), "client", "scenes", "EditCollections.fxml").getValue());
         scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());

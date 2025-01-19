@@ -1,5 +1,6 @@
 package client.controllers;
 
+import client.LanguageManager;
 import client.entities.Action;
 import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
@@ -20,6 +21,7 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 
@@ -29,6 +31,8 @@ public class CollectionCtrl {
     // Utilities
     private final ServerUtils server;
     private Config config;
+    private LanguageManager languageManager;
+    private ResourceBundle bundle;
     private NoteCtrl noteCtrl;
     private DashboardCtrl dashboardCtrl;
     private SearchCtrl searchCtrl;
@@ -52,6 +56,9 @@ public class CollectionCtrl {
         this.config = config;
         this.noteCtrl = noteCtrl;
         this.searchCtrl = searchCtrl;
+
+        this.languageManager = LanguageManager.getInstance(this.config);
+        this.bundle = this.languageManager.getBundle();
     }
 
 
@@ -203,9 +210,9 @@ public class CollectionCtrl {
 
         Label dynamicLabel = new Label();
         if (currentCollection != null && currentCollection.title != null) {
-            dynamicLabel.setText("Current: " + currentCollection.title);
+            dynamicLabel.setText(bundle.getString("current.text") + currentCollection.title);
         } else {
-            dynamicLabel.setText("No collection selected");
+            dynamicLabel.setText(bundle.getString("noCollectionSelected.text"));
         }
         dynamicLabel.getStyleClass().add("current-collection-label");
 
@@ -234,15 +241,15 @@ public class CollectionCtrl {
         Label pickNoteDestination = new Label();
 
         if (currentCollectionForNote != null && currentCollectionForNote.title != null) {
-            dynamicLabel.setText("Assigned to: " + currentCollectionForNote.title);
+            dynamicLabel.setText(bundle.getString("assignedTo.text") + currentCollectionForNote.title);
         } else {
-            dynamicLabel.setText("No collection assigned");
+            dynamicLabel.setText(bundle.getString("noCollectionAssigned.text"));
         }
         dynamicLabel.getStyleClass().add("current-collection-label");
         pickNoteDestination.getStyleClass().add("pick-note-destination");
         CustomMenuItem dynamicLabelItem = new CustomMenuItem(dynamicLabel, false);
 
-        pickNoteDestination.setText("Pick Note Destination");
+        pickNoteDestination.setText(bundle.getString("pickNoteDestination.text"));
         CustomMenuItem pickNoteDestinationItem = new CustomMenuItem(pickNoteDestination, false);
         moveNotesButton.getItems().set(0, dynamicLabelItem);
         moveNotesButton.getItems().set(2, pickNoteDestinationItem);
@@ -328,19 +335,18 @@ public class CollectionCtrl {
     public boolean showDeleteConfirmation() {
         return dialogStyler.createStyledAlert(
                 Alert.AlertType.CONFIRMATION,
-                "Delete collection",
-                "Delete collection",
-                "Are you sure you want to delete this collection? All notes in the collection will be deleted as well."
+                bundle.getString("deleteCollection.text"),
+                bundle.getString("deleteCollection.text"),
+                bundle.getString("deleteCollectionConfirmation.text")
         ).showAndWait().filter(b -> b == ButtonType.OK).isPresent();
     }
 
     public boolean showForgetConfirmation() {
         return dialogStyler.createStyledAlert(
                 Alert.AlertType.CONFIRMATION,
-                "Forget collection",
-                "Forget collection",
-                "Are you sure you want to forget this collection?" +
-                        "\nYou will lose access to it's notes, but may reconnect to it later."
+                bundle.getString("forgetCollection.text"),
+                bundle.getString("forgetCollection.text"),
+                bundle.getString("forgetCollectionConfirmation.text")
         ).showAndWait().filter(b -> b == ButtonType.OK).isPresent();
     }
 
@@ -399,8 +405,8 @@ public class CollectionCtrl {
         } catch (ClientErrorException e) {
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,
-                    "Error",
-                    "Error",
+                    bundle.getString("error.text"),
+                    bundle.getString("error.text"),
                     e.getResponse().readEntity(String.class)
             );
             alert.showAndWait();

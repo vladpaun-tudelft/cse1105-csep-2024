@@ -59,8 +59,9 @@ public class DashboardCtrl implements Initializable {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     @Getter private final ServerUtils server;
     @Getter private final MainCtrl mainCtrl;
-    @Getter @Setter private Config config;
+    @Getter @Setter @Inject private Config config;
     @Getter private LanguageManager languageManager;
+    private ResourceBundle bundle;
     @Getter private final DialogStyler dialogStyler;
 
     // Controllers
@@ -108,7 +109,7 @@ public class DashboardCtrl implements Initializable {
     @Getter @Setter private ObservableList<Note> allNotes;
     @Getter @Setter public ObservableList<Note> collectionNotes;
 
-    private TreeItem<Object> noNotesItem = new TreeItem<>(" - no notes in collection.");
+    private TreeItem<Object> noNotesItem;
     @Getter @Setter private boolean isProgrammaticChange = false;
     @Getter @Setter private Deque<Action> actionHistory = new ArrayDeque<>();
     private boolean isUndoBodyChange = false; // Flag for undo-triggered body changes
@@ -116,7 +117,6 @@ public class DashboardCtrl implements Initializable {
     @Inject
     public DashboardCtrl(ServerUtils server,
                          MainCtrl mainCtrl,
-                         Config config,
                          MarkdownCtrl markdownCtrl,
                          CollectionCtrl collectionCtrl,
                          NoteCtrl noteCtrl,
@@ -126,7 +126,6 @@ public class DashboardCtrl implements Initializable {
                          TagCtrl tagCtrl) {
         this.mainCtrl = mainCtrl;
         this.server = server;
-        this.config = config;
         this.markdownCtrl = markdownCtrl;
         this.collectionCtrl = collectionCtrl;
         this.noteCtrl = noteCtrl;
@@ -134,6 +133,9 @@ public class DashboardCtrl implements Initializable {
         this.filesCtrl = filesCtrl;
         this.dialogStyler = dialogStyler;
         this.tagCtrl = tagCtrl;
+        this.languageManager = LanguageManager.getInstance(this.config);
+        this.bundle = languageManager.getBundle();
+        noNotesItem = new TreeItem<>(this.bundle.getString("noNotesInCollection.text"));
     }
 
     @SneakyThrows
@@ -258,7 +260,13 @@ public class DashboardCtrl implements Initializable {
         if (scene == null) return;
 
         try {
-            Pair<DashboardCtrl, Parent> dashboard = Main.getFxml().load(DashboardCtrl.class, languageManager.getBundle(), "client", "scenes", "Dashboard.fxml");
+            Pair<DashboardCtrl, Parent> dashboard = Main.getFxml().load(
+                    DashboardCtrl.class,
+                    languageManager.getBundle(),
+                    "client",
+                    "scenes",
+                    "Dashboard.fxml"
+            );
 
             scene.setRoot(dashboard.getValue());
         } catch (Exception e) {
@@ -327,7 +335,7 @@ public class DashboardCtrl implements Initializable {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
-                moveNotesButton.setText("Move Note");
+                moveNotesButton.setText(bundle.getString("moveNote.text"));
                 filesViewBlocker.setVisible(true);
 
                 server.unregisterFromEmbeddedFileUpdates();
@@ -417,7 +425,7 @@ public class DashboardCtrl implements Initializable {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
-                moveNotesButton.setText("Move Note");
+                moveNotesButton.setText(bundle.getString("moveNote.text"));
                 filesViewBlocker.setVisible(true);
 
                 server.unregisterFromEmbeddedFileUpdates();
@@ -886,7 +894,7 @@ public class DashboardCtrl implements Initializable {
             /*case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
                 collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
             }*/
-            default -> throw new UnsupportedOperationException("Undo action not supported for type: " + lastAction.getType());
+            default -> throw new UnsupportedOperationException(bundle.getString("undoUnsupported.text") + lastAction.getType());
         }
         event.consume();
     }
@@ -1057,7 +1065,7 @@ public class DashboardCtrl implements Initializable {
 
         if (currentCollection == null) {
             collectionNotes = allNotes;
-            currentCollectionTitle.setText("All Notes");
+            currentCollectionTitle.setText(bundle.getString("allNotes.text"));
             collectionView.setVisible(false);
             allNotesView.setVisible(true);
             collectionView.getSelectionModel().clearSelection();

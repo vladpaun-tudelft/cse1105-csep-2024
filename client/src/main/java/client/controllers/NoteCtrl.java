@@ -1,7 +1,9 @@
 package client.controllers;
 
+import client.LanguageManager;
 import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
+import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
 import commons.Collection;
@@ -16,6 +18,7 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 public class NoteCtrl {
 
@@ -42,13 +45,21 @@ public class NoteCtrl {
     @Getter @Setter private List<Note> createPendingNotes;
     @Getter @Setter private List<Note> updatePendingNotes;
 
+    private Config config;
+    private LanguageManager languageManager;
+    private ResourceBundle bundle;
+
     private long tempNoteId = -1;
 
     @Inject
-    public NoteCtrl(ServerUtils server) {
+    public NoteCtrl(ServerUtils server, Config config) {
         this.server = server;
         createPendingNotes = new ArrayList<>();
         updatePendingNotes = new ArrayList<>();
+
+        this.config = config;
+        this.languageManager = LanguageManager.getInstance(this.config);
+        this.bundle = this.languageManager.getBundle();
     }
 
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
@@ -160,9 +171,9 @@ public class NoteCtrl {
         if (currentNote != null) {
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.CONFIRMATION,
-                    "Confirm deletion",
-                    "Confirm deletion",
-                    "Do you really want to delete this note?"
+                    bundle.getString("confirmDeletion.text"),
+                    bundle.getString("confirmDeletion.text"),
+                    bundle.getString("deleteNoteConfirmation.text")
             );
             Optional<ButtonType> buttonType = alert.showAndWait();
 

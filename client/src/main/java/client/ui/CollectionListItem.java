@@ -1,7 +1,10 @@
 package client.ui;
 
+import client.LanguageManager;
 import client.controllers.CollectionCtrl;
 import client.scenes.EditCollectionsCtrl;
+import client.utils.Config;
+import com.google.inject.Inject;
 import commons.Collection;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -9,6 +12,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+
+import java.util.ResourceBundle;
 
 public class CollectionListItem extends ListCell<Collection> {
 
@@ -22,9 +27,16 @@ public class CollectionListItem extends ListCell<Collection> {
     private EditCollectionsCtrl controller;
     private CollectionCtrl collectionCtrl;
 
-    public CollectionListItem(EditCollectionsCtrl controller) {
+    @Inject
+    private Config config;
+    private LanguageManager manager;
+    private ResourceBundle bundle;
 
+    public CollectionListItem(EditCollectionsCtrl controller) {
         this.controller = controller;
+
+        this.manager = LanguageManager.getInstance(this.config);
+        this.bundle = this.manager.getBundle();
 
         // Initialize the note title
         collectionTitle = new Label();
@@ -83,7 +95,7 @@ public class CollectionListItem extends ListCell<Collection> {
                 favouriteButton.getStyleClass().add("default_collection_icon");
                 favouriteButton.getStyleClass().remove("set_default_collection_icon");
 
-                collectionTitle.setText(collectionTitle.getText() + " - Default");
+                collectionTitle.setText(collectionTitle.getText() + bundle.getString("default.text"));
             } else {
                 favouriteButton.setDisable(false);
                 favouriteButton.getStyleClass().add("set_default_collection_icon");

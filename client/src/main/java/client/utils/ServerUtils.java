@@ -15,6 +15,7 @@
  */
 package client.utils;
 
+import client.LanguageManager;
 import client.ui.DialogStyler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -52,6 +53,8 @@ public class ServerUtils {
 	private final Config config;
 	private List<Collection> collections;
 	private DialogStyler dialogStyler;
+	private LanguageManager manager;
+	private ResourceBundle bundle;
 
 	@Getter @Setter
 	private static StompSession session;
@@ -67,6 +70,9 @@ public class ServerUtils {
 		this.config = config;
 		this.dialogStyler = dialogStyler;
 		collections = config.readFromFile();
+
+		this.manager = LanguageManager.getInstance(this.config);
+		this.bundle = this.manager.getBundle();
 	}
 
 	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<Long> consumer) {
@@ -356,9 +362,9 @@ public class ServerUtils {
 		if (!isServerAvailable(serverUrl)) {
 			dialogStyler.createStyledAlert(
 					Alert.AlertType.ERROR,
-					"Server Unreachable.",
-					"Server could not be reached.",
-					"The server you tried to access is unreachable. Please try again later."
+					bundle.getString("serverUnreachable.text"),
+					bundle.getString("serverCouldNotBeReached.text"),
+					bundle.getString("unreachable.text")
 			).showAndWait();
 
 			return false;
