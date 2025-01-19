@@ -102,6 +102,8 @@ public class CollectionCtrl {
                     }
                 }
             }
+            dashboardCtrl.filter();
+            dashboardCtrl.updateTagList();
         });
     }
 
@@ -159,6 +161,8 @@ public class CollectionCtrl {
         listView.setOnMouseClicked(event -> {
             Note currentNote = dashboardCtrl.getCurrentNote();
             Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
+            dashboardCtrl.filter();
+            dashboardCtrl.updateTagList();
 
             if (collectionView.getSelectionModel().getSelectedItems().size() == 1
                     || treeView.getSelectionModel().getSelectedItems().size() == 1) {
@@ -297,37 +301,8 @@ public class CollectionCtrl {
 
     public ObservableList<Note> viewNotes(Collection currentCollection, ObservableList<Note> allNotes) {
         dashboardCtrl.setSearchIsActive(false);
-        ObservableList<Note> collectionNotes;
-        if (currentCollection == null) {
-            collectionNotes = allNotes;
-            currentCollectionTitle.setText("All Notes");
-            collectionView.setVisible(false);
-            treeView.setVisible(true);
-            collectionView.getSelectionModel().clearSelection();
-        } else {
-            collectionNotes = FXCollections.observableArrayList(
-                    allNotes.stream()
-                            .filter(note -> note.collection.equals(currentCollection))
-                            .distinct()
-                            .collect(Collectors.toList())
-            );
-            server.getWebSocketURL(currentCollection.serverURL);
-            dashboardCtrl.noteAdditionSync();
-            dashboardCtrl.noteDeletionSync();
-
-            currentCollectionTitle.setText(currentCollection.title);
-            collectionView.setVisible(true);
-            treeView.setVisible(false);
-            treeView.getSelectionModel().clearSelection();
-        }
-
-        collectionView.setItems(collectionNotes);
-        collectionView.getSelectionModel().clearSelection();
-
-        deleteCollectionButton.setDisable(currentCollection == null);
-
-        collectionView.getSelectionModel().clearSelection();
-        return collectionNotes!=null?collectionNotes : FXCollections.observableArrayList();
+        dashboardCtrl.clearTags(null);
+        return dashboardCtrl.filter();
     }
 
     public void removeCollectionFromClient(boolean delete, Collection collection, List<Collection> collections, ObservableList<Note> collectionNotes, ObservableList<Note> allNotes) {
@@ -387,6 +362,7 @@ public class CollectionCtrl {
                 collectionView.getSelectionModel().select(currentNote);
             }
             dashboardCtrl.setProgrammaticChange(false);
+
             collectionSelect.selectToggle(selectedRadioMenuItem);
             moveNotesButton.hide();
         }

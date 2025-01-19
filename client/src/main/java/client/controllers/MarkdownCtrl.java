@@ -2,6 +2,7 @@ package client.controllers;
 
 import client.scenes.DashboardCtrl;
 import client.services.ReferenceService;
+import client.services.TagService;
 import client.ui.DialogStyler;
 import com.google.inject.Inject;
 import commons.Note;
@@ -28,13 +29,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Handles markdown rendering, reference validation, and tooltip interactions in the WebView.
+ * Handles markdown rendering, reference validation, tag visualization, and tooltip interactions in the WebView.
  */
 public class MarkdownCtrl {
 
     // Dashboard reference
     private DashboardCtrl dashboardCtrl;
     private ReferenceService referenceService;
+    private TagService tagService;
     private DialogStyler dialogStyler = new DialogStyler();
 
     // Markdown parser and renderer
@@ -61,6 +63,7 @@ public class MarkdownCtrl {
     @Inject
     public MarkdownCtrl() {
         this.referenceService = new ReferenceService(dashboardCtrl, noteBody, recommendationsMenu);
+        this.tagService = new TagService();
         var extensions = Arrays.asList(
                 TablesExtension.create(),
                 StrikethroughExtension.create()
@@ -118,11 +121,15 @@ public class MarkdownCtrl {
         });
         noteBody.scrollTopProperty().addListener((_, _, _) -> synchronizeScroll());
 
-        // Handle javascript alerts from all `<a>` tags in the WebView
+        // Handle javascript alerts from the WebView
         markdownView.getEngine().setOnAlert(event -> {
             String url = event.getData();
 
-            if (url.startsWith("note://")) {
+            if (url.startsWith("tag://")) {
+                // Handle tag clicks
+                String tag = url.substring("tag://".length());
+                dashboardCtrl.selectTag(tag);
+            } else if (url.startsWith("note://")) {
                 // Handle internal note links
                 String noteTitle = url.substring("note://".length());
                 dashboardCtrl.getCollectionNotes().stream()
@@ -148,7 +155,8 @@ public class MarkdownCtrl {
      * Updates the markdown view with validated and rendered content.
      */
     public void updateMarkdownView(String markdown) {
-        String validatedContent = referenceService.validateAndReplaceReferences(markdown);
+        String validatedContent = tagService.replaceTagsInMarkdown(markdown);
+        validatedContent = referenceService.validateAndReplaceReferences(validatedContent);
         String renderedHtml = convertMarkdownToHtml(validatedContent);
 
         Platform.runLater(() -> {
