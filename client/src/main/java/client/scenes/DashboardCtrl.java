@@ -556,7 +556,7 @@ public class DashboardCtrl implements Initializable {
         String previousBody = currentNote != null? currentNote.getBody() : ""; // Get the current body before change
         noteCtrl.onBodyChanged(currentNote);
         updateTagList();
-        String newBody = currentNote.getBody(); // Get the new body after change
+        String newBody = currentNote != null? currentNote.getBody() : ""; // Get the new body after change
 
         if (!previousBody.equals(newBody) && currentNote != null) {
             // Compute the diff between the previous body and the new body
@@ -976,8 +976,10 @@ public class DashboardCtrl implements Initializable {
     }
 
     private void filterInTreeView() {
-        if (searchField.getText().trim().isEmpty() && tagCtrl.getSelectedTags().isEmpty())
+        if (searchField.getText().trim().isEmpty() && tagCtrl.getSelectedTags().isEmpty()) {
+            refreshTreeView(collections, allNotes, true);
             return;
+        }
 
         List<Note> filteredNotes = getFilteredNotes();
         List<Collection> filteredCollections = collections.stream()
