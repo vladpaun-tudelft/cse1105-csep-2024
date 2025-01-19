@@ -1,8 +1,6 @@
 package client.scenes;
 
-import client.Language;
-import client.LanguageManager;
-import client.Main;
+import client.*;
 import client.controllers.*;
 import client.entities.Action;
 import client.entities.ActionType;
@@ -28,8 +26,6 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
@@ -38,7 +34,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
-import javafx.util.Pair;
+import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -80,8 +76,8 @@ public class DashboardCtrl implements Initializable {
     @FXML private WebView markdownView;
     @FXML private Label markdownViewBlocker;
     @FXML @Getter private Label noteTitle;
-    @FXML @Getter ListView collectionView;
-    @FXML public TreeView allNotesView;
+    @FXML @Getter public ListView collectionView;
+    @FXML @Getter public TreeView allNotesView;
     @FXML @Getter Button addButton;
     @FXML @Getter private Label noteTitleMD;
     @FXML private Button deleteButton;
@@ -255,20 +251,49 @@ public class DashboardCtrl implements Initializable {
     }
 
     private void updateLanguage() {
-        // Reload the FXML with new language
-        Scene scene = languageButton.getScene();
-        if (scene == null) return;
-
+        Stage primaryStage = (Stage) languageButton.getScene().getWindow();
         try {
-            Pair<DashboardCtrl, Parent> dashboard = Main.getFxml().load(
-                    DashboardCtrl.class,
-                    languageManager.getBundle(),
-                    "client",
-                    "scenes",
-                    "Dashboard.fxml"
-            );
+            // save state
+            double x = primaryStage.getX();
+            double y = primaryStage.getY();
+            double width = primaryStage.getWidth();
+            double height = primaryStage.getHeight();
+            boolean isMaximized = primaryStage.isMaximized();
+            boolean isFullScreen = primaryStage.isFullScreen();
 
-            scene.setRoot(dashboard.getValue());
+            Collection backupCurrentCollection = currentCollection;
+            Note backupCurrentNote = currentNote;
+            String backupSearchText = searchField.getText();
+            boolean visibilityTreeView = allNotesView.isVisible();
+            boolean visibilityCollectionView = collectionView.isVisible();
+            List<String> selectedTags = tagCtrl.getSelectedTags();
+
+            // restart the UI
+            Main main = new Main();
+            main.start(primaryStage);
+            DashboardCtrl dashboardCtrl = main.getDashboardCtrl();
+
+            // transfer state
+            if (isFullScreen) {
+                primaryStage.setFullScreen(true);
+            } else if (isMaximized) {
+                primaryStage.setMaximized(true);
+            } else {
+                primaryStage.setX(x);
+                primaryStage.setY(y);
+                primaryStage.setWidth(width);
+                primaryStage.setHeight(height);
+            }
+
+            dashboardCtrl.setCurrentCollection(backupCurrentCollection);
+            dashboardCtrl.setCurrentNote(backupCurrentNote);
+            dashboardCtrl.getSearchField().setText(backupSearchText);
+            dashboardCtrl.getAllNotesView().setVisible(visibilityTreeView);
+            dashboardCtrl.getCollectionView().setVisible(visibilityCollectionView);
+            dashboardCtrl.getNoteCtrl().showCurrentNote(backupCurrentNote);
+            dashboardCtrl.selectNoteInTreeView(backupCurrentNote);
+            dashboardCtrl.getCollectionView().getSelectionModel().select(backupCurrentNote);
+            dashboardCtrl.getTagCtrl().selectTags(selectedTags);
         } catch (Exception e) {
             e.printStackTrace();
         }

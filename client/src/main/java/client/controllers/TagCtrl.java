@@ -181,6 +181,40 @@ public class TagCtrl {
         return selectedTags;
     }
 
+    public void selectTags(List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            clearTags();
+            return;
+        }
+
+        Platform.runLater(() -> {
+            clearTags();
+
+            for (int i = 0; i < tags.size(); i++) {
+                ComboBox<String> currentDropdown = getLastComboBox();
+                if (currentDropdown == null) {
+                    continue;
+                }
+
+                currentDropdown.getSelectionModel().select(tags.get(i));
+                addTagDropdown(currentDropdown);
+                updateTagList();
+            }
+
+            dashboardCtrl.filter();
+        });
+    }
+
+    private ComboBox<String> getLastComboBox() {
+        ComboBox<String> lastComboBox = null;
+        for (Node node : tagsBox.getChildren()) {
+            if (node instanceof ComboBox) {
+                lastComboBox = (ComboBox<String>) node;
+            }
+        }
+        return lastComboBox;
+    }
+
     private void onTagSelectionChanged(ComboBox<String> comboBox) {
         Platform.runLater(() -> {
             // add new dropdown if this was the last one

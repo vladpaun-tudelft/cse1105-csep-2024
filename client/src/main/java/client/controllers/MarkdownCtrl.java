@@ -183,6 +183,8 @@ public class MarkdownCtrl {
         markdown = convertFileNameToURL(markdown);
         String htmlContent = markdown == null || markdown.isEmpty() ? "" : renderer.render(parser.parse(markdown));
 
+        markdownView.getEngine().setUserStyleSheetLocation(getClass().getResource("/css/markdown.css").toExternalForm());
+
         return """
                 <!DOCTYPE html>
                 <html>
