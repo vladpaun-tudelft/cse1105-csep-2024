@@ -814,7 +814,10 @@ public class DashboardCtrl implements Initializable {
 
             TreeItem<Object> selectedItem = (TreeItem<Object>) allNotesView.getSelectionModel().getSelectedItem();
             TreeItem<Object> nextItem;
-
+            //we cannot select both collections and notes, fixes bugs
+            if(selectedItem.getValue() instanceof Collection) {
+                allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            }
             if (selectedItem == null) {
                 // No item selected, select the first valid item
                 nextItem = findFirstValidItem(root);
@@ -822,7 +825,6 @@ public class DashboardCtrl implements Initializable {
                 // Find the next or previous valid item
                 nextItem = findValidItemInDirection(root, selectedItem, direction);
             }
-
 
             if (nextItem != null) {
                 if(allNotesView.getSelectionModel().getSelectedItems().contains(nextItem)) {
