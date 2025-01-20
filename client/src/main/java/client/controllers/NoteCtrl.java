@@ -143,26 +143,28 @@ public class NoteCtrl {
     public void showCurrentNote(Note selectedNote) {
         if (selectedNote == null) return;
 
-        moveNotesButton.setText(selectedNote.collection.title);
+        Platform.runLater(() -> {
+            moveNotesButton.setText(selectedNote.collection.title);
 
-        noteTitle.setText(selectedNote.title);
-        noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-        // Here, the +45 to be changed with +5 when we remove the trash icons
-        noteTitle.maxWidthProperty().bind(noteBody.widthProperty() .subtract(moveNotesButton.widthProperty()) .subtract(45));
+            noteTitle.setText(selectedNote.title);
+            noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+            // Here, the +45 to be changed with +5 when we remove the trash icons
+            noteTitle.maxWidthProperty().bind(noteBody.widthProperty() .subtract(moveNotesButton.widthProperty()) .subtract(45));
 
-        noteTitleMd.setText(selectedNote.title);
-        noteTitleMd.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-        // Again, here, when the trash icons are removed, we can remove the subtract, or make it like 5px
-        noteTitleMd.maxWidthProperty().bind(markdownView.widthProperty().subtract(40));
+            noteTitleMd.setText(selectedNote.title);
+            noteTitleMd.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+            // Again, here, when the trash icons are removed, we can remove the subtract, or make it like 5px
+            noteTitleMd.maxWidthProperty().bind(markdownView.widthProperty().subtract(40));
 
-        noteBody.setText(selectedNote.body);
-        contentBlocker.setVisible(false);
-        filesViewBlocker.setVisible(false);
-        dashboardCtrl.getFilesCtrl().showFiles(selectedNote);
-        dashboardCtrl.getMarkdownCtrl().setCurrentNote(selectedNote);
-        dashboardCtrl.getMarkdownCtrl().updateMarkdownView(selectedNote.getBody());
+            noteBody.setText(selectedNote.body);
+            contentBlocker.setVisible(false);
+            filesViewBlocker.setVisible(false);
+            dashboardCtrl.getFilesCtrl().showFiles(selectedNote);
+            dashboardCtrl.getMarkdownCtrl().setCurrentNote(selectedNote);
+            dashboardCtrl.getMarkdownCtrl().updateMarkdownView(selectedNote.getBody());
 
-        Platform.runLater(() -> noteBody.requestFocus());
+             noteBody.requestFocus();
+        });
     }
 
     public void deleteSelectedNote(Note currentNote,

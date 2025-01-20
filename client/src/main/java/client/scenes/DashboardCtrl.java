@@ -261,6 +261,8 @@ public class DashboardCtrl implements Initializable {
             boolean isMaximized = primaryStage.isMaximized();
             boolean isFullScreen = primaryStage.isFullScreen();
 
+            noteCtrl.saveAllPendingNotes();
+
             Collection backupCurrentCollection = currentCollection;
             Note backupCurrentNote = currentNote;
             String backupSearchText = searchField.getText();
@@ -292,8 +294,8 @@ public class DashboardCtrl implements Initializable {
             dashboardCtrl.getCollectionView().setVisible(visibilityCollectionView);
             dashboardCtrl.getNoteCtrl().showCurrentNote(backupCurrentNote);
             dashboardCtrl.selectNoteInTreeView(backupCurrentNote);
-            dashboardCtrl.getCollectionView().getSelectionModel().select(backupCurrentNote);
             dashboardCtrl.getTagCtrl().selectTags(selectedTags);
+            Platform.runLater(() -> dashboardCtrl.getCollectionView().getSelectionModel().select(backupCurrentNote));
         } catch (Exception e) {
             e.printStackTrace();
         }
