@@ -18,6 +18,7 @@ import javafx.scene.control.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -160,10 +161,29 @@ public class CollectionCtrl {
         listView.setOnMouseClicked(event -> {
             Note currentNote = dashboardCtrl.getCurrentNote();
             Collection selectedCollection = listView.getSelectionModel().getSelectedItem();
-            dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_NOTE, currentNote, currentNote.collection, selectedCollection));
-            moveNoteFromCollection(currentNote, selectedCollection);
-            dashboardCtrl.filter();
-            dashboardCtrl.updateTagList();
+
+            //dashboardCtrl.filter();
+            //dashboardCtrl.updateTagList();
+            if (collectionView.getSelectionModel().getSelectedItems().size() == 1
+                    || treeView.getSelectionModel().getSelectedItems().size() == 1) {
+                dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_NOTE, currentNote, currentNote.collection, selectedCollection));
+               moveNoteFromCollection(currentNote, selectedCollection);
+                dashboardCtrl.refreshTreeView();
+               dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
+                dashboardCtrl.selectNoteInTreeView(currentNote);
+            }
+            else if(collectionView.getSelectionModel().getSelectedItems().size() > 1) {
+                //dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_MULTIPLE_NOTES, currentNote, currentNote.collection, selectedCollection));
+                moveMultipleNotes(selectedCollection);
+
+            }
+            else if (dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size() > 1) {
+                //dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_MULTIPLE_NOTES_TREE, currentNote, currentNote.collection, selectedCollection));
+                moveMultipleNotesInTreeView(selectedCollection);
+
+            }
+
+
         });
     }
     /**
@@ -339,10 +359,7 @@ public class CollectionCtrl {
             dashboardCtrl.setProgrammaticChange(true);
             if(dashboardCtrl.getCurrentCollection() != null ) {
                 selectedRadioMenuItem.fire();   // If not in all note view
-                dashboardCtrl.collectionView.getSelectionModel().select(currentNote);
-            } else {
-                dashboardCtrl.refreshTreeView();
-                dashboardCtrl.selectNoteInTreeView(currentNote);
+                collectionView.getSelectionModel().select(currentNote);
             }
             dashboardCtrl.setProgrammaticChange(false);
 
@@ -405,4 +422,90 @@ public class CollectionCtrl {
     public void editCollections() {
         dashboardCtrl.getMainCtrl().showEditCollections();
     }
+
+    /**
+     * moving multiple notes in the collection view
+     *
+     * @param destinationCollection destination collection
+     */
+    public void moveMultipleNotes(Collection destinationCollection) {
+
+        if (collectionView != null &&
+                collectionView.getSelectionModel().getSelectedItems().size() > 1) {
+            ObservableList<Note> selectedItems = collectionView.getSelectionModel().getSelectedItems();
+            List<Note> notesToMove = new ArrayList<>(selectedItems);
+            //used to reselect notes
+            List<Note> previouslySelectedNotes = new ArrayList<>(selectedItems);
+            for (Note note : notesToMove) {
+                moveNoteFromCollection(note, destinationCollection);
+            }
+            dashboardCtrl.refreshTreeView();
+            collectionView.getSelectionModel().clearSelection();
+            //reselect items
+            for (Note note : previouslySelectedNotes) {
+                collectionView.getSelectionModel().select(note);
+            }
+        }
+
+    }
+
+    /**
+     * moving multiple notes in the all notes view
+     *
+     * @param destinationCollection destination collection
+     */
+    public void moveMultipleNotesInTreeView(Collection destinationCollection) {
+
+        if (dashboardCtrl.allNotesView == null) return;
+        ObservableList<TreeItem<Note>> selectedItems =
+                dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems();
+        if (selectedItems.size() < 1) return;
+
+        // cast to list of notes
+        List<Note> selectedNotes = selectedItems
+                .stream()
+                .map(TreeItem::getValue)
+                .collect(Collectors.toList());
+
+        for (Note note : selectedNotes) {
+            moveNoteFromCollection(note, destinationCollection);
+        }
+
+        dashboardCtrl.refreshTreeView();
+
+        // select items that were selected in another collection
+        List<TreeItem<Note>> itemsToSelect = new ArrayList<>();
+        for (Note note : selectedNotes) {
+            TreeItem<Note> matchingItem = findTreeItem(dashboardCtrl.allNotesView.getRoot(), note);
+            if (matchingItem != null) {
+                itemsToSelect.add(matchingItem);
+            }
+        }
+        dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
+        for (TreeItem<Note> treeItem : itemsToSelect) {
+            dashboardCtrl.allNotesView.getSelectionModel().select(treeItem);
+        }
+    }
+
+    /**
+     * helper method for moving notes
+     * @param root root
+     * @param targetNote targetNote
+     * @return return
+     */
+    public  TreeItem<Note> findTreeItem(TreeItem<Note> root, Note targetNote) {
+        if (root == null) return null;
+        if (root.getValue() == targetNote) {
+            return root;
+        }
+        for (TreeItem<Note> child : root.getChildren()) {
+            TreeItem<Note> result = findTreeItem(child, targetNote);
+            if (result != null) return result;
+        }
+        return null;
+    }
+
+
+
 }
+

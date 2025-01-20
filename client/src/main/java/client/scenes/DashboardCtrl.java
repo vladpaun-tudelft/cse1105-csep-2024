@@ -68,7 +68,7 @@ public class DashboardCtrl implements Initializable {
     @FXML private WebView markdownView;
     @FXML private Label markdownViewBlocker;
     @FXML @Getter private Label noteTitle;
-    @FXML public ListView collectionView;
+    @FXML @Getter ListView collectionView;
     @FXML public TreeView allNotesView;
     @FXML @Getter Button addButton;
     @FXML @Getter private Label noteTitleMD;
@@ -170,6 +170,7 @@ public class DashboardCtrl implements Initializable {
 
         collectionCtrl.setUp();
 
+        collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         BooleanBinding isNoteSelected = collectionView.getSelectionModel().selectedItemProperty().isNull()
                 .and(allNotesView.getSelectionModel().selectedItemProperty().isNull()
@@ -228,7 +229,7 @@ public class DashboardCtrl implements Initializable {
         collectionView.setCellFactory(TextFieldListCell.forListView());
 
         // Set ListView entry as Title (editable)
-        collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl));
+        collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl));
 
         collectionView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -319,6 +320,7 @@ public class DashboardCtrl implements Initializable {
             // Content blockers otherwise
             if (newValue != null && ((TreeItem)newValue).getValue() instanceof Note note) {
 
+                allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                 if (!isProgrammaticChange) actionHistory.clear();
 
                 currentNote = note;
@@ -346,6 +348,7 @@ public class DashboardCtrl implements Initializable {
 
             } else {
                 currentNote = null;
+                allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
@@ -476,7 +479,7 @@ public class DashboardCtrl implements Initializable {
      */
     private TreeItem<Object> findItem(TreeItem<Object> currentItem, Object targetObject) {
         // Check if the current item matches the target note
-        if (currentItem.getValue() != null){
+        if (currentItem.getValue() != null) {
             if (currentItem.getValue() instanceof Note currentNote &&
                     targetObject instanceof Note targetNote &&
                     currentNote.title.equals(targetNote.title)) {
@@ -500,6 +503,7 @@ public class DashboardCtrl implements Initializable {
 
         return null; // If no match is found
     }
+
     private TreeItem<Object> findItem(Object targetObject) {
         return findItem(allNotesView.getRoot(), targetObject);
     }
@@ -528,8 +532,9 @@ public class DashboardCtrl implements Initializable {
         collectionCtrl.addCollection();
         updateTagList();
     }
+
     // This overloaded method is used when you already have the collection from the editCollections stage
-    public void addCollection(Collection collection){
+    public void addCollection(Collection collection) {
         currentCollection = collectionCtrl.addInputtedCollection(collection, currentCollection, collections);
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
         updateTagList();
@@ -554,9 +559,14 @@ public class DashboardCtrl implements Initializable {
         }
 
         String previousBody = currentNote != null? currentNote.getBody() : ""; // Get the current body before change
+        if (currentNote == null) {
+            return;
+        }
         noteCtrl.onBodyChanged(currentNote);
         updateTagList();
         String newBody = currentNote != null? currentNote.getBody() : ""; // Get the new body after change
+        newBody = currentNote.getBody();
+
 
         if (!previousBody.equals(newBody) && currentNote != null) {
             // Compute the diff between the previous body and the new body
@@ -609,9 +619,11 @@ public class DashboardCtrl implements Initializable {
     public void search() {
         filter();
     }
+
     public void setSearchIsActive(boolean b) {
         searchCtrl.setSearchIsActive(b);
     }
+
     public void clearSearch() {
         searchCtrl.setSearchIsActive(false);
         updateTagList();
@@ -662,7 +674,7 @@ public class DashboardCtrl implements Initializable {
         collectionCtrl.viewNotes(currentCollection, allNotes);
     }
 
-    public void addFile(){
+    public void addFile() {
         // Make sure notes are saved on the server
         noteCtrl.saveAllPendingNotes();
         EmbeddedFile newFile = filesCtrl.addFile(currentNote);
@@ -803,6 +815,12 @@ public class DashboardCtrl implements Initializable {
             case ActionType.MOVE_NOTE -> {
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
             }
+            /*case ActionType.MOVE_MULTIPLE_NOTES -> {
+                collectionCtrl.moveMultipleNotes(destinationCollection);
+            }*/
+            /*case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
+                collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
+            }*/
             default -> throw new UnsupportedOperationException("Undo action not supported for type: " + lastAction.getType());
         }
         event.consume();
@@ -814,6 +832,8 @@ public class DashboardCtrl implements Initializable {
 
     private void selectNoteInDirection(int direction) {
         if (currentCollection == null) {
+            SelectionMode currentMode = allNotesView.getSelectionModel().getSelectionMode();
+
             TreeItem<Object> root = allNotesView.getRoot();
             if (root == null || root.getChildren().isEmpty()) {
                 return; // No items in the TreeView, do nothing
@@ -821,7 +841,10 @@ public class DashboardCtrl implements Initializable {
 
             TreeItem<Object> selectedItem = (TreeItem<Object>) allNotesView.getSelectionModel().getSelectedItem();
             TreeItem<Object> nextItem;
-
+            //we cannot select both collections and notes, fixes bugs
+            if(selectedItem.getValue() instanceof Collection) {
+                allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            }
             if (selectedItem == null) {
                 // No item selected, select the first valid item
                 nextItem = findFirstValidItem(root);
@@ -831,8 +854,11 @@ public class DashboardCtrl implements Initializable {
             }
 
             if (nextItem != null) {
-                allNotesView.getSelectionModel().select(nextItem);
+                if(allNotesView.getSelectionModel().getSelectedItems().contains(nextItem)) {
+                    allNotesView.getSelectionModel().clearSelection(allNotesView.getSelectionModel().getSelectedIndex());
+                }
 
+                    allNotesView.getSelectionModel().select(nextItem);
                 // If the selected item is of type Note, set it as the current note and show it
                 if (nextItem.getValue() instanceof Note note) {
                     currentNote = note;
@@ -845,7 +871,11 @@ public class DashboardCtrl implements Initializable {
                 currentNote = (direction > 0) ? collectionNotes.getFirst() : collectionNotes.getLast();
             } else {
                 int currentIndex = collectionNotes.indexOf(currentNote);
+
                 int nextIndex = (currentIndex + direction + collectionNotes.size()) % collectionNotes.size();
+                if(collectionView.getSelectionModel().isSelected(nextIndex)){
+                    collectionView.getSelectionModel().clearSelection(currentIndex);
+                }
                 currentNote = collectionNotes.get(nextIndex);
             }
             collectionView.getSelectionModel().select(currentNote);
@@ -894,6 +924,17 @@ public class DashboardCtrl implements Initializable {
             flattenTreeRecursive(child, items);
         }
     }
+
+    /**
+     * A method used for deleting multiple notes in a collection view
+     *
+     * @param selectedItems selected notes
+     */
+    public void deleteMultipleNotes(ObservableList<Note> selectedItems) {
+        noteCtrl.deleteMultipleNotes(allNotes, selectedItems, collectionNotes);
+    }
+
+
 
     // ----------------------- Tag - Methods -----------------------
     public void updateTagList() {

@@ -76,7 +76,14 @@ public class NoteListItem extends ListCell<Note> {
 
     private void configureEventHandlers() {
         deleteButton.setOnAction(event -> {
-            controller.deleteSelectedNote();  // getItem()
+            if (controller.getCollectionView().getSelectionModel().getSelectedItems().size() > 1) {
+                controller.deleteMultipleNotes(controller.getCollectionView().getSelectionModel().getSelectedItems());
+            } else {
+                Note note = (Note) getItem();
+                if (note != null) {
+                    controller.deleteSelectedNote();
+                }
+            }
         });
         editButton.setOnAction(event -> {
             startEditing();
@@ -105,7 +112,7 @@ public class NoteListItem extends ListCell<Note> {
             editButton.setVisible(isSelected());
 
             if (isSelected()) {
-                noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(60));
+                noteTitle.maxWidthProperty().bind(controller.getCollectionView().widthProperty().subtract(60));
                 if (!hBox.getChildren().contains(editButton) || !hBox.getChildren().contains(deleteButton)) {
                     if (!hBox.getChildren().contains(editButton)) {
                         hBox.getChildren().add(editButton);
@@ -115,7 +122,7 @@ public class NoteListItem extends ListCell<Note> {
                     }
                 }
             } else {
-                noteTitle.maxWidthProperty().bind(controller.collectionView.widthProperty().subtract(10));
+                noteTitle.maxWidthProperty().bind(controller.getCollectionView().widthProperty().subtract(10));
                 hBox.getChildren().remove(editButton);
                 hBox.getChildren().remove(deleteButton);
             }
