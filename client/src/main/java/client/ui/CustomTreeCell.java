@@ -153,8 +153,8 @@ public class CustomTreeCell extends TreeCell<Object> {
             updateNoteItem(note);
         } else if (item instanceof Collection collection) {
             updateCollectionItem(collection);
-        } else {
-            setText(item.toString());
+        } else if (item instanceof String && item.equals(" - no notes in collection.")) {
+            setText((String) item);
         }
     }
 
