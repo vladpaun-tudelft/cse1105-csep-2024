@@ -73,8 +73,8 @@
                   <Button fx:id="createButton" layoutX="219.0" layoutY="299.0" mnemonicParsing="false" onAction="#createCollection" prefHeight="30.0" prefWidth="90.0" styleClass="popup-button" text="%create.button" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0" />
                   <Label layoutX="24.0" layoutY="24.0" prefHeight="25.0" text="%old.title.label" AnchorPane.bottomAnchor="105.0" AnchorPane.leftAnchor="15.0" />
                   <Label layoutX="34.0" layoutY="34.0" prefHeight="25.0" text="%old.server.label" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="15.0" />
-                  <Label fx:id="oldTitleLabel" layoutX="90.0" layoutY="121.0" prefHeight="25.0" text="..." textFill="RED" AnchorPane.bottomAnchor="105.0" AnchorPane.leftAnchor="80.0" />
-                  <Label fx:id="oldServerLabel" layoutX="100.0" layoutY="131.0" prefHeight="25.0" text="..." textFill="RED" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="80.0" />
+                  <Label fx:id="oldTitleLabel" layoutX="90.0" layoutY="121.0" prefHeight="25.0" text="..." textFill="RED" AnchorPane.bottomAnchor="105.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="5.0" />
+                  <Label fx:id="oldServerLabel" layoutX="100.0" layoutY="131.0" prefHeight="25.0" text="..." textFill="RED" AnchorPane.bottomAnchor="75.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="5.0" />
                   <Button fx:id="saveButton" layoutX="104.0" layoutY="281.0" mnemonicParsing="false" onAction="#saveCollection" prefHeight="30.0" prefWidth="90.0" styleClass="popup-button" text="%save.button" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" />
                   <Label fx:id="contentBlocker" alignment="CENTER" prefHeight="572.0" prefWidth="326.0" text="%no.collection.selected" textAlignment="CENTER" textFill="#7e7e7e" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <font>
