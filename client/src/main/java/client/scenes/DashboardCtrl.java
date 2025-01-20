@@ -634,6 +634,7 @@ public class DashboardCtrl implements Initializable {
         noteCtrl.saveAllPendingNotes();
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+        refreshTreeView();
         filesCtrl.showFiles(currentNote);
         viewAllNotes();
         clearSearch();
