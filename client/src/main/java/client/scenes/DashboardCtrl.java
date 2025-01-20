@@ -33,6 +33,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import lombok.Getter;
@@ -94,6 +95,8 @@ public class DashboardCtrl implements Initializable {
     @FXML private Label filesViewBlocker;
     @FXML private HBox tagsBox;
     @FXML private MenuButton languageButton;
+    @FXML private ScrollPane fileScrollPane;
+    @FXML private Text filesText;
 
 
     // Variables
@@ -204,6 +207,13 @@ public class DashboardCtrl implements Initializable {
 
         filesCtrl.setDashboardCtrl(this);
         filesCtrl.setReferences(filesView);
+
+        fileScrollPane.prefWidthProperty().bind(
+                addFileButton.layoutXProperty()
+                        .subtract(filesText.layoutXProperty())
+                        .subtract(filesText.getBoundsInParent().getWidth())
+                        .subtract(10) // 5px gap from each side
+        );
 
         tagCtrl.setReferences(this, tagsBox, allNotes);
 

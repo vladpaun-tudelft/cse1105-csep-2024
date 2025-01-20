@@ -32,28 +32,45 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
-<?import java.lang.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.paint.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.scene.web.*?>
+<?import java.lang.String?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.CustomMenuItem?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.web.WebView?>
 
-<VBox fx:id="root" prefHeight="600.0" prefWidth="900.0" styleClass="mainView" stylesheets="@../../css/styles.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
+<VBox fx:id="root" prefHeight="600.0" prefWidth="900.0" styleClass="mainView" stylesheets="@../../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
     <children>
         <MenuBar styleClass="options-bar" VBox.vgrow="NEVER" />
         <HBox fx:id="tagsRow" alignment="CENTER_LEFT" spacing="10.0" VBox.vgrow="NEVER">
             <children>
-                <Label fx:id="tagLabel" styleClass="tagLabel" text="%tags.text" minWidth="-Infinity" />
+                <Label fx:id="tagLabel" minWidth="-Infinity" styleClass="tagLabel" text="%tags.text" />
                 <ScrollPane fx:id="tagsScrollPane" fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" HBox.hgrow="ALWAYS">
                     <content>
-                        <HBox fx:id="tagsBox" alignment="CENTER_LEFT" spacing="10.0" minWidth="-Infinity">
+                        <HBox fx:id="tagsBox" alignment="CENTER_LEFT" minWidth="-Infinity" spacing="10.0">
                             <!-- Combo Boxes will be added here dynamically -->
                         </HBox>
                     </content>
                 </ScrollPane>
-                <Button fx:id="clearTagsButton" text="%clearTags.text" onAction="#clearTags" minWidth="-Infinity" />
+                <Button fx:id="clearTagsButton" minWidth="-Infinity" onAction="#clearTags" text="%clearTags.text" />
             </children>
         </HBox>
         <SplitPane dividerPositions="0.2506" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="content-view" VBox.vgrow="ALWAYS">
@@ -192,12 +209,12 @@
                                     <CustomMenuItem mnemonicParsing="false" text="List of Collections" />
                                  </items>
                               </MenuButton>
-                              <Text fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%filesView.text" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
+                              <Text fx:id="filesText" fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%filesView.text" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
                               <Button fx:id="addFileButton" layoutX="280.0" layoutY="531.0" mnemonicParsing="false" onAction="#addFile" text="%addFileButton.text" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0">
                                  <cursor>
                                     <Cursor fx:constant="HAND" />
                                  </cursor></Button>
-                              <ScrollPane layoutX="55.0" layoutY="525.0" prefHeight="40.0" prefWidth="212.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="67.0">
+                              <ScrollPane fx:id="fileScrollPane" fitToWidth="true" layoutX="57.599999999999994" layoutY="525.0" prefHeight="40.0" prefWidth="213.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="57.0">
                                  <content>
                                     <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
                                  </content>
