@@ -181,9 +181,14 @@ public class NoteCtrl {
         updatePendingNotes.remove(currentNote);
         server.send("/app/deleteNote", currentNote);
 
+        removeNoteFromClient(currentNote, collectionNotes, allNotes);
+
+        Platform.runLater(() -> dashboardCtrl.filter());
+    }
+
+    public void removeNoteFromClient(Note currentNote, ObservableList<Note> collectionNotes, ObservableList<Note> allNotes) {
         allNotes.remove(currentNote);
         collectionNotes.remove(currentNote);
-        Platform.runLater(() -> dashboardCtrl.filter());
     }
 
     public void updateAfterDelete(Note currentNote,

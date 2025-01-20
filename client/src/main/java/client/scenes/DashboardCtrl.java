@@ -666,6 +666,10 @@ public class DashboardCtrl implements Initializable {
         }
 
         config.writeToFile(collection);
+        if (defaultCollection == null) {
+            defaultCollection = collection;
+            config.setDefaultCollection(collection);
+        }
 
         // add entry in collections menu
         //right now in createCollectionButton they are not added to any menu
