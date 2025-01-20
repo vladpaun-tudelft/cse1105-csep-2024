@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -17,10 +18,15 @@ public class Config {
     public File configFile;
     private DialogStyler dialogStyler;
 
+    private boolean fileError = false;
+
     @Inject
     public Config(DialogStyler dialogStyler) {
-        configFile = new File("client/src/main/resources/config.json");
         this.dialogStyler = dialogStyler;
+
+        File appDataDir = getAppDataDirectory();
+        configFile = new File(appDataDir, "config.json");
+
         if (!configFile.exists()) {
             try {
                 configFile.createNewFile();
@@ -28,14 +34,21 @@ public class Config {
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, new ConfigData(new ArrayList<>(), -1));
             } catch (IOException e) {
-                dialogStyler.createStyledAlert(
-                        Alert.AlertType.ERROR,
-                        "File Error.",
-                        "File could not be created.",
-                        "We have encountered an error while creating the config file. Please try again later."
-                ).showAndWait();
+                if(!fileError) {
+                    dialogStyler.createStyledAlert(
+                            Alert.AlertType.ERROR,
+                            "File Error.",
+                            "File could not be created.",
+                            "We have encountered an error while creating the config file. Please try again later."
+                    ).showAndWait();
+                    fileError = true;
+                }
             }
         }
+    }
+
+    public boolean isFileErrorStatus() {
+        return fileError;
     }
 
     public List<Collection> readFromFile() {
@@ -159,6 +172,38 @@ public class Config {
         } catch (IOException e) {
             return -1; // Return -1 if there's an issue reading the file
         }
+    }
+
+    public File getAppDataDirectory() {
+        String os = System.getProperty("os.name").toLowerCase();
+        String appDataPath = null;
+        String appData;
+        File appDataDir = null;
+        if (os.contains("win")) {
+            appData = System.getenv("APPDATA");
+            if (appData != null) {
+                appDataPath = appData + File.separator + "NetNote";
+            }
+        } else {
+            appData = System.getProperty("user.home");
+            if (appData != null) {
+                appDataPath = appData + File.separator + ".netnote";
+            }
+        }
+        if (appDataPath != null) {
+            appDataDir = new File(appDataPath);
+        }
+        if (appDataDir == null || !(appDataDir.exists()) && !appDataDir.mkdirs()) {
+
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.ERROR,
+                    "Environment error",
+                    "Environment variable error:",
+                    "Failed to create directory: " + appDataPath
+            );
+        }
+
+        return appDataDir;
     }
 
     // Inner class to represent the full config data

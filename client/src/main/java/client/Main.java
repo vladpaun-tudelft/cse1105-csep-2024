@@ -37,9 +37,7 @@ public class Main extends Application {
 	}
 
 	@Override
-	public void start(Stage primaryStage) throws Exception {
-
-		var serverUtils = INJECTOR.getInstance(ServerUtils.class);
+	public void start(Stage primaryStage) {
 
 		var dashboard = FXML.load(DashboardCtrl.class, "client", "scenes", "Dashboard.fxml");
 

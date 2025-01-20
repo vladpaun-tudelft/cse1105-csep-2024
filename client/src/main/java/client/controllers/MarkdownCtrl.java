@@ -20,7 +20,7 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 
 import java.awt.*;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -58,7 +58,7 @@ public class MarkdownCtrl {
 
     @Getter
     private final String cssPath;
-    private final String scriptPath;
+    private String scriptPath = null;
 
     @Inject
     public MarkdownCtrl() {
@@ -71,18 +71,21 @@ public class MarkdownCtrl {
         parser = Parser.builder().extensions(extensions).build();
         renderer = HtmlRenderer.builder().extensions(extensions).build();
 
-        URL cssUrl = getClass().getResource("/css/markdown.css");
-        if (cssUrl != null) {
-            cssPath = cssUrl.toExternalForm();
-        } else {
-            throw new RuntimeException("Markdown CSS file not found.");
-        }
+        // Get the external CSS file path
+        File cssFile = getExternalCssFile();
+        cssPath = cssFile.toURI().toString();
 
+        // Script path can still be loaded from the resources
         URL scriptUrl = getClass().getResource("/script/referenceHandler.js");
         if (scriptUrl != null) {
             scriptPath = scriptUrl.toExternalForm();
         } else {
-            throw new RuntimeException("Reference javascript file not found.");
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.ERROR,
+                    "File error",
+                    "JS file not found",
+                    "Reference javascript file not found."
+            );
         }
     }
 
@@ -257,4 +260,118 @@ public class MarkdownCtrl {
             alert.showAndWait();
         }
     }
+
+    // ----------------------- Helper methods for getting external css file -----------------------
+
+    public File getAppDataDirectory() {
+        String os = System.getProperty("os.name").toLowerCase();
+        String appDataPath = null;
+        String appData;
+        File appDataDir = null;
+        if (os.contains("win")) {
+            appData = System.getenv("APPDATA");
+            if (appData != null) {
+                appDataPath = appData + File.separator + "NetNote";
+            }
+        } else {
+            appData = System.getProperty("user.home");
+            if (appData != null) {
+                appDataPath = appData + File.separator + ".netnote";
+            }
+        }
+        if (appDataPath != null) {
+            appDataDir = new File(appDataPath);
+        }
+        if (appDataDir == null || !(appDataDir.exists()) && !appDataDir.mkdirs()) {
+
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.ERROR,
+                    "Environment error",
+                    "Environment variable error:",
+                    "Failed to create directory: " + appDataPath
+            );
+            dashboardCtrl.onClose();
+        }
+
+        return appDataDir;
+
+    }
+
+    public File getExternalCssFile() {
+        File appDataDir = getAppDataDirectory();
+        File externalCssFile = new File(appDataDir, "markdown.css");
+
+        // CSS file in resources
+        String packagedCssPath = "/css/markdown.css";
+
+        if (externalCssFile.exists()) {
+            // External file exists, use it and update the packaged version
+            updatePackagedCssFile(externalCssFile, packagedCssPath);
+        } else {
+            // External file does not exist, copy it from resources
+            try (InputStream in = getClass().getResourceAsStream(packagedCssPath);
+                 OutputStream out = new FileOutputStream(externalCssFile)) {
+                if (in == null) {
+                    dialogStyler.createStyledAlert(
+                            Alert.AlertType.ERROR,
+                            "File error",
+                            "Markdown CSS Missing",
+                            "The CSS file for markdown could not be found in the application resources."
+                    );
+                    return null;
+                }
+
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            } catch (IOException e) {
+                dialogStyler.createStyledAlert(
+                        Alert.AlertType.ERROR,
+                        "File error",
+                        "File Copy Error",
+                        "Failed to copy markdown.css to the external directory."
+                );
+            }
+        }
+        return externalCssFile;
+    }
+
+    private void updatePackagedCssFile(File externalCssFile, String packagedCssPath) {
+        // Locate the packaged resource
+        URL packagedCssUrl = getClass().getResource(packagedCssPath);
+        if (packagedCssUrl == null) {
+            return;
+        }
+
+        try {
+            // Convert the resource URL to a file path
+            File packagedCssFile = new File(packagedCssUrl.toURI());
+
+            if (!packagedCssFile.canWrite()) {
+                return;
+            }
+
+            // Copy external CSS to the packaged resource location
+            try (InputStream in = new FileInputStream(externalCssFile);
+                 OutputStream out = new FileOutputStream(packagedCssFile)) {
+
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            }
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
 }

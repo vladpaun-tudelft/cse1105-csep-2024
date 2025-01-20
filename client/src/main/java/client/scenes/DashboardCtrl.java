@@ -127,6 +127,7 @@ public class DashboardCtrl implements Initializable {
     @SneakyThrows
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
+        if(config.isFileErrorStatus()) onClose();
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = allNotes;
         markdownCtrl.setReferences(collectionView, allNotesView, markdownView, markdownViewBlocker, noteBody);
