@@ -1004,15 +1004,15 @@ public class DashboardCtrl implements Initializable {
             allNotesView.getSelectionModel().clearSelection();
         }
 
-        collectionView.setItems(collectionNotes);
+        //collectionView.setItems(collectionNotes);
         Platform.runLater(() -> {
             collectionView.refresh();
         });
-        collectionView.getSelectionModel().clearSelection();
+        //collectionView.getSelectionModel().clearSelection();
 
         deleteCollectionButton.setDisable(currentCollection == null);
 
-        collectionView.getSelectionModel().clearSelection();
+        //collectionView.getSelectionModel().clearSelection();
         return collectionNotes!=null? collectionNotes : FXCollections.observableArrayList();
     }
 
