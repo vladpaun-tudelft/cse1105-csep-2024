@@ -16,6 +16,13 @@ import java.util.stream.Collectors;
  */
 public class TagService {
 
+    // Matches hashtags in the format "#tag"
+    // consists of one or more of the following characters
+    // - Letters: uppercase or lowercase, a to z or A to Z
+    // - Numbers, 0 to 9
+    // - Underscore, plus or hyphen
+    private static final String TAG_PATTERN = "#([a-zA-Z0-9_+-]+)";
+
     /**
      * Extracts tags from a note's body using a regular expression.
      * Tags are identified as words prefixed with a `#` character.
@@ -26,7 +33,7 @@ public class TagService {
      */
     public List<String> extractTagsFromBody(String body) {
         List<String> tags = new ArrayList<>();
-        Pattern pattern = Pattern.compile("#([a-zA-Z0-9_+-]+)");
+        Pattern pattern = Pattern.compile(TAG_PATTERN);
         Matcher matcher = pattern.matcher(body);
 
         while (matcher.find()) {
@@ -84,17 +91,19 @@ public class TagService {
      * @return The markdown with tags replaced by custom HTML
      */
     public String replaceTagsInMarkdown(String markdown) {
-        List<String> tags = extractTagsFromBody(markdown);
+        StringBuilder result = new StringBuilder();
+        Pattern pattern = Pattern.compile(TAG_PATTERN);
+        Matcher matcher = pattern.matcher(markdown);
 
-        for (String tag : tags) {
-            if (!tag.isBlank()) {
-                String tagHtml = "<button class='custom-tag-button' data-tag='" + tag +
-                        "' onclick='handleTagClick(\"" + tag + "\")'>" + tag + "</button>";
-                markdown = markdown.replace("#" + tag, tagHtml);
-            }
+        while (matcher.find()) {
+            String tag = matcher.group(1);
+            String tagHtml = "<button class='custom-tag-button' data-tag='" + tag +
+                    "' onclick='handleTagClick(\"" + tag + "\")'>" + tag + "</button>";
+            matcher.appendReplacement(result, Matcher.quoteReplacement(tagHtml));
         }
+        matcher.appendTail(result);
 
-        return markdown;
+        return result.toString();
     }
 
     public boolean noteHasAllSelectedTags(Note note, List<String> selectedTags) {
