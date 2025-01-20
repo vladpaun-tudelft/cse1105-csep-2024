@@ -14,6 +14,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
 import lombok.Getter;
+import lombok.Setter;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.parser.Parser;
@@ -53,11 +54,8 @@ public class MarkdownCtrl {
     private ContextMenu recommendationsMenu;
 
 
-    private Note currentNote;
-
-
-    @Getter
-    private final String cssPath;
+    @Setter private Note currentNote;
+    @Getter private final String cssPath;
     private String scriptPath = null;
 
     @Inject
@@ -87,14 +85,6 @@ public class MarkdownCtrl {
                     "Reference javascript file not found."
             );
         }
-    }
-
-    public void setCurrentNote(Note currentNote) {
-        this.currentNote = currentNote;
-    }
-
-    public String getCssPath() {
-        return cssPath;
     }
 
     /**
