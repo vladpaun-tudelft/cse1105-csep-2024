@@ -537,7 +537,7 @@ public class DashboardCtrl implements Initializable {
     // This overloaded method is used when you already have the collection from the editCollections stage
     public void addCollection(Collection collection) {
         currentCollection = collectionCtrl.addInputtedCollection(collection, currentCollection, collections);
-        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+        collectionNotes = collectionCtrl.viewNotes();
         updateTagList();
     }
 
@@ -548,7 +548,7 @@ public class DashboardCtrl implements Initializable {
 
     public void viewAllNotes() {
         currentCollection = null;
-        collectionNotes = collectionCtrl.viewNotes(null, allNotes);
+        collectionNotes = collectionCtrl.viewNotes();
         updateTagList();
     }
 
@@ -633,7 +633,7 @@ public class DashboardCtrl implements Initializable {
     public void refresh() {
         noteCtrl.saveAllPendingNotes();
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
-        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+        collectionNotes = collectionCtrl.viewNotes();
         refreshTreeView();
         filesCtrl.showFiles(currentNote);
         viewAllNotes();
@@ -677,7 +677,7 @@ public class DashboardCtrl implements Initializable {
         RadioMenuItem radioMenuItem = createCollectionButton(collection, currentCollectionTitle, collectionSelect);
         collectionSelect.selectToggle(radioMenuItem);
 
-        collectionCtrl.viewNotes(currentCollection, allNotes);
+        collectionCtrl.viewNotes();
     }
 
     public void addFile() {
@@ -703,7 +703,7 @@ public class DashboardCtrl implements Initializable {
         RadioMenuItem radioMenuItem = new RadioMenuItem(c.title);
         radioMenuItem.setOnAction(event -> {
             currentCollection = c;
-            collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+            collectionNotes = collectionCtrl.viewNotes();
         });
         radioMenuItem.setToggleGroup(collectionSelect);
         //here they are not added
@@ -726,7 +726,7 @@ public class DashboardCtrl implements Initializable {
                 currentCollection = collections.get(collections.indexOf(currentCollection) + 1);
             }
         }
-        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+        collectionNotes = collectionCtrl.viewNotes();
         updateTagList();
     }
 
@@ -743,7 +743,7 @@ public class DashboardCtrl implements Initializable {
                 currentCollection = collections.get(collections.indexOf(currentCollection) - 1);
             }
         }
-        collectionNotes = collectionCtrl.viewNotes(currentCollection, allNotes);
+        collectionNotes = collectionCtrl.viewNotes();
     }
 
     /**
@@ -1008,6 +1008,7 @@ public class DashboardCtrl implements Initializable {
             collectionView.setVisible(true);
             allNotesView.setVisible(false);
             allNotesView.getSelectionModel().clearSelection();
+            collectionView.setItems(collectionNotes);
         }
 
         //collectionView.setItems(collectionNotes);
