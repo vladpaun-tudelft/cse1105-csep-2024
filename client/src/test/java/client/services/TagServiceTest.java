@@ -26,6 +26,17 @@ class TagServiceTest {
     }
 
     @Test
+    public void testExtractTagsFromBodyDuplicate() {
+        String body = "#java #javafx";
+
+        List<String> tags = tagService.extractTagsFromBody(body);
+
+        assertEquals(2, tags.size());
+        assertTrue(tags.contains("java"));
+        assertTrue(tags.contains("javafx"));
+    }
+
+    @Test
     public void testExtractTagsFromBodySpecialCharacters() {
         String body = "This is a note with special #tags-1234";
 
@@ -95,6 +106,18 @@ class TagServiceTest {
         String markdown = "This is a #tag1 and here is #tag2. Also, check #tag3.";
 
         String expected = "This is a <button class='custom-tag-button' data-tag='tag1' onclick='handleTagClick(\"tag1\")'>tag1</button> and here is <button class='custom-tag-button' data-tag='tag2' onclick='handleTagClick(\"tag2\")'>tag2</button>. Also, check <button class='custom-tag-button' data-tag='tag3' onclick='handleTagClick(\"tag3\")'>tag3</button>.";
+
+        String result = tagService.replaceTagsInMarkdown(markdown);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testReplaceTagsInMarkdownDuplicate() {
+        String markdown = "#java #javafx";
+
+        String expected = "<button class='custom-tag-button' data-tag='java' onclick='handleTagClick(\"java\")'>java</button>" +
+                " <button class='custom-tag-button' data-tag='javafx' onclick='handleTagClick(\"javafx\")'>javafx</button>";
 
         String result = tagService.replaceTagsInMarkdown(markdown);
 
