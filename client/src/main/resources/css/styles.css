@@ -692,3 +692,13 @@
     -fx-background-color: -main-selected;
     -fx-text-fill: white;
 }
+
+.notifications-bar {
+    -fx-background-color: linear-gradient(to right, #854b4a 0%, -main-foreground 10%, -main-foreground 100%);
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: -main-background;
+}
+
+.notifications-bar-faded {
+    -fx-background-color: linear-gradient(to right, -main-foreground 0%, -main-foreground 100%);
+}

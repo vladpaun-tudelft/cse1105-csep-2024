@@ -33,6 +33,7 @@
 -->
 
 <?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
@@ -60,19 +61,6 @@
 <VBox fx:id="root" prefHeight="600.0" prefWidth="900.0" styleClass="mainView" stylesheets="@../../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
     <children>
         <MenuBar styleClass="options-bar" VBox.vgrow="NEVER" />
-        <HBox fx:id="tagsRow" alignment="CENTER_LEFT" spacing="10.0" VBox.vgrow="NEVER">
-            <children>
-                <Label fx:id="tagLabel" minWidth="-Infinity" styleClass="tagLabel" text="%tags.text" />
-                <ScrollPane fx:id="tagsScrollPane" fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" HBox.hgrow="ALWAYS">
-                    <content>
-                        <HBox fx:id="tagsBox" alignment="CENTER_LEFT" minWidth="-Infinity" spacing="10.0">
-                            <!-- Combo Boxes will be added here dynamically -->
-                        </HBox>
-                    </content>
-                </ScrollPane>
-                <Button fx:id="clearTagsButton" minWidth="-Infinity" onAction="#clearTags" text="%clearTags.text" />
-            </children>
-        </HBox>
         <SplitPane dividerPositions="0.2506" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="content-view" VBox.vgrow="ALWAYS">
             <items>
                 <AnchorPane layoutY="1.0" minWidth="0.0" prefHeight="200.0" prefWidth="200.0" styleClass="foreground-element">
@@ -144,116 +132,149 @@
                   </MenuButton>
                     </children>
                 </AnchorPane>
-                <SplitPane centerShape="false" dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0">
-                    <items>
-                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="-1.0" prefWidth="-1.0">
-                            <content>
-                                <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="551.0" prefWidth="329.0" styleClass="background-element">
-                                    <children>
-                                        <TextArea fx:id="noteBody" layoutX="4.0" layoutY="47.0" onKeyReleased="#onBodyChanged" prefHeight="480.0" prefWidth="329.0" styleClass="background-element" wrapText="true" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="3.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="46.0">
-                                            <font>
-                                                <Font size="14.0" />
-                                            </font></TextArea>
-                                        <Label fx:id="noteTitle" layoutX="8.666666666666666" layoutY="6.666666666666666" style="&#10;" text="%noteBody.placeholder" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
-                                            <font>
-                                                <Font size="18.0" fx:id="x1" />
-                                            </font>
-                                            <textFill>
-                                                <Color red="0.624" green="0.624" blue="0.624" fx:id="x2" />
-                                            </textFill>
-                                        </Label>
-                                        <Label fx:id="contentBlocker" alignment="CENTER" layoutX="2.6666666666666665" layoutY="2.6666666666666665" prefHeight="572.0" prefWidth="326.0" text="%dashboard.noNoteSelected" textAlignment="CENTER" textFill="#7e7e7e" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0">
-                                            <font>
-                                                <Font name="System Italic" size="12.0" />
-                                            </font>
-                                            <styleClass>
-                                                <String fx:value="background-element" />
-                                                <String fx:value="content-blocker" />
-                                            </styleClass>
-                                        </Label>
-                                        <Button fx:id="deleteButton" layoutX="295.0" layoutY="3.0" mnemonicParsing="false" onAction="#deleteSelectedNote" textFill="#b93838" underline="true" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
-                                            <font>
-                                                <Font size="12.0" />
-                                            </font>
-                                            <cursor>
-                                                <Cursor fx:constant="HAND" />
-                                            </cursor>
-                                 <styleClass>
-                                    <String fx:value="delete_icon" />
-                                    <String fx:value="icon" />
-                                 </styleClass>
-                                        </Button>
-                                        <Text fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Files:" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
-                                        <Button fx:id="addFileButton" layoutX="280.0" layoutY="531.0" mnemonicParsing="false" onAction="#addFile" text="Add" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0">
-                                            <cursor>
-                                                <Cursor fx:constant="HAND" />
-                                            </cursor></Button>
-                                        <ScrollPane layoutX="55.0" layoutY="525.0" prefHeight="40.0" prefWidth="212.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="67.0">
+            <VBox prefHeight="200.0" prefWidth="100.0">
+               <children>
+                    <HBox fx:id="tagsRow" alignment="CENTER_LEFT" spacing="10.0" VBox.vgrow="NEVER">
+                        <children>
+                            <Label fx:id="tagLabel" minWidth="-Infinity" styleClass="tagLabel" text="%tags.text" />
+                            <ScrollPane fx:id="tagsScrollPane" fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" HBox.hgrow="ALWAYS">
+                                <content>
+                                    <HBox fx:id="tagsBox" alignment="CENTER_LEFT" minWidth="-Infinity" spacing="10.0">
+                            <!-- Combo Boxes will be added here dynamically -->
+                        </HBox>
+                                </content>
+                            </ScrollPane>
+                            <Button fx:id="clearTagsButton" minWidth="-Infinity" onAction="#clearTags" text="%clearTags.text" />
+                        </children>
+                    </HBox>
+                      <SplitPane centerShape="false" dividerPositions="0.5" prefHeight="160.0" prefWidth="200.0" style="-fx-padding: 0;" VBox.vgrow="ALWAYS">
+                          <items>
+                              <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="-1.0" prefWidth="-1.0">
+                                  <content>
+                                      <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="551.0" prefWidth="329.0" styleClass="background-element">
+                                          <children>
+                                              <TextArea fx:id="noteBody" layoutX="4.0" layoutY="47.0" onKeyReleased="#onBodyChanged" prefHeight="480.0" prefWidth="329.0" styleClass="background-element" wrapText="true" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="3.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="46.0">
+                                                  <font>
+                                                      <Font size="14.0" />
+                                                  </font>
+                                    </TextArea>
+                                              <Label fx:id="noteTitle" layoutX="8.666666666666666" layoutY="6.666666666666666" style="&#10;" text="%noteBody.placeholder" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                                  <font>
+                                                      <Font size="18.0" fx:id="x1" />
+                                                  </font>
+                                                  <textFill>
+                                                      <Color red="0.624" green="0.624" blue="0.624" fx:id="x2" />
+                                                  </textFill>
+                                              </Label>
+                                              <Label fx:id="contentBlocker" alignment="CENTER" layoutX="2.6666666666666665" layoutY="2.6666666666666665" prefHeight="572.0" prefWidth="326.0" text="%dashboard.noNoteSelected" textAlignment="CENTER" textFill="#7e7e7e" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0">
+                                                  <font>
+                                                      <Font name="System Italic" size="12.0" />
+                                                  </font>
+                                                  <styleClass>
+                                                      <String fx:value="background-element" />
+                                                      <String fx:value="content-blocker" />
+                                                  </styleClass>
+                                              </Label>
+                                              <Button fx:id="deleteButton" layoutX="295.0" layoutY="3.0" mnemonicParsing="false" onAction="#deleteSelectedNote" textFill="#b93838" underline="true" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                                  <font>
+                                                      <Font size="12.0" />
+                                                  </font>
+                                                  <cursor>
+                                                      <Cursor fx:constant="HAND" />
+                                                  </cursor>
+                                       <styleClass>
+                                          <String fx:value="delete_icon" />
+                                          <String fx:value="icon" />
+                                       </styleClass>
+                                              </Button>
+                                              <Text fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Files:" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
+                                              <Button fx:id="addFileButton" layoutX="280.0" layoutY="531.0" mnemonicParsing="false" onAction="#addFile" text="Add" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0">
+                                                  <cursor>
+                                                      <Cursor fx:constant="HAND" />
+                                                  </cursor>
+                                    </Button>
+                                              <ScrollPane layoutX="55.0" layoutY="525.0" prefHeight="40.0" prefWidth="212.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="67.0">
+                                                  <content>
+                                                      <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
+                                                  </content>
+                                              </ScrollPane>
+                                              <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                                    <MenuButton fx:id="moveNotesButton" alignment="CENTER" layoutX="176.66666666666669" layoutY="7.0" mnemonicParsing="false" prefWidth="185.0" styleClass="current-collection-menuButton" text="%moveNotesButton.text" textFill="WHITE" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="6.0">
+                                       <font>
+                                          <Font name="System Bold" size="12.0" />
+                                       </font>
+                                       <items>
+                                          <CustomMenuItem mnemonicParsing="false" styleClass="current-collection-menuButton" text="Collection Title" />
+                                          <SeparatorMenuItem mnemonicParsing="false" />
+                                          <CustomMenuItem mnemonicParsing="false" styleClass="pick-note-destination" text="Pick Note Destination">
                                             <content>
-                                                <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
+                                              <CheckBox text="Click Me" />
                                             </content>
-                                        </ScrollPane>
-                                        <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                              <MenuButton fx:id="moveNotesButton" alignment="CENTER" layoutX="176.66666666666669" layoutY="7.0" mnemonicParsing="false" prefWidth="185.0" styleClass="current-collection-menuButton" text="%moveNotesButton.text" textFill="WHITE" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="6.0">
-                                 <font>
-                                    <Font name="System Bold" size="12.0" />
-                                 </font>
-                                 <items>
-                                    <CustomMenuItem mnemonicParsing="false" styleClass="current-collection-menuButton" text="Collection Title" />
-                                    <SeparatorMenuItem mnemonicParsing="false" />
-                                    <CustomMenuItem mnemonicParsing="false" styleClass="pick-note-destination" text="Pick Note Destination">
-                                      <content>
-                                        <CheckBox text="Click Me" />
-                                      </content>
-                                    </CustomMenuItem>
-                                    <CustomMenuItem mnemonicParsing="false" text="List of Collections" />
-                                 </items>
-                              </MenuButton>
-                              <Text fx:id="filesText" fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%filesView.text" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
-                              <Button fx:id="addFileButton" layoutX="280.0" layoutY="531.0" mnemonicParsing="false" onAction="#addFile" text="%addFileButton.text" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0">
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor></Button>
-                              <ScrollPane fx:id="fileScrollPane" fitToWidth="true" layoutX="57.599999999999994" layoutY="525.0" prefHeight="40.0" prefWidth="213.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="57.0">
-                                 <content>
-                                    <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
-                                 </content>
+                                          </CustomMenuItem>
+                                          <CustomMenuItem mnemonicParsing="false" text="List of Collections" />
+                                       </items>
+                                    </MenuButton>
+                                    <Text fx:id="filesText" fill="WHITE" layoutX="14.0" layoutY="550.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%filesView.text" AnchorPane.bottomAnchor="17.0" AnchorPane.leftAnchor="14.0" />
+                                    <Button fx:id="addFileButton" layoutX="280.0" layoutY="531.0" mnemonicParsing="false" onAction="#addFile" text="%addFileButton.text" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="12.0">
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                    </Button>
+                                    <ScrollPane fx:id="fileScrollPane" fitToWidth="true" layoutX="57.599999999999994" layoutY="525.0" prefHeight="40.0" prefWidth="213.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="57.0">
+                                       <content>
+                                          <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
+                                       </content>
+                                    </ScrollPane>
+                                    <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                                          </children>
+                                      </AnchorPane>
+                                  </content>
                               </ScrollPane>
-                              <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                                    </children>
-                                </AnchorPane>
-                            </content>
-                        </ScrollPane>
-                        <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="-1.0" prefWidth="-1.0">
-                            <content>
-                                <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" styleClass="background-element">
-                                    <children>
-                                        <Label fx:id="noteTitleMD" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
-                                            <font>
-                                                <Font name="System Bold" size="18.0" fx:id="x11" />
-                                            </font>
-                                            <textFill>
-                                                <Color red="0.624" green="0.624" blue="0.624" fx:id="x21" />
-                                            </textFill>
-                                        </Label>
-                                        <WebView fx:id="markdownView" prefHeight="571.0" prefWidth="441.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0" />
-                                        <Label fx:id="markdownViewBlocker" alignment="CENTER" text="%noRenderedMarkdown.text" textAlignment="CENTER" textFill="#7e7e7e" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                            <font>
-                                                <Font name="System Italic" size="12.0" />
-                                            </font>
-                                            <styleClass>
-                                                <String fx:value="background-element" />
-                                                <String fx:value="content-blocker" />
-                                            </styleClass>
-                                        </Label>
-                                        <MenuButton fx:id="languageButton" layoutX="288.0" layoutY="7.0" mnemonicParsing="false" AnchorPane.rightAnchor="14.0" />
-                                    </children>
-                                </AnchorPane>
-                            </content>
-                        </ScrollPane>
-                    </items>
-                </SplitPane>
+                              <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="-1.0" prefWidth="-1.0">
+                                  <content>
+                                      <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" styleClass="background-element">
+                                          <children>
+                                              <Label fx:id="noteTitleMD" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                                  <font>
+                                                      <Font name="System Bold" size="18.0" fx:id="x11" />
+                                                  </font>
+                                                  <textFill>
+                                                      <Color red="0.624" green="0.624" blue="0.624" fx:id="x21" />
+                                                  </textFill>
+                                              </Label>
+                                              <WebView fx:id="markdownView" prefHeight="571.0" prefWidth="441.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="43.0" />
+                                              <Label fx:id="markdownViewBlocker" alignment="CENTER" text="%noRenderedMarkdown.text" textAlignment="CENTER" textFill="#7e7e7e" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                  <font>
+                                                      <Font name="System Italic" size="12.0" />
+                                                  </font>
+                                                  <styleClass>
+                                                      <String fx:value="background-element" />
+                                                      <String fx:value="content-blocker" />
+                                                  </styleClass>
+                                              </Label>
+                                              <MenuButton fx:id="languageButton" layoutX="288.0" layoutY="7.0" mnemonicParsing="false" AnchorPane.rightAnchor="14.0" />
+                                          </children>
+                                      </AnchorPane>
+                                  </content>
+                              </ScrollPane>
+                          </items>
+                      </SplitPane>
+               </children>
+            </VBox>
             </items>
         </SplitPane>
+      <HBox fx:id="notificationsBar" prefHeight="20.0" prefWidth="200.0">
+         <styleClass>
+            <String fx:value="notifications-bar" />
+            <String fx:value="notifications-bar-faded" />
+         </styleClass>
+         <children>
+            <Label fx:id="notificationsLabel" style="-fx-text-fill: #f75464;" textFill="#f75464" HBox.hgrow="ALWAYS">
+               <padding>
+                  <Insets left="12.0" />
+               </padding>
+            </Label>
+         </children>
+      </HBox>
     </children>
 </VBox>

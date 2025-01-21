@@ -44,7 +44,7 @@ public class CollectionCtrlTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        collectionCtrl = new CollectionCtrl(serverMock, configMock, noteCtrlMock, searchCtrlMock);
+        collectionCtrl = new CollectionCtrl(serverMock, configMock, noteCtrlMock, searchCtrlMock, new NotificationsCtrl());
         collectionCtrl.setDashboardCtrl(dashboardCtrlMock);
         noteCtrlMock.setUpdatePendingNotes(new ArrayList<>());
     }

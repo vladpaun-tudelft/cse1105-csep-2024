@@ -30,6 +30,7 @@ public class CollectionCtrl {
 
     // Utilities
     private final ServerUtils server;
+    private final NotificationsCtrl notificationsCtrl;
     private Config config;
     private LanguageManager languageManager;
     private ResourceBundle bundle;
@@ -51,11 +52,12 @@ public class CollectionCtrl {
     @Getter @Setter ListView moveNotesListView;
 
     @Inject
-    public CollectionCtrl(ServerUtils server, Config config, NoteCtrl noteCtrl, SearchCtrl searchCtrl) {
+    public CollectionCtrl(ServerUtils server, Config config, NoteCtrl noteCtrl, SearchCtrl searchCtrl, NotificationsCtrl notificationsCtrl) {
         this.server = server;
         this.config = config;
         this.noteCtrl = noteCtrl;
         this.searchCtrl = searchCtrl;
+        this.notificationsCtrl = notificationsCtrl;
 
         this.languageManager = LanguageManager.getInstance(this.config);
         this.bundle = this.languageManager.getBundle();
@@ -403,13 +405,14 @@ public class CollectionCtrl {
 
             collections.add(addedCollection);
         } catch (ClientErrorException e) {
-            Alert alert = dialogStyler.createStyledAlert(
-                    Alert.AlertType.ERROR,
-                    bundle.getString("error.text"),
-                    bundle.getString("error.text"),
-                    e.getResponse().readEntity(String.class)
-            );
-            alert.showAndWait();
+//            Alert alert = dialogStyler.createStyledAlert(
+//                    Alert.AlertType.ERROR,
+//                    bundle.getString("error.text"),
+//                    bundle.getString("error.text"),
+//                    e.getResponse().readEntity(String.class)
+//            );
+//            alert.showAndWait();
+            notificationsCtrl.pushNotification(e.getResponse().readEntity(String.class));
             return currentCollection;
         }
 
