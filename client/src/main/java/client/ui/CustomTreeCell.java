@@ -2,6 +2,7 @@ package client.ui;
 
 import client.LanguageManager;
 import client.controllers.NoteCtrl;
+import client.controllers.NotificationsCtrl;
 import client.entities.Action;
 import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
@@ -24,6 +25,7 @@ import java.util.ResourceBundle;
 public class CustomTreeCell extends TreeCell<Object> {
 
     private final DashboardCtrl dashboardCtrl;
+    private final NotificationsCtrl notificationsCtrl;
     private final NoteCtrl noteCtrl;
 
     // Components for Notes
@@ -52,8 +54,9 @@ public class CustomTreeCell extends TreeCell<Object> {
     private ResourceBundle bundle;
 
 
-    public CustomTreeCell(DashboardCtrl dashboardCtrl, NoteCtrl noteCtrl, DialogStyler dialogStyler) {
+    public CustomTreeCell(DashboardCtrl dashboardCtrl, NoteCtrl noteCtrl, DialogStyler dialogStyler , NotificationsCtrl notificationsCtrl) {
         this.dashboardCtrl = dashboardCtrl;
+        this.notificationsCtrl = notificationsCtrl;
         this.noteCtrl = noteCtrl;
         this.dialogStyler = dialogStyler;
         this.manager = LanguageManager.getInstance(this.config);
@@ -275,15 +278,9 @@ public class CustomTreeCell extends TreeCell<Object> {
             originalNoteTitle = newTitle;
 
             dashboardCtrl.getActionHistory().push(new Action(ActionType.EDIT_TITLE, note, oldTitle, uniqueTitle));
+            notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
         } catch (ClientErrorException e) {
-            // Handle client errors
-            Alert alert = dialogStyler.createStyledAlert(
-                    Alert.AlertType.ERROR,
-                    bundle.getString("error.text"),
-                    bundle.getString("error.text"),
-                    e.getResponse().readEntity(String.class)
-            );
-            alert.showAndWait();
+            notificationsCtrl.pushNotification(bundle.getString("invalid.name"), true);
             note.setTitle(originalNoteTitle);
         }
 

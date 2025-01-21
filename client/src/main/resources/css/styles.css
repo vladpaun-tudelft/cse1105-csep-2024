@@ -339,6 +339,7 @@
     -fx-cursor: hand;
 }
 
+
 .current-collection-label {
     -fx-text-fill: white;
     -fx-padding: 6;
@@ -669,12 +670,12 @@
 
 /* Language switch */
 #languageButton {
-    -fx-background-color: -main-background;
+    -fx-background-color: -main-foreground;
     -fx-border-color: transparent;
     -fx-border-radius: 5;
     -fx-background-radius: 5;
-    -fx-font-size: 14px;
-    -fx-text-fill: -main-foreground;
+    -fx-font-size: 11px;
+    -fx-text-fill: white;
     -fx-cursor: hand;
 }
 
@@ -691,4 +692,22 @@
 #languageButton:focused {
     -fx-background-color: -main-selected;
     -fx-text-fill: white;
+}
+
+.notifications-bar {
+    -fx-background-color: linear-gradient(to right, #854b4a 0%, -main-foreground 10%, -main-foreground 100%);
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: -main-background;
+}
+
+.notifications-bar-faded {
+    -fx-background-color: linear-gradient(to right, -main-foreground 0%, -main-foreground 100%);
+}
+
+.language-button {
+    -fx-background-color: #424c3f;
+}
+
+.notification-text {
+    -fx-effect: dropshadow(gaussian, -main-foreground, 15, .4, 0, 0);
 }
