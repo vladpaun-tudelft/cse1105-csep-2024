@@ -136,7 +136,9 @@ public class MarkdownCtrl {
                         .filter(note -> note.title.equals(noteTitle))
                         .findFirst()
                         .ifPresent(selectedNote -> {
+                            collectionView.getSelectionModel().clearSelection();
                             collectionView.getSelectionModel().select(selectedNote);
+                            treeView.getSelectionModel().clearSelection();
                             dashboardCtrl.selectNoteInTreeView(selectedNote);
                         });
             } else {
