@@ -705,5 +705,9 @@
 }
 
 .language-button {
-    -fx-background-color: red;
+    -fx-background-color: #424c3f;
+}
+
+.notification-text {
+    -fx-effect: dropshadow(gaussian, -main-foreground, 15, .4, 0, 0);
 }

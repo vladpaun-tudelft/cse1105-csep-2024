@@ -28,6 +28,7 @@ public class NoteCtrl {
 
     // Dashboard reference
     private DashboardCtrl dashboardCtrl;
+    private NotificationsCtrl notificationsCtrl;
 
     // References
     private ListView collectionView;
@@ -52,10 +53,11 @@ public class NoteCtrl {
     private long tempNoteId = -1;
 
     @Inject
-    public NoteCtrl(ServerUtils server, Config config) {
+    public NoteCtrl(ServerUtils server, Config config, NotificationsCtrl notificationsCtrl) {
         this.server = server;
         createPendingNotes = new ArrayList<>();
         updatePendingNotes = new ArrayList<>();
+        this.notificationsCtrl = notificationsCtrl;
 
         this.config = config;
         this.languageManager = LanguageManager.getInstance(this.config);
@@ -123,7 +125,7 @@ public class NoteCtrl {
         });
 
 
-
+        notificationsCtrl.pushNotification(bundle.getString("creationSuccess"), false);
         return newNote;
     }
 
@@ -182,6 +184,7 @@ public class NoteCtrl {
             if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
                 deleteNote(currentNote, collectionNotes, allNotes);
                 noteBody.clear();
+                notificationsCtrl.pushNotification(bundle.getString("deleteSuccess"), false);
             }
         }
 
@@ -304,6 +307,7 @@ public class NoteCtrl {
                     noteBody.clear();
                 }
                 dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
+
             }
         }
         dashboardCtrl.refreshTreeView();

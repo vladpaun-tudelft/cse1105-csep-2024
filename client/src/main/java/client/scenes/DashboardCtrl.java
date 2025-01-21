@@ -313,6 +313,7 @@ public class DashboardCtrl implements Initializable {
             dashboardCtrl.selectNoteInTreeView(backupCurrentNote);
             dashboardCtrl.getTagCtrl().selectTags(selectedTags);
             Platform.runLater(() -> dashboardCtrl.getCollectionView().getSelectionModel().select(backupCurrentNote));
+            Platform.runLater(() -> notificationsCtrl.pushNotification(bundle.getString("newLanguage"), false));
         } catch (Exception e) {
             e.printStackTrace();
         }

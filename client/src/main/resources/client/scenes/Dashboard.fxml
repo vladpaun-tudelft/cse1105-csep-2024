@@ -269,10 +269,13 @@
             <String fx:value="notifications-bar-faded" />
          </styleClass>
          <children>
-            <Label fx:id="notificationsLabel" prefHeight="20.0" style="-fx-text-fill: #f75464;" textFill="#f75464" HBox.hgrow="ALWAYS">
+            <Label fx:id="notificationsLabel" prefHeight="25.0" styleClass="notification-text" textFill="WHITE" HBox.hgrow="ALWAYS">
                <padding>
                   <Insets left="12.0" />
                </padding>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
             </Label>
             <Region prefHeight="25.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
                       <MenuButton fx:id="languageButton" minHeight="0.0" mnemonicParsing="false" prefHeight="25.0">

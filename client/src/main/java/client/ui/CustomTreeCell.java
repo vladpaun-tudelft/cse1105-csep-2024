@@ -278,16 +278,9 @@ public class CustomTreeCell extends TreeCell<Object> {
             originalNoteTitle = newTitle;
 
             dashboardCtrl.getActionHistory().push(new Action(ActionType.EDIT_TITLE, note, oldTitle, uniqueTitle));
+            notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
         } catch (ClientErrorException e) {
-//             Handle client errors
-//            Alert alert = dialogStyler.createStyledAlert(
-//                    Alert.AlertType.ERROR,
-//                    bundle.getString("error.text"),
-//                    bundle.getString("error.text"),
-//                    e.getResponse().readEntity(String.class)
-//            );
-//            alert.showAndWait();
-            notificationsCtrl.pushNotification(e.getResponse().readEntity(String.class));
+            notificationsCtrl.pushNotification(bundle.getString("invalid.name"), true);
             note.setTitle(originalNoteTitle);
         }
 

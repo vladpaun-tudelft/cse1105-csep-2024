@@ -291,13 +291,13 @@ public class MarkdownCtrl {
 //                Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, bundle.getString("errorOpeningUrl.text"),
 //                        bundle.getString("failedToOpenUrl.text") + url, bundle.getString("checkUrlFormat.text"));
 //                alert.showAndWait();
-                notificationsCtrl.pushNotification(bundle.getString("failedToOpenUrl.text") + url + ": " + bundle.getString("checkUrlFormat.text"));
+                notificationsCtrl.pushNotification(bundle.getString("failedToOpenUrl.text") + url + ": " + bundle.getString("checkUrlFormat.text"), true);
             }
         } else {
 //            Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, "Desktop Not Supported",
 //                    bundle.getString("unableToOpenUrl.text"), bundle.getString("desktopNotSupported.text"));
 //            alert.showAndWait();
-            notificationsCtrl.pushNotification(bundle.getString("unableToOpenUrl.text") + ": " + bundle.getString("desktopNotSupported.text"));
+            notificationsCtrl.pushNotification(bundle.getString("unableToOpenUrl.text") + ": " + bundle.getString("desktopNotSupported.text"), true);
 
         }
     }
