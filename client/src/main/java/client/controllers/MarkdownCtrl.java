@@ -92,9 +92,9 @@ public class MarkdownCtrl {
         } else {
             dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,
-                    "File error",
-                    "JS file not found",
-                    "Reference javascript file not found."
+                    bundle.getString("fileError.text"),
+                    bundle.getString("fileError.text"),
+                    bundle.getString("referenceJsNotFound.text")
             );
         }
     }
@@ -314,9 +314,9 @@ public class MarkdownCtrl {
 
             dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,
-                    "Environment error",
-                    "Environment variable error:",
-                    "Failed to create directory: " + appDataPath
+                    bundle.getString("environmentError.text"),
+                    bundle.getString("environmentError.text"),
+                    bundle.getString("mkdirError.text") + appDataPath
             );
             dashboardCtrl.onClose();
         }
@@ -342,9 +342,9 @@ public class MarkdownCtrl {
                 if (in == null) {
                     dialogStyler.createStyledAlert(
                             Alert.AlertType.ERROR,
-                            "File error",
-                            "Markdown CSS Missing",
-                            "The CSS file for markdown could not be found in the application resources."
+                            bundle.getString("fileError.text"),
+                            bundle.getString("fileError.text"),
+                            bundle.getString("markdownCssNotFound.text")
                     );
                     return null;
                 }
@@ -357,9 +357,9 @@ public class MarkdownCtrl {
             } catch (IOException e) {
                 dialogStyler.createStyledAlert(
                         Alert.AlertType.ERROR,
-                        "File error",
-                        "File Copy Error",
-                        "Failed to copy markdown.css to the external directory."
+                        bundle.getString("fileError.text"),
+                        bundle.getString("fileError.text"),
+                        bundle.getString("mdCopyError.text")
                 );
             }
         }

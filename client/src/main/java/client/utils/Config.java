@@ -205,6 +205,7 @@ public class Config {
         }
 
         return appDataDir;
+        }
 
     public String getCurrentLanguage() {
         try {
