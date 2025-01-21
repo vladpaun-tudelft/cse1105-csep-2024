@@ -96,8 +96,22 @@ public class NoteCtrl {
                         ObservableList<Note> allNotes,
                         ObservableList<Note> collectionNotes) {
         Collection collection = currentCollection != null ? currentCollection : dashboardCtrl.getDefaultCollection();
-        dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
-        dashboardCtrl.getCollectionView().getSelectionModel().clearSelection();
+
+        Note newNote = generateNewNote(allNotes, collection);
+
+        allNotes.add(newNote);
+        if (currentCollection != null) {
+            collectionView.getItems().add(newNote);
+            collectionView.getSelectionModel().clearSelection();
+            collectionView.getSelectionModel().select(newNote);
+        } else {
+            dashboardCtrl.selectNoteInTreeView(newNote);
+        }
+
+        return newNote;
+    }
+
+    private Note generateNewNote(ObservableList<Note> allNotes, Collection collection) {
         // Generate a unique title
         String baseTitle = "New Note";
         Note newNote = new Note(baseTitle, "", collection);
@@ -114,31 +128,38 @@ public class NoteCtrl {
 
         noteBody.setText("");
 
-        Platform.runLater(() -> {
-            dashboardCtrl.filter();
-            dashboardCtrl.updateTagList();
-            Platform.runLater(() -> {
-                dashboardCtrl.filter();
-                dashboardCtrl.updateTagList();
-                collectionView.getSelectionModel().select(newNote);
-            });
-        });
-
-
         notificationsCtrl.pushNotification(bundle.getString("creationSuccess"), false);
         return newNote;
     }
 
     public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> allNotes,ObservableList<Note> collectionNotes, Note note) {
-        if (!allNotes.contains(note)) {
-            allNotes.add(note);
+        boolean addedNoteIsSelectedTreeView = false;
+        boolean addedNoteIsSelectedCollectionView = false;
+        if (collectionView.getSelectionModel().getSelectedItem() != null) {
+            Note selectedNote = (Note)collectionView.getSelectionModel().getSelectedItem();
+            if (selectedNote.title.equals(note.title) && selectedNote.collection.equals(note.collection)) {
+                addedNoteIsSelectedCollectionView = true;
+            }
         }
+        if (treeView.getSelectionModel().getSelectedItem() != null) {
+            if(((TreeItem)treeView.getSelectionModel().getSelectedItem()).getValue() instanceof Note n && n.title.equals(note.title) && n.collection.equals(note.collection)){
+                addedNoteIsSelectedTreeView = true;
+            }
+        }
+        allNotes.removeIf(n -> n.title.equals(note.title) && n.collection.equals(note.collection));
+        allNotes.add(note);
         if (currentCollection != null && currentCollection.equals(note.collection)) {
-            if (!collectionNotes.contains(note)) collectionNotes.add(note);
+            collectionNotes.removeIf(n -> n.title.equals(note.title) && n.collection.equals(note.collection));
+            collectionNotes.add(note);
+        }
 
-            collectionView.getSelectionModel().select(collectionNotes.size() - 1);
-            collectionView.getFocusModel().focus(collectionNotes.size() - 1);
-            collectionView.edit(collectionNotes.size() - 1);
+        if(addedNoteIsSelectedTreeView) {
+            treeView.getSelectionModel().clearSelection();
+            dashboardCtrl.selectNoteInTreeView(note);
+            dashboardCtrl.filter();
+        }
+        if(addedNoteIsSelectedCollectionView) {
+            collectionView.getSelectionModel().select(note);
         }
     }
 
@@ -197,9 +218,15 @@ public class NoteCtrl {
         updatePendingNotes.remove(currentNote);
         server.send("/app/deleteNote", currentNote);
 
-        allNotes.remove(currentNote);
-        collectionNotes.remove(currentNote);
+        removeNoteFromClient(currentNote, collectionNotes, allNotes);
+
         Platform.runLater(() -> dashboardCtrl.filter());
+    }
+
+    public void removeNoteFromClient(Note currentNote, ObservableList<Note> collectionNotes, ObservableList<Note> allNotes) {
+        allNotes.remove(currentNote);
+        collectionView.getItems().remove(currentNote);
+        collectionView.refresh();
     }
 
     public void updateAfterDelete(Note currentNote,
@@ -268,9 +295,9 @@ public class NoteCtrl {
         if (selectedItems != null) {
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.CONFIRMATION,
-                    "Confirm deletion",
-                    "Confirm deletion",
-                    "Do you really want to delete selected notes?"
+                    bundle.getString("confirmDeletion.text"),
+                    bundle.getString("confirmDeletion.text"),
+                    bundle.getString("deleteMultipleNotesConfirmation.text")
             );
             Optional<ButtonType> buttonType = alert.showAndWait();
             List<Note> notesToDelete = new ArrayList<>(selectedItems);
@@ -295,9 +322,9 @@ public class NoteCtrl {
         if (selectedItems != null) {
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.CONFIRMATION,
-                    "Confirm deletion",
-                    "Confirm deletion",
-                    "Do you really want to delete selected notes?"
+                    bundle.getString("confirmDeletion.text"),
+                    bundle.getString("confirmDeletion.text"),
+                    bundle.getString("deleteMultipleNotesConfirmation.text")
             );
             Optional<ButtonType> buttonType = alert.showAndWait();
             List<TreeItem<Note>> notesToDelete = new ArrayList<>(selectedItems);

@@ -308,7 +308,7 @@ public class CollectionCtrl {
     }
 
 
-    public ObservableList<Note> viewNotes(Collection currentCollection, ObservableList<Note> allNotes) {
+    public ObservableList<Note> viewNotes() {
         dashboardCtrl.setSearchIsActive(false);
         dashboardCtrl.clearTags(null);
         return dashboardCtrl.filter();
@@ -319,7 +319,7 @@ public class CollectionCtrl {
                 .filter(note -> note.collection.equals(collection))
                 .collect(Collectors.toList());
         for (Note n : notesToDelete) {
-            if (delete) noteCtrl.deleteNote(n,collectionNotes,allNotes);
+            noteCtrl.removeNoteFromClient(n,collectionNotes,allNotes);
         }
 
         Collection previousCollection = collections.stream().filter(c -> !c.equals(collection)).findFirst().orElse(null);

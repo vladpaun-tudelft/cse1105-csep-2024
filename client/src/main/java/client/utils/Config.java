@@ -18,10 +18,15 @@ public class Config {
     private DialogStyler dialogStyler;
     private static final String DEFAULT_LANGUAGE = "en";
 
+    private boolean fileError = false;
+
     @Inject
     public Config(DialogStyler dialogStyler) {
-        configFile = new File("client/src/main/resources/config.json");
         this.dialogStyler = dialogStyler;
+
+        File appDataDir = getAppDataDirectory();
+        configFile = new File(appDataDir, "config.json");
+
         if (!configFile.exists()) {
             try {
                 configFile.createNewFile();
@@ -29,14 +34,21 @@ public class Config {
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, new ConfigData(new ArrayList<>(), -1, DEFAULT_LANGUAGE));
             } catch (IOException e) {
-                dialogStyler.createStyledAlert(
-                        Alert.AlertType.ERROR,
-                        "File Error.",
-                        "File could not be created.",
-                        "We have encountered an error while creating the config file. Please try again later."
-                ).showAndWait();
+                if(!fileError) {
+                    dialogStyler.createStyledAlert(
+                            Alert.AlertType.ERROR,
+                            "File Error.",
+                            "File could not be created.",
+                            "We have encountered an error while creating the config file. Please try again later."
+                    ).showAndWait();
+                    fileError = true;
+                }
             }
         }
+    }
+
+    public boolean isFileErrorStatus() {
+        return fileError;
     }
 
     public List<Collection> readFromFile() {
@@ -162,6 +174,38 @@ public class Config {
             return -1; // Return -1 if there's an issue reading the file
         }
     }
+
+    public File getAppDataDirectory() {
+        String os = System.getProperty("os.name").toLowerCase();
+        String appDataPath = null;
+        String appData;
+        File appDataDir = null;
+        if (os.contains("win")) {
+            appData = System.getenv("APPDATA");
+            if (appData != null) {
+                appDataPath = appData + File.separator + "NetNote";
+            }
+        } else {
+            appData = System.getProperty("user.home");
+            if (appData != null) {
+                appDataPath = appData + File.separator + ".netnote";
+            }
+        }
+        if (appDataPath != null) {
+            appDataDir = new File(appDataPath);
+        }
+        if (appDataDir == null || !(appDataDir.exists()) && !appDataDir.mkdirs()) {
+
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.ERROR,
+                    "Environment error",
+                    "Environment variable error:",
+                    "Failed to create directory: " + appDataPath
+            );
+        }
+
+        return appDataDir;
+        }
 
     public String getCurrentLanguage() {
         try {
