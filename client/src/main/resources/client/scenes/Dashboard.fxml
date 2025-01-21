@@ -52,6 +52,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
@@ -252,7 +253,6 @@
                                                       <String fx:value="content-blocker" />
                                                   </styleClass>
                                               </Label>
-                                              <MenuButton fx:id="languageButton" layoutX="288.0" layoutY="7.0" mnemonicParsing="false" AnchorPane.rightAnchor="14.0" />
                                           </children>
                                       </AnchorPane>
                                   </content>
@@ -263,17 +263,23 @@
             </VBox>
             </items>
         </SplitPane>
-      <HBox fx:id="notificationsBar" prefHeight="20.0" prefWidth="200.0">
+      <HBox fx:id="notificationsBar" maxHeight="25.0" prefHeight="25.0" prefWidth="200.0">
          <styleClass>
             <String fx:value="notifications-bar" />
             <String fx:value="notifications-bar-faded" />
          </styleClass>
          <children>
-            <Label fx:id="notificationsLabel" style="-fx-text-fill: #f75464;" textFill="#f75464" HBox.hgrow="ALWAYS">
+            <Label fx:id="notificationsLabel" prefHeight="20.0" style="-fx-text-fill: #f75464;" textFill="#f75464" HBox.hgrow="ALWAYS">
                <padding>
                   <Insets left="12.0" />
                </padding>
             </Label>
+            <Region prefHeight="25.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                      <MenuButton fx:id="languageButton" minHeight="0.0" mnemonicParsing="false" prefHeight="25.0">
+               <font>
+                  <Font size="6.0" />
+               </font>
+            </MenuButton>
          </children>
       </HBox>
     </children>

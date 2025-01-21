@@ -339,6 +339,7 @@
     -fx-cursor: hand;
 }
 
+
 .current-collection-label {
     -fx-text-fill: white;
     -fx-padding: 6;
@@ -669,12 +670,12 @@
 
 /* Language switch */
 #languageButton {
-    -fx-background-color: -main-background;
+    -fx-background-color: -main-foreground;
     -fx-border-color: transparent;
     -fx-border-radius: 5;
     -fx-background-radius: 5;
-    -fx-font-size: 14px;
-    -fx-text-fill: -main-foreground;
+    -fx-font-size: 11px;
+    -fx-text-fill: white;
     -fx-cursor: hand;
 }
 
@@ -701,4 +702,8 @@
 
 .notifications-bar-faded {
     -fx-background-color: linear-gradient(to right, -main-foreground 0%, -main-foreground 100%);
+}
+
+.language-button {
+    -fx-background-color: red;
 }
