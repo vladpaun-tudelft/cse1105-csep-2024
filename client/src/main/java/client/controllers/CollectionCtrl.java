@@ -329,7 +329,7 @@ public class CollectionCtrl {
         // delete collection from server
         if (delete) {
             server.deleteCollection(collection);
-            notificationsCtrl.pushNotification(bundle.getString("deleteCollection"), false);
+            if(notificationsCtrl != null)notificationsCtrl.pushNotification(bundle.getString("deleteCollection"), false);
         }
         // delete collection from config file
         collections.remove(collection);
@@ -387,14 +387,14 @@ public class CollectionCtrl {
         }
         noteCtrl.getUpdatePendingNotes().add(currentNote);
         noteCtrl.saveAllPendingNotes();
-        notificationsCtrl.pushNotification(bundle.getString("movedNote") + selectedCollection.title, false);
+        if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("movedNote") + selectedCollection.title, false);
     }
 
 
     public void updateCollection(Collection collection, List<Collection> collections) {
         server.updateCollection(collection);
         config.writeAllToFile(collections);
-        notificationsCtrl.pushNotification(bundle.getString("updatedCollection") + collection.title, false);
+        if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("updatedCollection") + collection.title, false);
     }
 
     public Collection addInputtedCollection(Collection inputtedCollection, Collection currentCollection, List<Collection> collections) {
@@ -409,9 +409,9 @@ public class CollectionCtrl {
             }
 
             collections.add(addedCollection);
-            notificationsCtrl.pushNotification(bundle.getString("addedCollection"), false);
+            if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("addedCollection"), false);
         } catch (ClientErrorException e) {
-            notificationsCtrl.pushNotification(e.getResponse().readEntity(String.class), true);
+            if(notificationsCtrl != null) notificationsCtrl.pushNotification(e.getResponse().readEntity(String.class), true);
             return currentCollection;
         }
 
@@ -453,7 +453,7 @@ public class CollectionCtrl {
             for (Note note : previouslySelectedNotes) {
                 collectionView.getSelectionModel().select(note);
             }
-            notificationsCtrl.pushNotification(bundle.getString("movedNotesMultiple") + destinationCollection.title, false);
+            if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("movedNotesMultiple") + destinationCollection.title, false);
         }
 
     }
