@@ -1,9 +1,12 @@
 package client.ui;
 
+import client.LanguageManager;
 import client.controllers.NoteCtrl;
 import client.entities.Action;
 import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
+import client.utils.Config;
+import com.google.inject.Inject;
 import commons.Collection;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
@@ -15,6 +18,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+
+import java.util.ResourceBundle;
 
 public class CustomTreeCell extends TreeCell<Object> {
 
@@ -41,10 +46,18 @@ public class CustomTreeCell extends TreeCell<Object> {
     private static final int DOUBLE_CLICK_TIMEFRAME = 400;
     private DialogStyler dialogStyler;
 
+    @Inject
+    private Config config;
+    private LanguageManager manager;
+    private ResourceBundle bundle;
+
+
     public CustomTreeCell(DashboardCtrl dashboardCtrl, NoteCtrl noteCtrl, DialogStyler dialogStyler) {
         this.dashboardCtrl = dashboardCtrl;
         this.noteCtrl = noteCtrl;
         this.dialogStyler = dialogStyler;
+        this.manager = LanguageManager.getInstance(this.config);
+        this.bundle = this.manager.getBundle();
 
         // Initialize Note components
         noteTitleLabel = new Label();
@@ -188,7 +201,7 @@ public class CustomTreeCell extends TreeCell<Object> {
         collectionTitleLabel.setText(collection.title);
 
         if (collection.equals(dashboardCtrl.getDefaultCollection())) {
-            collectionTitleLabel.setText(collection.title + " - Default");
+            collectionTitleLabel.setText(collection.title + bundle.getString("default.text"));
             favouriteButton.setDisable(true);
             favouriteButton.getStyleClass().add("default_collection_icon");
             favouriteButton.getStyleClass().remove("set_default_collection_icon");
@@ -266,8 +279,8 @@ public class CustomTreeCell extends TreeCell<Object> {
             // Handle client errors
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,
-                    "Error",
-                    "Error",
+                    bundle.getString("error.text"),
+                    bundle.getString("error.text"),
                     e.getResponse().readEntity(String.class)
             );
             alert.showAndWait();

@@ -17,8 +17,11 @@ package client;
 
 import client.scenes.DashboardCtrl;
 import client.scenes.MainCtrl;
+import client.utils.Config;
+import client.utils.ServerUtils;
 import com.google.inject.Injector;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -28,25 +31,39 @@ import static com.google.inject.Guice.createInjector;
 
 public class Main extends Application {
 
-	private static final Injector INJECTOR = createInjector(new MyModule());
-	private static final MyFXML FXML = new MyFXML(INJECTOR);
+	private DashboardCtrl dashboardCtrl;
+
+	public DashboardCtrl getDashboardCtrl() {
+		return dashboardCtrl;
+	}
 
 	public static void main(String[] args) throws URISyntaxException, IOException {
 		launch();
 	}
 
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage primaryStage) throws Exception {
+		Injector injector = createInjector(new MyModule());
+		MyFXML FXML = new MyFXML(injector);
 
-		var dashboard = FXML.load(DashboardCtrl.class, "client", "scenes", "Dashboard.fxml");
+		var serverUtils = injector.getInstance(ServerUtils.class);
 
-		var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
+		Config config = injector.getInstance(Config.class);
+		LanguageManager languageManager = LanguageManager.getInstance(config);
+
+		var dashboard = FXML.load(DashboardCtrl.class, languageManager.getBundle(), "client", "scenes", "Dashboard.fxml");
+		dashboardCtrl = dashboard.getKey();
+
+		var mainCtrl = injector.getInstance(MainCtrl.class);
 		mainCtrl.initialize(primaryStage, dashboard);
 
 		// Add close request handler
 		primaryStage.setOnCloseRequest(event -> {
 			// Call the onClose method in the controller
 			mainCtrl.onClose();
+
+			Platform.exit();
+			System.exit(0);
 		});
 	}
 }

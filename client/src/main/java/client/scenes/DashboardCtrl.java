@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.*;
 import client.controllers.*;
 import client.entities.Action;
 import client.entities.ActionType;
@@ -27,9 +28,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -50,7 +56,9 @@ public class DashboardCtrl implements Initializable {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     @Getter private final ServerUtils server;
     @Getter private final MainCtrl mainCtrl;
-    @Getter private final Config config;
+    @Getter @Setter @Inject private Config config;
+    @Getter private LanguageManager languageManager;
+    private ResourceBundle bundle;
     @Getter private final DialogStyler dialogStyler;
 
     // Controllers
@@ -63,13 +71,14 @@ public class DashboardCtrl implements Initializable {
     @Getter private final TagCtrl tagCtrl;
 
     // FXML Components
+    @FXML private VBox root;
     @FXML private Label contentBlocker;
     @FXML @Getter private TextArea noteBody;
     @FXML private WebView markdownView;
     @FXML private Label markdownViewBlocker;
     @FXML @Getter private Label noteTitle;
-    @FXML @Getter ListView collectionView;
-    @FXML public TreeView allNotesView;
+    @FXML @Getter public ListView collectionView;
+    @FXML @Getter public TreeView allNotesView;
     @FXML @Getter Button addButton;
     @FXML @Getter private Label noteTitleMD;
     @FXML private Button deleteButton;
@@ -85,6 +94,9 @@ public class DashboardCtrl implements Initializable {
     @FXML private HBox filesView;
     @FXML private Label filesViewBlocker;
     @FXML private HBox tagsBox;
+    @FXML private MenuButton languageButton;
+    @FXML private ScrollPane fileScrollPane;
+    @FXML private Text filesText;
 
 
     // Variables
@@ -96,7 +108,7 @@ public class DashboardCtrl implements Initializable {
     @Getter @Setter private ObservableList<Note> allNotes;
     @Getter @Setter public ObservableList<Note> collectionNotes;
 
-    private TreeItem<Object> noNotesItem = new TreeItem<>(" - no notes in collection.");
+    private TreeItem<Object> noNotesItem;
     @Getter @Setter private boolean isProgrammaticChange = false;
     @Getter @Setter private Deque<Action> actionHistory = new ArrayDeque<>();
     private boolean isUndoBodyChange = false; // Flag for undo-triggered body changes
@@ -104,7 +116,6 @@ public class DashboardCtrl implements Initializable {
     @Inject
     public DashboardCtrl(ServerUtils server,
                          MainCtrl mainCtrl,
-                         Config config,
                          MarkdownCtrl markdownCtrl,
                          CollectionCtrl collectionCtrl,
                          NoteCtrl noteCtrl,
@@ -114,7 +125,6 @@ public class DashboardCtrl implements Initializable {
                          TagCtrl tagCtrl) {
         this.mainCtrl = mainCtrl;
         this.server = server;
-        this.config = config;
         this.markdownCtrl = markdownCtrl;
         this.collectionCtrl = collectionCtrl;
         this.noteCtrl = noteCtrl;
@@ -122,12 +132,19 @@ public class DashboardCtrl implements Initializable {
         this.filesCtrl = filesCtrl;
         this.dialogStyler = dialogStyler;
         this.tagCtrl = tagCtrl;
+        this.languageManager = LanguageManager.getInstance(this.config);
+        this.bundle = languageManager.getBundle();
+        noNotesItem = new TreeItem<>(this.bundle.getString("noNotesInCollection.text"));
     }
 
     @SneakyThrows
     @FXML
     public void initialize(URL arg0, ResourceBundle arg1) {
         if(config.isFileErrorStatus()) onClose();
+
+        languageManager = LanguageManager.getInstance(config);
+        setupLanguageButton();
+
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = allNotes;
         markdownCtrl.setReferences(collectionView, allNotesView, markdownView, markdownViewBlocker, noteBody);
@@ -193,6 +210,13 @@ public class DashboardCtrl implements Initializable {
         filesCtrl.setDashboardCtrl(this);
         filesCtrl.setReferences(filesView);
 
+        fileScrollPane.prefWidthProperty().bind(
+                addFileButton.layoutXProperty()
+                        .subtract(filesText.layoutXProperty())
+                        .subtract(filesText.getBoundsInParent().getWidth())
+                        .subtract(10) // 5px gap from each side
+        );
+
         tagCtrl.setReferences(this, tagsBox, allNotes);
 
         viewAllNotes();
@@ -200,6 +224,93 @@ public class DashboardCtrl implements Initializable {
         // Temporary solution
         scheduler.scheduleAtFixedRate(() -> noteCtrl.saveAllPendingNotes(),
                 10,10, TimeUnit.SECONDS);
+    }
+
+    private void setupLanguageButton() {
+        ImageView currentFlag = createLanguageImageView(languageManager.getCurrentLanguage().getImagePath());
+        languageButton.setGraphic(currentFlag);
+        languageButton.setText(languageManager.getCurrentLanguage().getDisplayName());
+
+
+        for (Language lang : Language.values()) {
+            MenuItem item = new MenuItem(lang.getDisplayName());
+
+            ImageView flagImage = createLanguageImageView(lang.getImagePath());
+            item.setGraphic(flagImage);
+
+            item.setOnAction(e -> switchLanguage(lang));
+            languageButton.getItems().add(item);
+        }
+    }
+
+    private ImageView createLanguageImageView(String imagePath) {
+        Image flagImage = new Image(getClass().getResourceAsStream(imagePath));
+        ImageView imageView = new ImageView(flagImage);
+        imageView.setFitHeight(16);
+        imageView.setFitWidth(24);
+        imageView.setPreserveRatio(true);
+        return imageView;
+    }
+
+    private void switchLanguage(Language language) {
+        languageManager.switchLanguage(language);
+
+        ImageView newFlag = createLanguageImageView(language.getImagePath());
+        languageButton.setGraphic(newFlag);
+        languageButton.setText(language.getDisplayName());
+
+        updateLanguage();
+    }
+
+    private void updateLanguage() {
+        Stage primaryStage = (Stage) languageButton.getScene().getWindow();
+        try {
+            // save state
+            double x = primaryStage.getX();
+            double y = primaryStage.getY();
+            double width = primaryStage.getWidth();
+            double height = primaryStage.getHeight();
+            boolean isMaximized = primaryStage.isMaximized();
+            boolean isFullScreen = primaryStage.isFullScreen();
+
+            noteCtrl.saveAllPendingNotes();
+
+            Collection backupCurrentCollection = currentCollection;
+            Note backupCurrentNote = currentNote;
+            String backupSearchText = searchField.getText();
+            boolean visibilityTreeView = allNotesView.isVisible();
+            boolean visibilityCollectionView = collectionView.isVisible();
+            List<String> selectedTags = tagCtrl.getSelectedTags();
+
+            // restart the UI
+            Main main = new Main();
+            main.start(primaryStage);
+            DashboardCtrl dashboardCtrl = main.getDashboardCtrl();
+
+            // transfer state
+            if (isFullScreen) {
+                primaryStage.setFullScreen(true);
+            } else if (isMaximized) {
+                primaryStage.setMaximized(true);
+            } else {
+                primaryStage.setX(x);
+                primaryStage.setY(y);
+                primaryStage.setWidth(width);
+                primaryStage.setHeight(height);
+            }
+
+            dashboardCtrl.setCurrentCollection(backupCurrentCollection);
+            dashboardCtrl.setCurrentNote(backupCurrentNote);
+            dashboardCtrl.getSearchField().setText(backupSearchText);
+            dashboardCtrl.getAllNotesView().setVisible(visibilityTreeView);
+            dashboardCtrl.getCollectionView().setVisible(visibilityCollectionView);
+            dashboardCtrl.getNoteCtrl().showCurrentNote(backupCurrentNote);
+            dashboardCtrl.selectNoteInTreeView(backupCurrentNote);
+            dashboardCtrl.getTagCtrl().selectTags(selectedTags);
+            Platform.runLater(() -> dashboardCtrl.getCollectionView().getSelectionModel().select(backupCurrentNote));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void noteAdditionSync() {
@@ -263,7 +374,7 @@ public class DashboardCtrl implements Initializable {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
-                moveNotesButton.setText("Move Note");
+                moveNotesButton.setText(bundle.getString("moveNote.text"));
                 filesViewBlocker.setVisible(true);
 
                 server.unregisterFromEmbeddedFileUpdates();
@@ -353,7 +464,7 @@ public class DashboardCtrl implements Initializable {
                 // Show content blockers when no item is selected
                 contentBlocker.setVisible(true);
                 markdownViewBlocker.setVisible(true);
-                moveNotesButton.setText("Move Note");
+                moveNotesButton.setText(bundle.getString("moveNote.text"));
                 filesViewBlocker.setVisible(true);
 
                 server.unregisterFromEmbeddedFileUpdates();
@@ -827,7 +938,7 @@ public class DashboardCtrl implements Initializable {
             /*case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
                 collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
             }*/
-            default -> throw new UnsupportedOperationException("Undo action not supported for type: " + lastAction.getType());
+            default -> throw new UnsupportedOperationException(bundle.getString("undoUnsupported.text") + lastAction.getType());
         }
         event.consume();
     }
@@ -998,7 +1109,7 @@ public class DashboardCtrl implements Initializable {
 
         if (currentCollection == null) {
             collectionNotes = allNotes;
-            currentCollectionTitle.setText("All Notes");
+            currentCollectionTitle.setText(bundle.getString("allNotes.text"));
             collectionView.setVisible(false);
             allNotesView.setVisible(true);
             collectionView.getSelectionModel().clearSelection();

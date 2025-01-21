@@ -1,9 +1,11 @@
 package client.controllers;
 
+import client.LanguageManager;
 import client.scenes.DashboardCtrl;
 import client.services.ReferenceService;
 import client.services.TagService;
 import client.ui.DialogStyler;
+import client.utils.Config;
 import com.google.inject.Inject;
 import commons.Note;
 import javafx.animation.PauseTransition;
@@ -11,6 +13,7 @@ import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
 import lombok.Getter;
@@ -26,6 +29,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,8 +62,16 @@ public class MarkdownCtrl {
     @Getter private final String cssPath;
     private String scriptPath = null;
 
+    private Config config;
+    private LanguageManager languageManager;
+    private ResourceBundle bundle;
+
     @Inject
-    public MarkdownCtrl() {
+    public MarkdownCtrl(Config config) {
+        this.config = config;
+        this.languageManager = LanguageManager.getInstance(this.config);
+        this.bundle = this.languageManager.getBundle();
+
         this.referenceService = new ReferenceService(dashboardCtrl, noteBody, recommendationsMenu);
         this.tagService = new TagService();
         var extensions = Arrays.asList(
@@ -114,6 +126,24 @@ public class MarkdownCtrl {
         });
         noteBody.scrollTopProperty().addListener((_, _, _) -> synchronizeScroll());
 
+        // Pass internationalized strings to JS
+        WebEngine webEngine = markdownView.getEngine();
+        webEngine.documentProperty().addListener((obs, oldDoc, newDoc) -> {
+            if (newDoc != null) {
+                String collectionLabel = bundle.getString("collection.text");
+                String noteLabel = bundle.getString("note.text");
+                String previewLabel = bundle.getString("preview.text");
+
+                webEngine.executeScript(
+                        "window.localizedStrings = {" +
+                                "   collectionLabel: '" + escapeJsString(collectionLabel) + "'," +
+                                "   noteLabel: '" + escapeJsString(noteLabel) + "'," +
+                                "   previewLabel: '" + escapeJsString(previewLabel) + "'" +
+                                "};"
+                );
+            }
+        });
+
         // Handle javascript alerts from the WebView
         markdownView.getEngine().setOnAlert(event -> {
             String url = event.getData();
@@ -129,7 +159,9 @@ public class MarkdownCtrl {
                         .filter(note -> note.title.equals(noteTitle))
                         .findFirst()
                         .ifPresent(selectedNote -> {
+                            collectionView.getSelectionModel().clearSelection();
                             collectionView.getSelectionModel().select(selectedNote);
+                            treeView.getSelectionModel().clearSelection();
                             dashboardCtrl.selectNoteInTreeView(selectedNote);
                         });
             } else {
@@ -137,6 +169,10 @@ public class MarkdownCtrl {
                 openUrlInBrowser(url);
             }
         });
+    }
+
+    private String escapeJsString(String input) {
+        return input.replace("'", "\\'").replace("\n", "\\n").replace("\r", "");
     }
 
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
@@ -164,6 +200,8 @@ public class MarkdownCtrl {
     private String convertMarkdownToHtml(String markdown) {
         markdown = convertFileNameToURL(markdown);
         String htmlContent = markdown == null || markdown.isEmpty() ? "" : renderer.render(parser.parse(markdown));
+
+        markdownView.getEngine().setUserStyleSheetLocation(getClass().getResource("/css/markdown.css").toExternalForm());
 
         return """
                 <!DOCTYPE html>
@@ -240,13 +278,13 @@ public class MarkdownCtrl {
             try {
                 desktop.browse(new URI(url));
             } catch (IOException | URISyntaxException e) {
-                Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, "Error Opening URL",
-                        "Failed to open the URL: " + url, "Please check the URL format (missing protocol) or your connection");
+                Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, bundle.getString("errorOpeningUrl.text"),
+                        bundle.getString("failedToOpenUrl.text") + url, bundle.getString("checkUrlFormat.text"));
                 alert.showAndWait();
             }
         } else {
             Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, "Desktop Not Supported",
-                    "Unable to open the URL", "Desktop is not supported on this platform.");
+                    bundle.getString("unableToOpenUrl.text"), bundle.getString("desktopNotSupported.text"));
             alert.showAndWait();
         }
     }

@@ -2,6 +2,7 @@ package client.controllers;
 
 import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
+import client.utils.Config;
 import client.utils.ServerUtils;
 import commons.EmbeddedFile;
 import commons.Note;
@@ -29,6 +30,7 @@ public class FilesCtrlTest {
     private ServerUtils serverUtils;
     private DashboardCtrl dashboardCtrl;
     private DialogStyler dialogStyler;
+    private Config config;
     private HBox filesView;
 
     private Note sampleNote;
@@ -39,9 +41,10 @@ public class FilesCtrlTest {
         serverUtils = mock(ServerUtils.class);
         dashboardCtrl = mock(DashboardCtrl.class);
         dialogStyler = mock(DialogStyler.class);
+        config = mock(Config.class);
         filesView = new HBox();
 
-        filesCtrl = new FilesCtrl(serverUtils, new FileChooser());
+        filesCtrl = new FilesCtrl(serverUtils, new FileChooser(), config);
         filesCtrl.setDashboardCtrl(dashboardCtrl);
         filesCtrl.setReferences(filesView);
         filesCtrl.setDialogStyler(dialogStyler);

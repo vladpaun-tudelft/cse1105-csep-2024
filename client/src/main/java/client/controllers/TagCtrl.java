@@ -1,8 +1,11 @@
 package client.controllers;
 
+import client.LanguageManager;
 import client.scenes.DashboardCtrl;
 import client.services.TagService;
 import client.ui.DialogStyler;
+import client.utils.Config;
+import com.google.inject.Inject;
 import commons.Note;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -16,6 +19,7 @@ import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * Controls logic for tag management.
@@ -29,8 +33,17 @@ public class TagCtrl {
 
     @Getter private TagService tagService;
 
+    @Inject
+    private Config config;
+    private LanguageManager languageManager;
+    private ResourceBundle bundle;
+
+
     public TagCtrl() {
         this.tagService = new TagService();
+
+        this.languageManager = LanguageManager.getInstance(this.config);
+        this.bundle = languageManager.getBundle();
     }
 
     public void setReferences(DashboardCtrl dashboardCtrl, HBox tagsBox, ObservableList<Note> allNotes) {
@@ -92,11 +105,11 @@ public class TagCtrl {
 
                 // add "No tags" to the dropdown when no tags are available
                 if (availableTags.isEmpty()) {
-                    comboBox.setPromptText("No more tags");
+                    comboBox.setPromptText(bundle.getString("noMoreTags.text"));
                     comboBox.setStyle("-fx-text-fill: #f5f5f5; -fx-font-style: italic;");
                     comboBox.setDisable(true);
                 } else {
-                    comboBox.setPromptText("Select a tag");
+                    comboBox.setPromptText(bundle.getString("selectATag.text"));
                     comboBox.setStyle("");
                     comboBox.setDisable(false);
                 }
@@ -126,9 +139,9 @@ public class TagCtrl {
             DialogStyler dialogStyler = new DialogStyler();
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,
-                    "Tag Not Found",
-                    "The tag you selected could not be found.",
-                    "Please make sure the tag exists or add it manually."
+                    bundle.getString("tagNotFound.text"),
+                    bundle.getString("tagNotFoundMore.text"),
+                    bundle.getString("makeSureTagExists.text")
             );
             alert.showAndWait();
             return;
@@ -166,6 +179,40 @@ public class TagCtrl {
             }
         }
         return selectedTags;
+    }
+
+    public void selectTags(List<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            clearTags();
+            return;
+        }
+
+        Platform.runLater(() -> {
+            clearTags();
+
+            for (int i = 0; i < tags.size(); i++) {
+                ComboBox<String> currentDropdown = getLastComboBox();
+                if (currentDropdown == null) {
+                    continue;
+                }
+
+                currentDropdown.getSelectionModel().select(tags.get(i));
+                addTagDropdown(currentDropdown);
+                updateTagList();
+            }
+
+            dashboardCtrl.filter();
+        });
+    }
+
+    private ComboBox<String> getLastComboBox() {
+        ComboBox<String> lastComboBox = null;
+        for (Node node : tagsBox.getChildren()) {
+            if (node instanceof ComboBox) {
+                lastComboBox = (ComboBox<String>) node;
+            }
+        }
+        return lastComboBox;
     }
 
     private void onTagSelectionChanged(ComboBox<String> comboBox) {
@@ -210,13 +257,13 @@ public class TagCtrl {
         newDropdown.setOnAction(event -> onTagSelectionChanged(newDropdown));
     }
 
-    private static ComboBox<String> createTagComboBox() {
+    private ComboBox<String> createTagComboBox() {
         ComboBox<String> newDropdown = new ComboBox<>();
         newDropdown.setPrefWidth(150.0);
-        newDropdown.setPromptText("Select a tag");
+        newDropdown.setPromptText(bundle.getString("selectATag.text"));
         newDropdown.getStyleClass().add("tag-dropdown");
 
-        Tooltip dropdownTooltip = new Tooltip("Select a tag from the list or type to add a new one.");
+        Tooltip dropdownTooltip = new Tooltip(bundle.getString("selectATagTooltip.text"));
         newDropdown.setTooltip(dropdownTooltip);
         return newDropdown;
     }

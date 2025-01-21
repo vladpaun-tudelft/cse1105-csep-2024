@@ -1,5 +1,8 @@
 package client.services;
 
+import client.LanguageManager;
+import client.utils.Config;
+import com.google.inject.Inject;
 import commons.Note;
 import client.scenes.DashboardCtrl;
 import javafx.application.Platform;
@@ -20,10 +23,18 @@ public class ReferenceService {
     private final TextArea noteBody;
     private ContextMenu recommendationsMenu;
 
+    @Inject
+    private Config config;
+    private LanguageManager manager;
+    private ResourceBundle bundle;
+
     public ReferenceService(DashboardCtrl dashboardCtrl, TextArea noteBody, ContextMenu recommendationsMenu) {
         this.dashboardCtrl = dashboardCtrl;
         this.noteBody = noteBody;
         this.recommendationsMenu = recommendationsMenu;
+
+        this.manager = LanguageManager.getInstance(this.config);
+        this.bundle = this.manager.getBundle();
     }
 
     // ----------------------- Reference Extraction and Validation -----------------------
@@ -84,8 +95,8 @@ public class ReferenceService {
      * Generates preview text for the referred note.
      */
     private String generatePreviewText(Note referredNote) {
-        if (referredNote.body.isBlank()) return "The note is blank.";
-        if (referredNote.title.equals(dashboardCtrl.getCurrentNote().title)) return "This note references itself.";
+        if (referredNote.body.isBlank()) return bundle.getString("thisNoteIsBlank.text");
+        if (referredNote.title.equals(dashboardCtrl.getCurrentNote().title)) return bundle.getString("thisNoteReferencesItself.text");
 
         String previewText = referredNote.body.length() > 20
                 ? referredNote.body.substring(0, 20) + "..."
@@ -160,7 +171,7 @@ public class ReferenceService {
                 .toList();
 
         if (matches.isEmpty()) {
-            MenuItem noMatchesItem = new MenuItem("No Notes Found");
+            MenuItem noMatchesItem = new MenuItem(bundle.getString("noNotesFound.text"));
             noMatchesItem.setDisable(true);
             recommendationsMenu.getItems().add(noMatchesItem);
         } else {
@@ -180,7 +191,7 @@ public class ReferenceService {
 
         // Add the "← Previous" button as the first item, if applicable
         if (startIndex > 0) {
-            MenuItem previousPageItem = new MenuItem("← Previous");
+            MenuItem previousPageItem = new MenuItem(bundle.getString("previous.text"));
             previousPageItem.setOnAction(e -> {
                 paginateRecommendations(matches, startIndex - pageSize);
             });
@@ -197,7 +208,7 @@ public class ReferenceService {
 
         // Add the "Next →" button as the last item, if applicable
         if (endIndex < matches.size()) {
-            MenuItem nextPageItem = new MenuItem("Next →");
+            MenuItem nextPageItem = new MenuItem(bundle.getString("next.text"));
             nextPageItem.setOnAction(e -> {
                 paginateRecommendations(matches, endIndex);
             });
