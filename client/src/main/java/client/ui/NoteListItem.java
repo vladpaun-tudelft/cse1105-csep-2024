@@ -1,9 +1,12 @@
 package client.ui;
 
+import client.LanguageManager;
 import client.controllers.NoteCtrl;
 import client.entities.Action;
 import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
+import client.utils.Config;
+import com.google.inject.Inject;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
 import javafx.geometry.Pos;
@@ -13,6 +16,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+
+import java.util.ResourceBundle;
 
 public class NoteListItem extends ListCell<Note> {
 
@@ -34,6 +39,12 @@ public class NoteListItem extends ListCell<Note> {
     private final HBox hBox;
     private TextField textField;
 
+
+    @Inject
+    private Config config;
+    private LanguageManager manager;
+    private ResourceBundle bundle;
+
     // Variables
     private String originalTitle;
     private long lastClickTime = 0;
@@ -47,6 +58,9 @@ public class NoteListItem extends ListCell<Note> {
         this.overviewBody = overviewBody;
         this.controller = controller;
         this.noteCtrl = noteCtrl;
+
+        this.manager = LanguageManager.getInstance(this.config);
+        this.bundle = this.manager.getBundle();
 
         // Initialize the note title
         noteTitle = new Label();
@@ -194,8 +208,8 @@ public class NoteListItem extends ListCell<Note> {
         } catch (ClientErrorException e) {
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,
-                    "Error",
-                    "Error",
+                    bundle.getString("error.text"),
+                    bundle.getString("error.text"),
                     e.getResponse().readEntity(String.class)
             );
             alert.showAndWait();

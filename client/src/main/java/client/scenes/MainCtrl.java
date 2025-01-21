@@ -15,8 +15,11 @@
  */
 package client.scenes;
 
+import client.LanguageManager;
 import client.MyFXML;
 import client.MyModule;
+import client.utils.Config;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 import javafx.application.Platform;
 import javafx.scene.Parent;
@@ -30,6 +33,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Pair;
 
+import java.util.ResourceBundle;
+
 import static com.google.inject.Guice.createInjector;
 
 public class MainCtrl {
@@ -38,6 +43,9 @@ public class MainCtrl {
 
     private DashboardCtrl dashboardCtrl;
     private Scene dashboard;
+    @Inject
+    private Config config;
+    private LanguageManager manager;
 
     private static final Injector INJECTOR = createInjector(new MyModule());
     private static final MyFXML FXML = new MyFXML(INJECTOR);
@@ -50,6 +58,8 @@ public class MainCtrl {
         this.dashboard = new Scene(dashboard.getValue());
         this.dashboard.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
 
+        manager = LanguageManager.getInstance(config);
+
         configureKeyboardShortcuts();
 
         showDashboard();
@@ -59,8 +69,8 @@ public class MainCtrl {
     /**
      * Method to load scenes without caching.
      */
-    public <T> T loadScene(Class<T> controllerClass, String... fxmlPath) {
-        var fxml = FXML.load(controllerClass, fxmlPath);
+    public <T> T loadScene(Class<T> controllerClass, ResourceBundle bundle, String... fxmlPath) {
+        var fxml = FXML.load(controllerClass, bundle, fxmlPath);
         Scene scene = new Scene(fxml.getValue());
         scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         return controllerClass.cast(fxml.getKey());
@@ -70,14 +80,14 @@ public class MainCtrl {
      * Opens the EditCollections scene as a popup.
      */
     public EditCollectionsCtrl showEditCollections() {
-        var editCollectionsCtrl = loadScene(EditCollectionsCtrl.class, "client", "scenes", "EditCollections.fxml");
+        var editCollectionsCtrl = loadScene(EditCollectionsCtrl.class, manager.getBundle(), "client", "scenes", "EditCollections.fxml");
 
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.initStyle(StageStyle.TRANSPARENT);
-        popupStage.setTitle("Edit Collections");
+        popupStage.setTitle(manager.getBundle().getString("editCollections.text"));
 
-        Scene scene = new Scene(FXML.load(EditCollectionsCtrl.class, "client", "scenes", "EditCollections.fxml").getValue());
+        Scene scene = new Scene(FXML.load(EditCollectionsCtrl.class, manager.getBundle(), "client", "scenes", "EditCollections.fxml").getValue());
         scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
 scene.setFill(Color.TRANSPARENT);
         popupStage.setScene(scene);

@@ -22,10 +22,18 @@ function showTooltip(event, element) {
     const noteTitle = element.getAttribute('data-note-title');
     const noteCollection = element.getAttribute('data-note-collection');
     const notePreview = element.getAttribute('data-note-preview');
+
+    // fallback if something fails
+    const localizedStrings = window.localizedStrings || {
+        collectionLabel: 'Collection',
+        noteLabel: 'Note',
+        previewLabel: 'Preview'
+    };
+
     tooltip.innerHTML =
-        `Collection: <b>${noteCollection}</b>;<br>` +
-        `Note: <b>${noteTitle}</b>;<br>` +
-        `Preview: ${notePreview}`;
+        `${localizedStrings.collectionLabel}: <b>${noteCollection}</b>;<br>` +
+        `${localizedStrings.noteLabel}: <b>${noteTitle}</b>;<br>` +
+        `${localizedStrings.previewLabel}: ${notePreview}`;
     tooltip.style.display = 'block';
     positionTooltip(event);
 }

@@ -1,7 +1,9 @@
 package client.controllers;
 
+import client.LanguageManager;
 import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
+import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
 import commons.Collection;
@@ -16,6 +18,7 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
 public class NoteCtrl {
 
@@ -42,13 +45,21 @@ public class NoteCtrl {
     @Getter @Setter private List<Note> createPendingNotes;
     @Getter @Setter private List<Note> updatePendingNotes;
 
+    private Config config;
+    private LanguageManager languageManager;
+    private ResourceBundle bundle;
+
     private long tempNoteId = -1;
 
     @Inject
-    public NoteCtrl(ServerUtils server) {
+    public NoteCtrl(ServerUtils server, Config config) {
         this.server = server;
         createPendingNotes = new ArrayList<>();
         updatePendingNotes = new ArrayList<>();
+
+        this.config = config;
+        this.languageManager = LanguageManager.getInstance(this.config);
+        this.bundle = this.languageManager.getBundle();
     }
 
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
@@ -132,26 +143,28 @@ public class NoteCtrl {
     public void showCurrentNote(Note selectedNote) {
         if (selectedNote == null) return;
 
-        moveNotesButton.setText(selectedNote.collection.title);
+        Platform.runLater(() -> {
+            moveNotesButton.setText(selectedNote.collection.title);
 
-        noteTitle.setText(selectedNote.title);
-        noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-        // Here, the +45 to be changed with +5 when we remove the trash icons
-        noteTitle.maxWidthProperty().bind(noteBody.widthProperty() .subtract(moveNotesButton.widthProperty()) .subtract(45));
+            noteTitle.setText(selectedNote.title);
+            noteTitle.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+            // Here, the +45 to be changed with +5 when we remove the trash icons
+            noteTitle.maxWidthProperty().bind(noteBody.widthProperty() .subtract(moveNotesButton.widthProperty()) .subtract(45));
 
-        noteTitleMd.setText(selectedNote.title);
-        noteTitleMd.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-        // Again, here, when the trash icons are removed, we can remove the subtract, or make it like 5px
-        noteTitleMd.maxWidthProperty().bind(markdownView.widthProperty().subtract(40));
+            noteTitleMd.setText(selectedNote.title);
+            noteTitleMd.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
+            // Again, here, when the trash icons are removed, we can remove the subtract, or make it like 5px
+            noteTitleMd.maxWidthProperty().bind(markdownView.widthProperty().subtract(40));
 
-        noteBody.setText(selectedNote.body);
-        contentBlocker.setVisible(false);
-        filesViewBlocker.setVisible(false);
-        dashboardCtrl.getFilesCtrl().showFiles(selectedNote);
-        dashboardCtrl.getMarkdownCtrl().setCurrentNote(selectedNote);
-        dashboardCtrl.getMarkdownCtrl().updateMarkdownView(selectedNote.getBody());
+            noteBody.setText(selectedNote.body);
+            contentBlocker.setVisible(false);
+            filesViewBlocker.setVisible(false);
+            dashboardCtrl.getFilesCtrl().showFiles(selectedNote);
+            dashboardCtrl.getMarkdownCtrl().setCurrentNote(selectedNote);
+            dashboardCtrl.getMarkdownCtrl().updateMarkdownView(selectedNote.getBody());
 
-        Platform.runLater(() -> noteBody.requestFocus());
+             noteBody.requestFocus();
+        });
     }
 
     public void deleteSelectedNote(Note currentNote,
@@ -160,9 +173,9 @@ public class NoteCtrl {
         if (currentNote != null) {
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.CONFIRMATION,
-                    "Confirm deletion",
-                    "Confirm deletion",
-                    "Do you really want to delete this note?"
+                    bundle.getString("confirmDeletion.text"),
+                    bundle.getString("confirmDeletion.text"),
+                    bundle.getString("deleteNoteConfirmation.text")
             );
             Optional<ButtonType> buttonType = alert.showAndWait();
 

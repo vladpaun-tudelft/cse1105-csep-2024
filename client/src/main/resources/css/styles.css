@@ -665,3 +665,30 @@
     -fx-padding: 0;
 }
 /* ============================= */
+
+
+/* Language switch */
+#languageButton {
+    -fx-background-color: -main-background;
+    -fx-border-color: transparent;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-font-size: 14px;
+    -fx-text-fill: -main-foreground;
+    -fx-cursor: hand;
+}
+
+#languageButton:hover {
+    -fx-background-color: -main-selected;
+    -fx-text-fill: white;
+}
+
+#languageButton:pressed {
+    -fx-background-color: -main-selected;
+    -fx-text-fill: -main-foreground;
+}
+
+#languageButton:focused {
+    -fx-background-color: -main-selected;
+    -fx-text-fill: white;
+}

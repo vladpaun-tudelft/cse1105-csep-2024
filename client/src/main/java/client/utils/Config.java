@@ -16,6 +16,7 @@ import commons.Collection;
 public class Config {
     public File configFile;
     private DialogStyler dialogStyler;
+    private static final String DEFAULT_LANGUAGE = "en";
 
     @Inject
     public Config(DialogStyler dialogStyler) {
@@ -26,7 +27,7 @@ public class Config {
                 configFile.createNewFile();
                 // Initialize the file with an empty list and no defaultCollectionId
                 ObjectMapper objectMapper = new ObjectMapper();
-                objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, new ConfigData(new ArrayList<>(), -1));
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, new ConfigData(new ArrayList<>(), -1, DEFAULT_LANGUAGE));
             } catch (IOException e) {
                 dialogStyler.createStyledAlert(
                         Alert.AlertType.ERROR,
@@ -75,7 +76,8 @@ public class Config {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             long defaultId = readDefaultCollectionId(); // Preserve the existing default ID
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, new ConfigData(collections, defaultId));
+            String currentLanguage = getCurrentLanguage();
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, new ConfigData(collections, defaultId, currentLanguage));
         } catch (IOException e) {
             dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,
@@ -119,7 +121,7 @@ public class Config {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writerWithDefaultPrettyPrinter()
-                    .writeValue(configFile, new ConfigData(collections, defaultCollectionId));
+                    .writeValue(configFile, new ConfigData(collections, defaultCollectionId, DEFAULT_LANGUAGE));
         } catch (IOException e) {
             dialogStyler.createStyledAlert(
                     Alert.AlertType.ERROR,
@@ -161,17 +163,45 @@ public class Config {
         }
     }
 
+    public String getCurrentLanguage() {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            ConfigData configData = objectMapper.readValue(configFile, ConfigData.class);
+            return configData.getLanguage() != null ? configData.getLanguage() : DEFAULT_LANGUAGE;
+        } catch (IOException e) {
+            return DEFAULT_LANGUAGE;
+        }
+    }
+
+    public void setLanguage(String languageCode) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            ConfigData configData = objectMapper.readValue(configFile, ConfigData.class);
+            configData.setLanguage(languageCode);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, configData);
+        } catch (IOException e) {
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.ERROR,
+                    "Language Setting Error.",
+                    "Language could not be set.",
+                    "We encountered an error while updating the language setting. Please try again later."
+            ).showAndWait();
+        }
+    }
+
     // Inner class to represent the full config data
     private static class ConfigData {
         private List<Collection> collections;
         private long defaultCollectionId;
+        private String language;
 
         // Default constructor for Jackson
         public ConfigData() {}
 
-        public ConfigData(List<Collection> collections, long defaultCollectionId) {
+        public ConfigData(List<Collection> collections, long defaultCollectionId, String language) {
             this.collections = collections;
             this.defaultCollectionId = defaultCollectionId;
+            this.language = language;
         }
 
         public List<Collection> getCollections() {
@@ -188,6 +218,14 @@ public class Config {
 
         public void setDefaultCollectionId(long defaultCollectionId) {
             this.defaultCollectionId = defaultCollectionId;
+        }
+
+        public String getLanguage() {
+            return language;
+        }
+
+        public void setLanguage(String language) {
+            this.language = language;
         }
     }
 }

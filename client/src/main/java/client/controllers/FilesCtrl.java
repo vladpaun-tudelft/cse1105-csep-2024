@@ -1,7 +1,9 @@
 package client.controllers;
 
+import client.LanguageManager;
 import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
+import client.utils.Config;
 import client.utils.ServerUtils;
 import commons.EmbeddedFile;
 import commons.Note;
@@ -25,10 +27,18 @@ public class FilesCtrl {
     private HBox filesView;
     private DialogStyler dialogStyler = new DialogStyler();
 
+    private Config config;
+    private LanguageManager languageManager;
+    private ResourceBundle bundle;
+
     @Inject
-    public FilesCtrl(ServerUtils serverUtils, FileChooser fileChooser) {
+    public FilesCtrl(ServerUtils serverUtils, FileChooser fileChooser, Config config) {
         this.serverUtils = serverUtils;
         this.fileChooser = fileChooser;
+
+        this.config = config;
+        this.languageManager = LanguageManager.getInstance(this.config);
+        this.bundle = this.languageManager.getBundle();
     }
 
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
@@ -52,23 +62,23 @@ public class FilesCtrl {
         if (currentNote == null) {
             Alert alert = dialogStyler.createStyledAlert(
                     Alert.AlertType.INFORMATION,
-                    "Error",
-                    "Error",
-                    "You don't have a note selected!"
+                    bundle.getString("error.text"),
+                    bundle.getString("error.text"),
+                    bundle.getString("noNoteSelected.text")
             );
             alert.showAndWait();
             return null;
         }
 
-        fileChooser.setTitle("Upload file");
+        fileChooser.setTitle(bundle.getString("uploadFile.text"));
         File uploadedFile = fileChooser.showOpenDialog(null);
         if (uploadedFile != null) {
             if (uploadedFile.isDirectory()) {
                 Alert alert = dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,
-                        "File error",
-                        "File error",
-                        "Directories cannot be uploaded!"
+                        bundle.getString("fileError.text"),
+                        bundle.getString("fileError.text"),
+                        bundle.getString("directoriesCannotBeUploaded.text")
                 );
                 alert.showAndWait();
                 return null;
@@ -77,9 +87,9 @@ public class FilesCtrl {
             if (!checkFileName(currentNote, uploadedFile.getName())) {
                 Alert alert = dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,
-                        "File error",
-                        "File error",
-                        "A file with this name already exists!"
+                        bundle.getString("fileError.text"),
+                        bundle.getString("fileError.text"),
+                        bundle.getString("fileWithNameAlreadyExists.text")
                 );
                 alert.showAndWait();
                 return null;
@@ -88,9 +98,9 @@ public class FilesCtrl {
             if (uploadedFile.length() > 10 * 1024 * 1024 /*10MB*/) {
                 Alert alert = dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,
-                        "Upload error",
-                        "Upload error",
-                        "This file is too large!"
+                        bundle.getString("uploadError.text"),
+                        bundle.getString("uploadError.text"),
+                        bundle.getString("thisFileIsTooLarge.text")
                 );
                 alert.showAndWait();
                 return null;
@@ -103,9 +113,9 @@ public class FilesCtrl {
             } catch (Exception exception) {
                 Alert alert = dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,
-                        "Upload error!",
-                        "Upload error!",
-                        "There was an error uploading this file, please try again."
+                        bundle.getString("uploadError.text"),
+                        bundle.getString("uploadError.text"),
+                        bundle.getString("errorUploadingFile.text")
                 );
                 alert.showAndWait();
                 return null;
@@ -212,9 +222,9 @@ public class FilesCtrl {
     public void deleteFile(Note currentNote, EmbeddedFile file) {
         Alert alert = dialogStyler.createStyledAlert(
                 Alert.AlertType.CONFIRMATION,
-                "Confirm deletion",
-                "Confirm deletion",
-                "Are you sure you want to delete this file?"
+                bundle.getString("confirmDeletion.text"),
+                bundle.getString("confirmDeletion.text"),
+                bundle.getString("deleteFileConfirmation.text")
         );
         Optional<ButtonType> buttonType = alert.showAndWait();
         if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)){
@@ -225,18 +235,18 @@ public class FilesCtrl {
 
     public void renameFile(Note currentNote, EmbeddedFile file) {
         TextInputDialog dialog = dialogStyler.createStyledTextInputDialog(
-                "Rename file",
-                "Rename file",
-                "Please enter the new title for the file:"
+                bundle.getString("renameFile.text"),
+                bundle.getString("renameFile.text"),
+                bundle.getString("pleaseEnterNewTitle.text")
         );
         Optional<String> fileName = dialog.showAndWait();
         if (fileName.isPresent()) {
             if (!checkFileName(currentNote, fileName.get())) {
                 Alert alert = dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,
-                        "File error",
-                        "File error",
-                        "A file with this name already exists!"
+                        bundle.getString("fileError.text"),
+                        bundle.getString("fileError.text"),
+                        bundle.getString("duplicateFile.text")
                 );
                 alert.showAndWait();
                 return;
@@ -259,7 +269,7 @@ public class FilesCtrl {
     }
 
     public void downloadFile(Note currentNote, EmbeddedFile embeddedFile) {
-        fileChooser.setTitle("Save file");
+        fileChooser.setTitle(bundle.getString("saveFile.text"));
         fileChooser.setInitialFileName(embeddedFile.getFileName());
         fileChooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter(embeddedFile.getFileType() + " files", "*." + embeddedFile.getFileType())
@@ -275,9 +285,9 @@ public class FilesCtrl {
                 e.printStackTrace();
                 Alert alert = dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,
-                        "Save file error",
-                        "Save file error",
-                        "The file could not be saved"
+                        bundle.getString("saveFileError.text"),
+                        bundle.getString("saveFileError.text"),
+                        bundle.getString("fileCouldNotBeSaved.text")
                 );
                 alert.showAndWait();
             }
