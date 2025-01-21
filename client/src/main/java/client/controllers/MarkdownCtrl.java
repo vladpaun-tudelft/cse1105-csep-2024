@@ -40,6 +40,7 @@ public class MarkdownCtrl {
 
     // Dashboard reference
     private DashboardCtrl dashboardCtrl;
+    private NotificationsCtrl notificationsCtrl;
     private ReferenceService referenceService;
     private TagService tagService;
     private DialogStyler dialogStyler = new DialogStyler();
@@ -67,10 +68,12 @@ public class MarkdownCtrl {
     private ResourceBundle bundle;
 
     @Inject
-    public MarkdownCtrl(Config config) {
+    public MarkdownCtrl(Config config, NotificationsCtrl ctrl) {
         this.config = config;
         this.languageManager = LanguageManager.getInstance(this.config);
         this.bundle = this.languageManager.getBundle();
+
+        notificationsCtrl = ctrl;
 
         this.referenceService = new ReferenceService(dashboardCtrl, noteBody, recommendationsMenu);
         this.tagService = new TagService();
@@ -278,14 +281,17 @@ public class MarkdownCtrl {
             try {
                 desktop.browse(new URI(url));
             } catch (IOException | URISyntaxException e) {
-                Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, bundle.getString("errorOpeningUrl.text"),
-                        bundle.getString("failedToOpenUrl.text") + url, bundle.getString("checkUrlFormat.text"));
-                alert.showAndWait();
+//                Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, bundle.getString("errorOpeningUrl.text"),
+//                        bundle.getString("failedToOpenUrl.text") + url, bundle.getString("checkUrlFormat.text"));
+//                alert.showAndWait();
+                notificationsCtrl.pushNotification(bundle.getString("failedToOpenUrl.text") + url + ": " + bundle.getString("checkUrlFormat.text"), true);
             }
         } else {
-            Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, "Desktop Not Supported",
-                    bundle.getString("unableToOpenUrl.text"), bundle.getString("desktopNotSupported.text"));
-            alert.showAndWait();
+//            Alert alert = dialogStyler.createStyledAlert(Alert.AlertType.ERROR, "Desktop Not Supported",
+//                    bundle.getString("unableToOpenUrl.text"), bundle.getString("desktopNotSupported.text"));
+//            alert.showAndWait();
+            notificationsCtrl.pushNotification(bundle.getString("unableToOpenUrl.text") + ": " + bundle.getString("desktopNotSupported.text"), true);
+
         }
     }
 

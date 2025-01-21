@@ -16,6 +16,7 @@
 package client;
 
 import client.controllers.MarkdownCtrl;
+import client.controllers.NotificationsCtrl;
 import client.scenes.DashboardCtrl;
 import client.scenes.EditCollectionsCtrl;
 import com.google.inject.Binder;
@@ -32,5 +33,6 @@ public class MyModule implements Module {
         binder.bind(DashboardCtrl.class).in(Scopes.SINGLETON);
         binder.bind(MarkdownCtrl.class).in(Scopes.SINGLETON);
         binder.bind(EditCollectionsCtrl.class).in(Scopes.SINGLETON);
+        binder.bind(NotificationsCtrl.class).in(Scopes.SINGLETON);
     }
 }

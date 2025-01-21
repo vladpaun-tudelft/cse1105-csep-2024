@@ -56,6 +56,7 @@ public class DashboardCtrl implements Initializable {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     @Getter private final ServerUtils server;
     @Getter private final MainCtrl mainCtrl;
+    @Getter private final NotificationsCtrl notificationsCtrl;
     @Getter @Setter @Inject private Config config;
     @Getter private LanguageManager languageManager;
     private ResourceBundle bundle;
@@ -92,6 +93,8 @@ public class DashboardCtrl implements Initializable {
     @FXML private MenuButton moveNotesButton;
     @FXML private Button addFileButton;
     @FXML private HBox filesView;
+    @FXML private HBox notificationsBar;
+    @FXML private Label notificationsLabel;
     @FXML private Label filesViewBlocker;
     @FXML private HBox tagsBox;
     @FXML private MenuButton languageButton;
@@ -117,6 +120,7 @@ public class DashboardCtrl implements Initializable {
     public DashboardCtrl(ServerUtils server,
                          MainCtrl mainCtrl,
                          MarkdownCtrl markdownCtrl,
+                         NotificationsCtrl notificationsCtrl,
                          CollectionCtrl collectionCtrl,
                          NoteCtrl noteCtrl,
                          SearchCtrl searchCtrl,
@@ -126,6 +130,7 @@ public class DashboardCtrl implements Initializable {
         this.mainCtrl = mainCtrl;
         this.server = server;
         this.markdownCtrl = markdownCtrl;
+        this.notificationsCtrl = notificationsCtrl;
         this.collectionCtrl = collectionCtrl;
         this.noteCtrl = noteCtrl;
         this.searchCtrl = searchCtrl;
@@ -171,6 +176,8 @@ public class DashboardCtrl implements Initializable {
         collectionSelect = collectionCtrl.getCollectionSelect();
 
         collectionCtrl.setDashboardCtrl(this);
+
+        notificationsCtrl.setReferences(notificationsBar, notificationsLabel);
 
         noteCtrl.setReferences(
                 collectionView,
@@ -308,6 +315,7 @@ public class DashboardCtrl implements Initializable {
             dashboardCtrl.selectNoteInTreeView(backupCurrentNote);
             dashboardCtrl.getTagCtrl().selectTags(selectedTags);
             Platform.runLater(() -> dashboardCtrl.getCollectionView().getSelectionModel().select(backupCurrentNote));
+            Platform.runLater(() -> notificationsCtrl.pushNotification(bundle.getString("newLanguage"), false));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -466,7 +474,7 @@ public class DashboardCtrl implements Initializable {
         allNotesView.setShowRoot(false); // To hide the root item if it's just a container
 
         // Set custom TreeCell factory for NoteTreeItem
-        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler));
+        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl));
 
     }
 
@@ -554,7 +562,7 @@ public class DashboardCtrl implements Initializable {
 
 
         // Reapply the custom cell factory
-        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler));
+        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl));
     }
 
 
