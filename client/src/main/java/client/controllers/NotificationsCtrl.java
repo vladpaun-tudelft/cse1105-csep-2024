@@ -8,11 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import java.awt.*;
-import java.io.File;
 
 public class NotificationsCtrl {
 
