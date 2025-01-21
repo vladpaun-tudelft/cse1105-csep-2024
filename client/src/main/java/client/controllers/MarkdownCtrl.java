@@ -13,6 +13,7 @@ import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
 import lombok.Getter;
@@ -132,6 +133,24 @@ public class MarkdownCtrl {
         });
         noteBody.scrollTopProperty().addListener((_, _, _) -> synchronizeScroll());
 
+        // Pass internationalized strings to JS
+        WebEngine webEngine = markdownView.getEngine();
+        webEngine.documentProperty().addListener((obs, oldDoc, newDoc) -> {
+            if (newDoc != null) {
+                String collectionLabel = bundle.getString("collection.text");
+                String noteLabel = bundle.getString("note.text");
+                String previewLabel = bundle.getString("preview.text");
+
+                webEngine.executeScript(
+                        "window.localizedStrings = {" +
+                                "   collectionLabel: '" + escapeJsString(collectionLabel) + "'," +
+                                "   noteLabel: '" + escapeJsString(noteLabel) + "'," +
+                                "   previewLabel: '" + escapeJsString(previewLabel) + "'" +
+                                "};"
+                );
+            }
+        });
+
         // Handle javascript alerts from the WebView
         markdownView.getEngine().setOnAlert(event -> {
             String url = event.getData();
@@ -155,6 +174,10 @@ public class MarkdownCtrl {
                 openUrlInBrowser(url);
             }
         });
+    }
+
+    private String escapeJsString(String input) {
+        return input.replace("'", "\\'").replace("\n", "\\n").replace("\r", "");
     }
 
     public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
