@@ -243,7 +243,16 @@ scene.setFill(Color.TRANSPARENT);
                 // DELETING NOTES
                 case DELETE -> {
                     if (event.isAltDown()) {
-                        dashboardCtrl.deleteSelectedNote();
+                        if (dashboardCtrl.getCurrentCollection() == null) {
+                            dashboardCtrl.getNoteCtrl().deleteMultipleNotesInTreeView(
+                                    dashboardCtrl.getAllNotes(),
+                                    dashboardCtrl.getAllNotesView().getSelectionModel().getSelectedItems(),
+                                    dashboardCtrl.getCollectionNotes()
+                            );
+                        } else {
+                            dashboardCtrl.deleteMultipleNotes(dashboardCtrl.collectionView.getSelectionModel().getSelectedItems());
+                        }
+
                         event.consume();
                     }
                 }

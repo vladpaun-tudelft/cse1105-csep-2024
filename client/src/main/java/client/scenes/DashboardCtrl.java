@@ -203,7 +203,7 @@ public class DashboardCtrl implements Initializable {
 
         collectionCtrl.moveNotesInitialization();
 
-        listViewSetup(allNotes);
+        listViewSetup(collectionNotes);
         treeViewSetup();
 
 
@@ -399,19 +399,7 @@ public class DashboardCtrl implements Initializable {
         // Add listener to the ObservableList to dynamically update the TreeView
         allNotes.addListener((ListChangeListener<Note>) change -> {
             while (change.next()) {
-                if (change.wasAdded()) {
-                    syncTreeView(virtualRoot, collections, allNotes, false);
-                    selectNoteInTreeView(change.getAddedSubList().getLast());
-                } else if (change.wasRemoved()) {
-                    TreeItem<Object> toRemove = findItem(change.getRemoved().getFirst());
-                    TreeItem<Object> toSelect = findValidItemInDirection(virtualRoot,toRemove, -1);
-                    syncTreeView(virtualRoot, collections, allNotes, false);
-                    if (toSelect != null && toSelect.getValue() instanceof Note) {
-                        selectNoteInTreeView((Note) toSelect.getValue());
-                    } else {
-                        allNotesView.getSelectionModel().clearSelection();
-                    }
-                }
+                syncTreeView(virtualRoot, collections, allNotes, false);
             }
         });
 
@@ -428,46 +416,48 @@ public class DashboardCtrl implements Initializable {
 
         // Add selection change listener
         allNotesView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            // If the selected item is a note, show it,
-            // Content blockers otherwise
-            if (newValue != null && ((TreeItem)newValue).getValue() instanceof Note note) {
+            if (currentCollection == null) {
+                // If the selected item is a note, show it,
+                // Content blockers otherwise
+                if (newValue != null && ((TreeItem)newValue).getValue() instanceof Note note) {
 
-                allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-                if (!isProgrammaticChange) actionHistory.clear();
+                    allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                    if (!isProgrammaticChange) actionHistory.clear();
 
-                currentNote = note;
-                noteCtrl.showCurrentNote(currentNote);
+                    currentNote = note;
+                    noteCtrl.showCurrentNote(currentNote);
 
-                markdownViewBlocker.setVisible(false);
-                allNotesView.getFocusModel().focus(0);
+                    markdownViewBlocker.setVisible(false);
+                    allNotesView.getFocusModel().focus(0);
 
-                server.registerForEmbeddedFileUpdates(currentNote, embeddedFileId -> {
-                    Platform.runLater(() -> {
+                    server.registerForEmbeddedFileUpdates(currentNote, embeddedFileId -> {
+                        Platform.runLater(() -> {
 //                        filesCtrl.showFiles(currentNote);
-                        filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId);
+                            filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId);
+                        });
                     });
-                });
-                server.registerForEmbeddedFilesDeleteUpdates(currentNote, embeddedFileId -> {
-                    Platform.runLater(() -> {
-                        filesCtrl.updateViewAfterDelete(currentNote, embeddedFileId);
+                    server.registerForEmbeddedFilesDeleteUpdates(currentNote, embeddedFileId -> {
+                        Platform.runLater(() -> {
+                            filesCtrl.updateViewAfterDelete(currentNote, embeddedFileId);
+                        });
                     });
-                });
-                server.registerForEmbeddedFilesRenameUpdates(currentNote, newFileName -> {
-                    Platform.runLater(() -> {
-                        filesCtrl.updateViewAfterRename(currentNote, newFileName);
+                    server.registerForEmbeddedFilesRenameUpdates(currentNote, newFileName -> {
+                        Platform.runLater(() -> {
+                            filesCtrl.updateViewAfterRename(currentNote, newFileName);
+                        });
                     });
-                });
 
-            } else {
-                currentNote = null;
-                allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-                // Show content blockers when no item is selected
-                contentBlocker.setVisible(true);
-                markdownViewBlocker.setVisible(true);
-                moveNotesButton.setText(bundle.getString("moveNote.text"));
-                filesViewBlocker.setVisible(true);
+                } else {
+                    currentNote = null;
+                    allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+                    // Show content blockers when no item is selected
+                    contentBlocker.setVisible(true);
+                    markdownViewBlocker.setVisible(true);
+                    moveNotesButton.setText(bundle.getString("moveNote.text"));
+                    filesViewBlocker.setVisible(true);
 
-                server.unregisterFromEmbeddedFileUpdates();
+                    server.unregisterFromEmbeddedFileUpdates();
+                }
             }
         });
 
@@ -623,17 +613,9 @@ public class DashboardCtrl implements Initializable {
     public void addNote() {
         setSearchIsActive(false);
         clearTags(null);
-        Note note = noteCtrl.addNote(currentCollection,
+        currentNote = noteCtrl.addNote(currentCollection,
                 allNotes, collectionNotes);
-        Platform.runLater(() -> {
-            filter();
-            updateTagList();
-            Platform.runLater(() -> {
-                filter();
-                updateTagList();
-                collectionView.getSelectionModel().select(note);
-            });
-        });
+        noteCtrl.showCurrentNote(currentNote);
     }
 
 
@@ -659,6 +641,7 @@ public class DashboardCtrl implements Initializable {
 
     public void viewAllNotes() {
         currentCollection = null;
+        refreshTreeView();
         collectionNotes = collectionCtrl.viewNotes();
         updateTagList();
     }
@@ -743,15 +726,12 @@ public class DashboardCtrl implements Initializable {
 
     public void refresh() {
         noteCtrl.saveAllPendingNotes();
-        allNotes = FXCollections.observableArrayList(server.getAllNotes());
-        collectionNotes = collectionCtrl.viewNotes();
-        refreshTreeView();
-        filesCtrl.showFiles(currentNote);
-        viewAllNotes();
+        ObservableList<Note> allNotesRefreshed = FXCollections.observableArrayList(server.getAllNotes());
+        allNotesRefreshed.stream()
+                .filter(note -> !allNotes.contains(note))
+                .forEach(allNotes::add);
         clearSearch();
-        filter();
-        updateTagList();
-        allNotesView.requestFocus();
+        viewAllNotes();
     }
 
     @FXML
@@ -959,7 +939,7 @@ public class DashboardCtrl implements Initializable {
             TreeItem<Object> selectedItem = (TreeItem<Object>) allNotesView.getSelectionModel().getSelectedItem();
             TreeItem<Object> nextItem;
             //we cannot select both collections and notes, fixes bugs
-            if(selectedItem.getValue() instanceof Collection) {
+            if(selectedItem == null || selectedItem.getValue() instanceof Collection) {
                 allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             }
             if (selectedItem == null) {
