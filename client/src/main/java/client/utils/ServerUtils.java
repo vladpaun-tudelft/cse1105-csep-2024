@@ -64,6 +64,8 @@ public class ServerUtils {
 	private StompSession.Subscription embeddedFilesDeleteUpdates;
 	@Getter @Setter
 	private StompSession.Subscription embeddedFilesRenameUpdates;
+	@Getter @Setter
+	private static List<Collection> unavailableCollections;
 
 	@Inject
 	public ServerUtils(Config config, DialogStyler dialogStyler) {
@@ -76,8 +78,10 @@ public class ServerUtils {
 	}
 
 	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<Long> consumer) {
-		if (embeddedFilesSubscription != null) {
-			embeddedFilesSubscription.unsubscribe();
+		if (embeddedFilesSubscription != null && session != null) {
+			try {
+				embeddedFilesSubscription.unsubscribe();
+			} catch (IllegalStateException _) {}
 		}
 
 		String topic = "/topic/notes/" + selectedNote.getId() + "/files";
@@ -95,8 +99,10 @@ public class ServerUtils {
 	}
 
 	public void registerForEmbeddedFilesDeleteUpdates(Note selectedNote, Consumer<Long> consumer) {
-		if (embeddedFilesDeleteUpdates != null) {
-			embeddedFilesDeleteUpdates.unsubscribe();
+		if (embeddedFilesDeleteUpdates != null && session != null) {
+			try {
+				embeddedFilesDeleteUpdates.unsubscribe();
+			} catch (IllegalStateException _) {}
 		}
 
 		String topic = "/topic/notes/" + selectedNote.getId() + "/files/deleteFile";
@@ -115,8 +121,10 @@ public class ServerUtils {
 
 	public void registerForEmbeddedFilesRenameUpdates(Note selectedNote,
 													  Consumer<Object[]> consumer) {
-		if (embeddedFilesRenameUpdates != null) {
-			embeddedFilesRenameUpdates.unsubscribe();
+		if (embeddedFilesRenameUpdates != null && session != null) {
+			try {
+				embeddedFilesRenameUpdates.unsubscribe();
+			} catch (IllegalStateException _) {}
 		}
 
 		String topic = "/topic/notes/" + selectedNote.getId() + "/files/renameFile";
@@ -136,16 +144,22 @@ public class ServerUtils {
 	}
 
 	public void unregisterFromEmbeddedFileUpdates() {
-		if (embeddedFilesSubscription != null) {
-			embeddedFilesSubscription.unsubscribe();
+		if (embeddedFilesSubscription != null && session != null) {
+			try {
+				embeddedFilesSubscription.unsubscribe();
+			} catch (IllegalStateException _) {}
 			embeddedFilesSubscription = null;
 		}
-		if (embeddedFilesDeleteUpdates != null) {
-			embeddedFilesDeleteUpdates.unsubscribe();
+		if (embeddedFilesDeleteUpdates != null && session != null) {
+			try {
+				embeddedFilesDeleteUpdates.unsubscribe();
+			} catch (IllegalStateException _) {}
 			embeddedFilesDeleteUpdates = null;
 		}
-		if (embeddedFilesRenameUpdates != null) {
-			embeddedFilesRenameUpdates.unsubscribe();
+		if (embeddedFilesRenameUpdates != null && session != null) {
+			try {
+				embeddedFilesRenameUpdates.unsubscribe();
+			} catch (IllegalStateException _) {}
 			embeddedFilesRenameUpdates = null;
 		}
 	}
@@ -222,9 +236,34 @@ public class ServerUtils {
 	public List<Note> getAllNotes() {
 		collections = config.readFromFile();
 		List<Note> allNotes = new ArrayList<>();
+		unavailableCollections = new ArrayList<>();
 		if (collections != null) {
 			for (Collection collection : collections) {
-				allNotes.addAll(getNotesByCollection(collection));
+				if (!isServerAvailable(collection.serverURL)) {
+					if (!unavailableCollections.contains(collection)) {
+						unavailableCollections.add(collection);
+					}
+				}
+				else {
+					allNotes.addAll(getNotesByCollection(collection));
+				}
+			}
+			if (!unavailableCollections.isEmpty()) {
+				String alertText = """
+                        The notes of the following collections could not be retrieved because the \
+                        server they are hosted on is unavailable.
+                        You can try to get the notes in these collections later by refreshing.
+                        
+                        """;
+				for (Collection collection : unavailableCollections) {
+					alertText += collection.title + "\n";
+				}
+				dialogStyler.createStyledAlert(
+						Alert.AlertType.INFORMATION,
+						"Error",
+						"Error",
+						alertText
+				).showAndWait();
 			}
 		}
 		return allNotes;

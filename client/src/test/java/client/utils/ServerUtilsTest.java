@@ -147,6 +147,7 @@ class ServerUtilsTest {
         // is server available to return true
         ServerUtils spyServerUtils = spy(serverUtils);
         doReturn(true).when(spyServerUtils).isServerAvailableWithAlert(anyString());
+        doReturn(true).when(spyServerUtils).isServerAvailable(anyString());
 
         List<Note> result = spyServerUtils.getAllNotes();
 

@@ -440,7 +440,6 @@ public class DashboardCtrl implements Initializable {
 
                     server.registerForEmbeddedFileUpdates(currentNote, embeddedFileId -> {
                         Platform.runLater(() -> {
-//                        filesCtrl.showFiles(currentNote);
                             filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId);
                         });
                     });
@@ -619,6 +618,55 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void addNote() {
+        if (currentCollection == null) {
+            if (server.isServerAvailable(defaultCollection.serverURL)) {
+                if (ServerUtils.getUnavailableCollections().contains(defaultCollection)) {
+                    allNotes.removeIf(note -> note.collection.equals(defaultCollection));
+                    allNotes.addAll(server.getNotesByCollection(defaultCollection));
+                    server.getWebSocketURL(defaultCollection.serverURL);
+                    noteAdditionSync();
+                    noteDeletionSync();
+                }
+                ServerUtils.getUnavailableCollections().remove(defaultCollection);
+            }
+            else {
+                if (!ServerUtils.getUnavailableCollections().contains(defaultCollection)) {
+                    ServerUtils.getUnavailableCollections().add(defaultCollection);
+                }
+                dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        "Server error",
+                        "Server error",
+                        "You can't add notes to the default collection right now because the server is unavailable."
+                ).showAndWait();
+                return;
+            }
+        }
+        else {
+           if (server.isServerAvailable(currentCollection.serverURL)) {
+               if (ServerUtils.getUnavailableCollections().contains(currentCollection)) {
+                   allNotes.removeIf(note -> note.collection.equals(currentCollection));
+                   allNotes.addAll(server.getNotesByCollection(currentCollection));
+                   server.getWebSocketURL(currentCollection.serverURL);
+                   noteAdditionSync();
+                   noteDeletionSync();
+               }
+               ServerUtils.getUnavailableCollections().remove(currentCollection);
+           }
+           else {
+               if (!ServerUtils.getUnavailableCollections().contains(currentCollection.serverURL)) {
+                   ServerUtils.getUnavailableCollections().add(currentCollection);
+               }
+               dialogStyler.createStyledAlert(
+                       Alert.AlertType.INFORMATION,
+                       "Server error",
+                       "Server error",
+                       "You can't add notes to the default collection right now because the server is unavailable."
+               ).showAndWait();
+               return;
+           }
+        }
+
         setSearchIsActive(false);
         clearTags(null);
         currentNote = noteCtrl.addNote(currentCollection,
@@ -652,6 +700,12 @@ public class DashboardCtrl implements Initializable {
         refreshTreeView();
         collectionNotes = collectionCtrl.viewNotes();
         updateTagList();
+
+        if (server.isServerAvailable(defaultCollection.serverURL)) {
+            server.getWebSocketURL(defaultCollection.serverURL);
+            noteAdditionSync();
+            noteDeletionSync();
+        }
     }
 
     @FXML

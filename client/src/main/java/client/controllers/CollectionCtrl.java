@@ -280,11 +280,26 @@ public class CollectionCtrl {
         dashboardCtrl.setCollections(collections);
 
         if (!collections.isEmpty()) {
-            server.getWebSocketURL(
-                    config.readDefaultCollection().serverURL
-            );
-            dashboardCtrl.noteAdditionSync();
-            dashboardCtrl.noteDeletionSync();
+            if (server.isServerAvailable(config.readDefaultCollection().serverURL)) {
+                ServerUtils.getUnavailableCollections().remove(config.readDefaultCollection());
+                server.getWebSocketURL(
+                        config.readDefaultCollection().serverURL
+                );
+                dashboardCtrl.noteAdditionSync();
+                dashboardCtrl.noteDeletionSync();
+            }
+            else {
+                if (!ServerUtils.getUnavailableCollections().contains(config.readDefaultCollection())) {
+                    ServerUtils.getUnavailableCollections().add(config.readDefaultCollection());
+                }
+                dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        "Error",
+                        "Error",
+                        "The server of your default collection is unavailable.\nYou will only be able to add notes to other\ncollections."
+                ).showAndWait();
+
+            }
         }
 
         Collection defaultCollection = collections.stream()
