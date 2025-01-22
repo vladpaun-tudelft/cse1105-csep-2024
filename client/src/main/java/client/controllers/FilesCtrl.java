@@ -273,9 +273,9 @@ public class FilesCtrl {
             if (fileName.get().isBlank()) {
                 Alert alert = dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,
-                        "File rename error",
-                        "File rename error",
-                        "Files cannot have an empty title!"
+                        bundle.getString("fileError.text"),
+                        bundle.getString("fileError.text"),
+                        bundle.getString("emptyRenameError")
                 );
                 alert.showAndWait();
                 return;
