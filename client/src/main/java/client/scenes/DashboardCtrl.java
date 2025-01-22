@@ -703,14 +703,14 @@ public class DashboardCtrl implements Initializable {
                 if (isWithinWord) {
                     // Merge changes into the last action if they are within a word
                     Action lastAction = actionHistory.pop();
-                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, lastAction.getPreviousState(), newBody));
+                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, lastAction.getPreviousState(), null, newBody));
                 } else {
                     // Create a new action for changes across words or lines
-                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, newBody));
+                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, null, newBody));
                 }
             } else {
                 // Create a new action for the first change
-                actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, newBody));
+                actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, null, newBody));
             }
         }
 
@@ -788,7 +788,7 @@ public class DashboardCtrl implements Initializable {
         if (newFile != null) {
             filesCtrl.showFiles(currentNote);
             // Save the file addition action to the history
-            actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, newFile, null));
+            actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, newFile, null, null));
         }
     }
 
@@ -923,13 +923,7 @@ public class DashboardCtrl implements Initializable {
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
             }
             case ActionType.MOVE_MULTIPLE_NOTES -> {
-                int number = (Integer) lastAction.getPreviousState();
-
-                while (number > 0) {
-                    Action lastAction2 = actionHistory.pop();
-                    collectionCtrl.moveNoteFromCollection(lastAction2.getNote(), (Collection) lastAction2.getPreviousState());
-                    number--;
-                }
+                collectionCtrl.moveMultipleNotes((Collection) lastAction.getNewState(), (ObservableList<Collection>) lastAction.getPreviousState2());
             }
             /*case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
                 collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
