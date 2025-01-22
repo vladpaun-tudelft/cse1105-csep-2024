@@ -7,6 +7,7 @@ import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
 import commons.Collection;
+import commons.EmbeddedFile;
 import commons.Note;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -227,6 +228,10 @@ public class NoteCtrl {
                            ObservableList<Note> collectionNotes,
                            ObservableList<Note> allNotes) {
         updatePendingNotes.remove(currentNote);
+        for (EmbeddedFile file : currentNote.getEmbeddedFiles()) {
+            server.deleteFile(currentNote, file);
+            currentNote.getEmbeddedFiles().remove(file);
+        }
         server.send("/app/deleteNote", currentNote);
 
         removeNoteFromClient(currentNote, collectionNotes, allNotes);
