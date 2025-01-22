@@ -249,19 +249,14 @@ public class ServerUtils {
 				}
 			}
 			if (!unavailableCollections.isEmpty()) {
-				String alertText = """
-                        The notes of the following collections could not be retrieved because the \
-                        server they are hosted on is unavailable.
-                        You can try to get the notes in these collections later by refreshing.
-                        
-                        """;
+				String alertText = bundle.getString("unavailableCollectionsError");
 				for (Collection collection : unavailableCollections) {
 					alertText += collection.title + "\n";
 				}
 				dialogStyler.createStyledAlert(
 						Alert.AlertType.INFORMATION,
-						"Error",
-						"Error",
+						bundle.getString("error.text"),
+						bundle.getString("error.text"),
 						alertText
 				).showAndWait();
 			}

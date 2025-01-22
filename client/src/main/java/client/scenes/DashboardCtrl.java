@@ -635,9 +635,9 @@ public class DashboardCtrl implements Initializable {
                 }
                 dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,
-                        "Server error",
-                        "Server error",
-                        "You can't add notes to the default collection right now because the server is unavailable."
+                        bundle.getString("serverError.text"),
+                        bundle.getString("serverError.text"),
+                        bundle.getString("addNoteError")
                 ).showAndWait();
                 return;
             }
@@ -659,9 +659,9 @@ public class DashboardCtrl implements Initializable {
                }
                dialogStyler.createStyledAlert(
                        Alert.AlertType.INFORMATION,
-                       "Server error",
-                       "Server error",
-                       "You can't add notes to the default collection right now because the server is unavailable."
+                       bundle.getString("serverError.text"),
+                       bundle.getString("serverError.text"),
+                       bundle.getString("addNoteError")
                ).showAndWait();
                return;
            }

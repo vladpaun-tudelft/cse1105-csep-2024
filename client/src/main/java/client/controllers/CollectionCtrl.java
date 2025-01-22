@@ -294,9 +294,9 @@ public class CollectionCtrl {
                 }
                 dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,
-                        "Error",
-                        "Error",
-                        "The server of your default collection is unavailable.\nYou will only be able to add notes to other\ncollections."
+                        bundle.getString("error.text"),
+                        bundle.getString("error.text"),
+                        bundle.getString("unavailableDefaultCollectionError")
                 ).showAndWait();
 
             }
