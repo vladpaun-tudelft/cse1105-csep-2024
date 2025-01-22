@@ -176,10 +176,12 @@ public class CollectionCtrl {
                     if (collectionView.getSelectionModel().getSelectedItems().size() == 1
                             || treeView.getSelectionModel().getSelectedItems().size() == 1) {
                         dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_NOTE, currentNote, currentNote.collection, null, selectedCollection));
+                        dashboardCtrl.setProgrammaticChange(true);
                         moveNoteFromCollection(currentNote, selectedCollection);
                         dashboardCtrl.refreshTreeView();
                         dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
                         dashboardCtrl.selectNoteInTreeView(currentNote);
+                        dashboardCtrl.setProgrammaticChange(false);
 
                     } else if (collectionView.getSelectionModel().getSelectedItems().size() > 1) {
                         //dashboardCtrl.setProgrammaticChange(true);
@@ -387,21 +389,15 @@ public class CollectionCtrl {
                 .map(toggle -> (RadioMenuItem) toggle)
                 .findFirst().orElse(null);
         if (selectedRadioMenuItem != null && dashboardCtrl.getCurrentNote() != null) {
-            dashboardCtrl.setProgrammaticChange(true);
             moveNote(currentNote, selectedCollection);
-
 
             if(dashboardCtrl.getCurrentCollection() != null ) {
                 selectedRadioMenuItem.fire();   // If not in all note view
                 collectionView.getSelectionModel().select(currentNote);
             }
-            dashboardCtrl.setProgrammaticChange(false);
 
             collectionSelect.selectToggle(selectedRadioMenuItem);
             moveNotesButton.hide();
-
-
-
         }
     }
 
