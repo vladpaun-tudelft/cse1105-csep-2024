@@ -1,6 +1,8 @@
 package client.scenes;
 
-import client.*;
+import client.Language;
+import client.LanguageManager;
+import client.Main;
 import client.controllers.*;
 import client.entities.Action;
 import client.entities.ActionType;
@@ -920,9 +922,15 @@ public class DashboardCtrl implements Initializable {
             case ActionType.MOVE_NOTE -> {
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
             }
-            /*case ActionType.MOVE_MULTIPLE_NOTES -> {
-                collectionCtrl.moveMultipleNotes(destinationCollection);
-            }*/
+            case ActionType.MOVE_MULTIPLE_NOTES -> {
+                int number = (Integer) lastAction.getPreviousState();
+
+                while (number > 0) {
+                    Action lastAction2 = actionHistory.pop();
+                    collectionCtrl.moveNoteFromCollection(lastAction2.getNote(), (Collection) lastAction2.getPreviousState());
+                    number--;
+                }
+            }
             /*case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
                 collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
             }*/

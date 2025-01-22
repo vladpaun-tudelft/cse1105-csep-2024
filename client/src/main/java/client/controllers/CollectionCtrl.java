@@ -18,6 +18,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -175,14 +176,14 @@ public class CollectionCtrl {
             //dashboardCtrl.updateTagList();
             if (collectionView.getSelectionModel().getSelectedItems().size() == 1
                     || treeView.getSelectionModel().getSelectedItems().size() == 1) {
-                dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_NOTE, currentNote, currentNote.collection, selectedCollection));
+                dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_NOTE, currentNote, currentNote.collection ,selectedCollection));
                moveNoteFromCollection(currentNote, selectedCollection);
                 dashboardCtrl.refreshTreeView();
                dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
                 dashboardCtrl.selectNoteInTreeView(currentNote);
             }
             else if(collectionView.getSelectionModel().getSelectedItems().size() > 1) {
-                //dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_MULTIPLE_NOTES, currentNote, currentNote.collection, selectedCollection));
+
                 moveMultipleNotes(selectedCollection);
 
             }
@@ -440,13 +441,19 @@ public class CollectionCtrl {
 
         if (collectionView != null &&
                 collectionView.getSelectionModel().getSelectedItems().size() > 1) {
+
             ObservableList<Note> selectedItems = collectionView.getSelectionModel().getSelectedItems();
             List<Note> notesToMove = new ArrayList<>(selectedItems);
+
+
+
             //used to reselect notes
             List<Note> previouslySelectedNotes = new ArrayList<>(selectedItems);
             for (Note note : notesToMove) {
                 moveNoteFromCollection(note, destinationCollection);
+                dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_NOTE, note, note.collection , destinationCollection));
             }
+            dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_MULTIPLE_NOTES,null,  previouslySelectedNotes.size(), null));
             dashboardCtrl.refreshTreeView();
             collectionView.getSelectionModel().clearSelection();
             //reselect items

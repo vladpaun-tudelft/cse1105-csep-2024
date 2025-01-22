@@ -21,7 +21,7 @@ public class Action {
                 '}';
     }
 
-    public Action(ActionType type, Note note, Object previousState, Object newState) {
+    public Action(ActionType type, Note note, Object previousState,  Object newState) {
         this.type = type;
         this.note = note;
         this.previousState = previousState;
