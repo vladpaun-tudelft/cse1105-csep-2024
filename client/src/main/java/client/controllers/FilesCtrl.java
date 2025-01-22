@@ -171,7 +171,7 @@ public class FilesCtrl {
                 bundle.getString("filename.text") + ": " + file.getFileName() + "\n" +
                 bundle.getString("fileSize.text") + ": " + calculateFileSize(file) + "\n" +
                 bundle.getString("uploadedAt.text") + ": " + file.getUploadedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
-        infoTooltip.setShowDelay(Duration.seconds(0.5));
+        infoTooltip.setShowDelay(Duration.seconds(0.2));
         fileName.setTooltip(infoTooltip);
 
         fileName.setOnMouseReleased(event -> {
@@ -182,7 +182,7 @@ public class FilesCtrl {
         editButton.getStyleClass().add("icon");
         editButton.getStyleClass().add("file-view-edit-button");
         Tooltip editTooltip = new Tooltip(bundle.getString("renameFile.text"));
-        editTooltip.setShowDelay(Duration.seconds(0.5));
+        editTooltip.setShowDelay(Duration.seconds(0.2));
         editButton.setTooltip(editTooltip);
         editButton.setOnAction(event -> {
             renameFile(currentNote, file);
@@ -192,7 +192,7 @@ public class FilesCtrl {
         deleteButton.getStyleClass().add("icon");
         deleteButton.getStyleClass().add("file-view-delete-button");
         Tooltip deleteTooltip = new Tooltip(bundle.getString("deleteFile.text"));
-        deleteTooltip.setShowDelay(Duration.seconds(0.5));
+        deleteTooltip.setShowDelay(Duration.seconds(0.2));
         deleteButton.setTooltip(deleteTooltip);
         deleteButton.setOnAction(event -> {
             dashboardCtrl.getActionHistory().push(
