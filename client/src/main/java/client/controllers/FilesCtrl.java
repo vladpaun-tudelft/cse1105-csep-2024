@@ -12,10 +12,13 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -197,6 +200,13 @@ public class FilesCtrl {
 
         Label fileName = new Label(file.getFileName());
         fileName.getStyleClass().add("file-view-label");
+        Tooltip infoTooltip = new Tooltip("Download file\n" +
+                "File name: " + file.getFileName() +
+                "\nFile size: " + calculateFileSize(file) +
+                "\nUploaded at: " + file.getUploadedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        infoTooltip.setShowDelay(Duration.seconds(0.5));
+        fileName.setTooltip(infoTooltip);
+
         fileName.setOnMouseReleased(event -> {
             downloadFile(currentNote, file);
         });
@@ -204,6 +214,9 @@ public class FilesCtrl {
         Button editButton = new Button();
         editButton.getStyleClass().add("icon");
         editButton.getStyleClass().add("file-view-edit-button");
+        Tooltip editTooltip = new Tooltip("Rename file");
+        editTooltip.setShowDelay(Duration.seconds(0.5));
+        editButton.setTooltip(editTooltip);
         editButton.setOnAction(event -> {
             renameFile(currentNote, file);
         });
@@ -211,6 +224,9 @@ public class FilesCtrl {
         Button deleteButton = new Button();
         deleteButton.getStyleClass().add("icon");
         deleteButton.getStyleClass().add("file-view-delete-button");
+        Tooltip deleteTooltip = new Tooltip("Delete file");
+        deleteTooltip.setShowDelay(Duration.seconds(0.5));
+        deleteButton.setTooltip(deleteTooltip);
         deleteButton.setOnAction(event -> {
             deleteFile(currentNote, file);
         });
@@ -218,6 +234,19 @@ public class FilesCtrl {
         entry.getChildren().addAll(fileName, editButton, deleteButton);
         return entry;
     }
+
+    public String calculateFileSize(EmbeddedFile file) {
+        DecimalFormat df = new DecimalFormat("#.##");
+        double bytes = file.getFileContent().length;
+        if (bytes < 1000 /*1kB*/) {
+            return df.format(bytes) + " bytes";
+        }
+        if (bytes < 1000000 /*1MB*/) {
+            return df.format(bytes / 1000) + " kB";
+        }
+        return df.format(bytes / 1000000) + " MB";
+    }
+
 
     public void deleteFile(Note currentNote, EmbeddedFile file) {
         Alert alert = dialogStyler.createStyledAlert(
@@ -241,6 +270,16 @@ public class FilesCtrl {
         );
         Optional<String> fileName = dialog.showAndWait();
         if (fileName.isPresent()) {
+            if (fileName.get().isBlank()) {
+                Alert alert = dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        "File rename error",
+                        "File rename error",
+                        "Files cannot have an empty title!"
+                );
+                alert.showAndWait();
+                return;
+            }
             if (!checkFileName(currentNote, fileName.get())) {
                 Alert alert = dialogStyler.createStyledAlert(
                         Alert.AlertType.INFORMATION,

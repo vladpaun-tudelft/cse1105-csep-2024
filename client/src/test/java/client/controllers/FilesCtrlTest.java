@@ -162,6 +162,31 @@ public class FilesCtrlTest {
         verify(filesView.getChildren(), times(2)).add(any());
     }
 
+    @Test
+    void calulateFileSizeEmptyFile() {
+        assertEquals("0 bytes", filesCtrl.calculateFileSize(sampleFile));
+    }
+
+    @Test
+    void calculateFileSize() {
+        EmbeddedFile e = new EmbeddedFile();
+        e.setFileContent(new byte[123]);
+        assertEquals("123 bytes", filesCtrl.calculateFileSize(e));
+    }
+
+    @Test
+    void calulateFileSize2() {
+        EmbeddedFile e = new EmbeddedFile();
+        e.setFileContent(new byte[1234]);
+        assertEquals("1.23 kB", filesCtrl.calculateFileSize(e));
+    }
+
+    @Test
+    void calculateFileSize3() {
+        EmbeddedFile e = new EmbeddedFile();
+        e.setFileContent(new byte[1234567]);
+        assertEquals("1.23 MB", filesCtrl.calculateFileSize(e));
+    }
 
     @Test
     void deleteFileCancelled() {
