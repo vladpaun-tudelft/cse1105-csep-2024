@@ -929,7 +929,13 @@ public class DashboardCtrl implements Initializable {
                 filesCtrl.renameFileInputted(changedFile, previousName, currentNote);
             }
             case ActionType.MOVE_NOTE -> {
+                isProgrammaticChange = true;
+                Note note = currentNote;
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
+                refreshTreeView();
+                allNotesView.getSelectionModel().clearSelection();
+                selectNoteInTreeView(note);
+                isProgrammaticChange = false;
             }
             case ActionType.MOVE_MULTIPLE_NOTES -> {
                 collectionCtrl.moveMultipleNotes((Collection)lastAction.getPreviousState());
