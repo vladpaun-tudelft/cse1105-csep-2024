@@ -18,8 +18,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.logging.log4j.message.Message;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -525,7 +523,10 @@ public class CollectionCtrl {
                         .findFirst()
                         .orElse(null);
 
-                moveNoteFromCollection(note, previousNote.getValue().collection);
+                if (previousNote != null) {
+                    moveNoteFromCollection(note, previousNote.getValue().collection);
+                }
+
             }
 
         }
