@@ -178,7 +178,9 @@ public class ServerUtils {
 
 	public void getWebSocketURL(String serverURL) {
 		if (session != null) {
-			session.disconnect();
+			try {
+				session.disconnect();
+			} catch (RuntimeException _) {}
 		}
 
 		String webSocket = serverURL.replace("http", "ws");

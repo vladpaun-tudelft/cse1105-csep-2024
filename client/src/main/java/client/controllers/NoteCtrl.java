@@ -273,6 +273,17 @@ public class NoteCtrl {
 
     public void onBodyChanged(Note currentNote) {
         if (currentNote != null) {
+            if (!server.isServerAvailable(currentNote.collection.serverURL)) {
+                String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
+                dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        bundle.getString("serverCouldNotBeReached.text"),
+                        bundle.getString("serverCouldNotBeReached.text"),
+                        alertText
+                ).showAndWait();
+                noteBody.clear();
+                return;
+            }
             String rawText = noteBody.getText();
             currentNote.setBody(rawText);
 
