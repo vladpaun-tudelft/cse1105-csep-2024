@@ -4,6 +4,7 @@ import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
 import client.utils.Config;
 import client.utils.ServerUtils;
+import commons.Collection;
 import commons.EmbeddedFile;
 import commons.Note;
 import javafx.collections.ObservableList;
@@ -39,6 +40,7 @@ public class FilesCtrlTest {
     @BeforeEach
     void setup() {
         serverUtils = mock(ServerUtils.class);
+        when(serverUtils.isServerAvailable(any())).thenReturn(true);
         dashboardCtrl = mock(DashboardCtrl.class);
         dialogStyler = mock(DialogStyler.class);
         config = mock(Config.class);
@@ -53,6 +55,8 @@ public class FilesCtrlTest {
         sampleFile = new EmbeddedFile(sampleNote, "test.txt", "text/plain", new byte[]{});
         sampleFile.setId(1L);
         sampleNote.getEmbeddedFiles().add(sampleFile);
+        Collection sampleCollection = new Collection("Sample Collection", "test.com");
+        sampleNote.collection = sampleCollection;
     }
 
     @Test

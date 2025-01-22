@@ -349,7 +349,7 @@ public class DashboardCtrl implements Initializable {
         collectionView.setCellFactory(TextFieldListCell.forListView());
 
         // Set ListView entry as Title (editable)
-        collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl));
+        collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server));
 
         collectionView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -473,7 +473,7 @@ public class DashboardCtrl implements Initializable {
         allNotesView.setShowRoot(false); // To hide the root item if it's just a container
 
         // Set custom TreeCell factory for NoteTreeItem
-        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl));
+        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl, server));
 
     }
 
@@ -561,7 +561,7 @@ public class DashboardCtrl implements Initializable {
 
 
         // Reapply the custom cell factory
-        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl));
+        allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl, server));
     }
 
 
@@ -701,7 +701,7 @@ public class DashboardCtrl implements Initializable {
         collectionNotes = collectionCtrl.viewNotes();
         updateTagList();
 
-        if (server.isServerAvailable(defaultCollection.serverURL)) {
+        if (defaultCollection != null && server.isServerAvailable(defaultCollection.serverURL)) {
             server.getWebSocketURL(defaultCollection.serverURL);
             noteAdditionSync();
             noteDeletionSync();
@@ -769,6 +769,16 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void deleteSelectedNote() {
+        if(!server.isServerAvailable(currentNote.collection.serverURL)) {
+            String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    bundle.getString("serverCouldNotBeReached.text"),
+                    bundle.getString("serverCouldNotBeReached.text"),
+                    alertText
+            ).showAndWait();
+        }
+
         noteCtrl.deleteSelectedNote(currentNote, collectionNotes, allNotes);
         updateTagList();
     }
@@ -920,7 +930,19 @@ public class DashboardCtrl implements Initializable {
         if (currentCollection == null) {
             // Handle TreeView selection
             TreeItem<Object> selectedItem = (TreeItem<Object>) allNotesView.getSelectionModel().getSelectedItem();
+
             if (selectedItem != null && selectedItem.getValue() instanceof Note) {
+                Note selectedNote = (Note) selectedItem.getValue();
+                if (!server.isServerAvailable(selectedNote.collection.serverURL)) {
+                    String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
+                    dialogStyler.createStyledAlert(
+                            Alert.AlertType.INFORMATION,
+                            bundle.getString("serverCouldNotBeReached.text"),
+                            bundle.getString("serverCouldNotBeReached.text"),
+                            alertText
+                    ).showAndWait();
+                    return;
+                }
                 CustomTreeCell customTreeCell = (CustomTreeCell) allNotesView.lookup(".tree-cell:selected");
                 if (customTreeCell != null) {
                     customTreeCell.startEditing();
@@ -930,6 +952,16 @@ public class DashboardCtrl implements Initializable {
             // Handle ListView selection
             Note selectedNote = (Note) collectionView.getSelectionModel().getSelectedItem();
             if (selectedNote != null) {
+                if (!server.isServerAvailable(selectedNote.collection.serverURL)) {
+                    String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
+                    dialogStyler.createStyledAlert(
+                            Alert.AlertType.INFORMATION,
+                            bundle.getString("serverCouldNotBeReached.text"),
+                            bundle.getString("serverCouldNotBeReached.text"),
+                            alertText
+                    ).showAndWait();
+                    return;
+                }
                 NoteListItem noteListItem = (NoteListItem) collectionView.lookup(".list-cell:selected");
                 if (noteListItem != null) {
                     noteListItem.startEditing();
@@ -965,7 +997,7 @@ public class DashboardCtrl implements Initializable {
                 noteTitle.setText(oldTitle);
                 noteTitleMD.setText(oldTitle);
                 refreshTreeView();
-                collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl));
+                collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server));
             }
             case ActionType.ADD_FILE -> {
                 EmbeddedFile addedFile = (EmbeddedFile) lastAction.getPreviousState();

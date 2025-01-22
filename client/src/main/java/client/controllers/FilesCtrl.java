@@ -73,6 +73,17 @@ public class FilesCtrl {
             return null;
         }
 
+        if (!serverUtils.isServerAvailable(currentNote.collection.serverURL)) {
+            String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    bundle.getString("serverCouldNotBeReached.text"),
+                    bundle.getString("serverCouldNotBeReached.text"),
+                    alertText
+            ).showAndWait();
+            return null;
+        }
+
         fileChooser.setTitle(bundle.getString("uploadFile.text"));
         File uploadedFile = fileChooser.showOpenDialog(null);
         if (uploadedFile != null) {
@@ -137,7 +148,7 @@ public class FilesCtrl {
     }
 
     public void showFiles(Note currentNote) {
-        if (currentNote == null)
+        if (currentNote == null || !serverUtils.isServerAvailable(currentNote.collection.serverURL))
             return;
         List<EmbeddedFile> filesInNote = serverUtils.getFilesByNote(currentNote);
         filesView.getChildren().clear();
@@ -200,10 +211,10 @@ public class FilesCtrl {
 
         Label fileName = new Label(file.getFileName());
         fileName.getStyleClass().add("file-view-label");
-        Tooltip infoTooltip = new Tooltip("Download file\n" +
-                "File name: " + file.getFileName() +
-                "\nFile size: " + calculateFileSize(file) +
-                "\nUploaded at: " + file.getUploadedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        Tooltip infoTooltip = new Tooltip(bundle.getString("saveFile.text") + "\n" +
+                bundle.getString("filename.text") + ": " + file.getFileName() + "\n" +
+                bundle.getString("fileSize.text") + ": " + calculateFileSize(file) + "\n" +
+                bundle.getString("uploadedAt.text") + ": " + file.getUploadedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
         infoTooltip.setShowDelay(Duration.seconds(0.5));
         fileName.setTooltip(infoTooltip);
 
@@ -214,7 +225,7 @@ public class FilesCtrl {
         Button editButton = new Button();
         editButton.getStyleClass().add("icon");
         editButton.getStyleClass().add("file-view-edit-button");
-        Tooltip editTooltip = new Tooltip("Rename file");
+        Tooltip editTooltip = new Tooltip(bundle.getString("renameFile.text"));
         editTooltip.setShowDelay(Duration.seconds(0.5));
         editButton.setTooltip(editTooltip);
         editButton.setOnAction(event -> {
@@ -224,7 +235,7 @@ public class FilesCtrl {
         Button deleteButton = new Button();
         deleteButton.getStyleClass().add("icon");
         deleteButton.getStyleClass().add("file-view-delete-button");
-        Tooltip deleteTooltip = new Tooltip("Delete file");
+        Tooltip deleteTooltip = new Tooltip(bundle.getString("deleteFile.text"));
         deleteTooltip.setShowDelay(Duration.seconds(0.5));
         deleteButton.setTooltip(deleteTooltip);
         deleteButton.setOnAction(event -> {
@@ -257,6 +268,17 @@ public class FilesCtrl {
         );
         Optional<ButtonType> buttonType = alert.showAndWait();
         if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)){
+            if (!serverUtils.isServerAvailable(currentNote.collection.serverURL)) {
+                String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
+                dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        bundle.getString("serverCouldNotBeReached.text"),
+                        bundle.getString("serverCouldNotBeReached.text"),
+                        alertText
+                ).showAndWait();
+                return;
+            }
+
             serverUtils.deleteFile(currentNote, file);
             serverUtils.send("/app/notes/" + currentNote.getId() + "/files/deleteFile", file.getId());
         }

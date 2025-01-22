@@ -430,45 +430,54 @@ class ServerUtilsTest {
 
     @Test
     void registerForEmbeddedFileUpdates() {
-        Note note = new Note("note", "", null);
+        Note note = new Note("note", "", new Collection("collection", "test.com"));
         note.id = 1L;
         String expectedTopic = "/topic/notes/1/files";
 
         when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
                 .thenReturn(subscriptionMock);
 
-        serverUtils.setSession(sessionMock);
-        serverUtils.registerForEmbeddedFileUpdates(note, consumerMock);
+        ServerUtils spyServerUtils = spy(serverUtils);
+        doReturn(true).when(spyServerUtils).isServerAvailable(any());
+
+        spyServerUtils.setSession(sessionMock);
+        spyServerUtils.registerForEmbeddedFileUpdates(note, consumerMock);
 
         verify(sessionMock).subscribe(eq(expectedTopic), any(StompFrameHandler.class));
     }
 
     @Test
     void registerForEmbeddedFilesDeleteUpdates() {
-        Note note = new Note("note", "", null);
+        Note note = new Note("note", "", new Collection("collection", "test.com"));
         note.id = 1L;
         String expectedTopic = "/topic/notes/1/files/deleteFile";
 
         when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
                 .thenReturn(deleteSubscriptionMock);
 
-        serverUtils.setSession(sessionMock);
-        serverUtils.registerForEmbeddedFilesDeleteUpdates(note, consumerMock);
+        ServerUtils spyServerUtils = spy(serverUtils);
+        doReturn(true).when(spyServerUtils).isServerAvailable(any());
+
+        spyServerUtils.setSession(sessionMock);
+        spyServerUtils.registerForEmbeddedFilesDeleteUpdates(note, consumerMock);
 
         verify(sessionMock).subscribe(eq(expectedTopic), any(StompFrameHandler.class));
     }
 
     @Test
     void registerForEmbeddedFilesRenameUpdates() {
-        Note note = new Note("note", "", null);
+        Note note = new Note("note", "", new Collection("collection", "test.com"));
         note.id = 1L;
         String expectedTopic = "/topic/notes/1/files/renameFile";
 
         when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
                 .thenReturn(renameSubsciptionMock);
 
-        serverUtils.setSession(sessionMock);
-        serverUtils.registerForEmbeddedFilesRenameUpdates(note, renameConsumerMock);
+        ServerUtils spyServerUtils = spy(serverUtils);
+        doReturn(true).when(spyServerUtils).isServerAvailable(any());
+
+        spyServerUtils.setSession(sessionMock);
+        spyServerUtils.registerForEmbeddedFilesRenameUpdates(note, renameConsumerMock);
 
         verify(sessionMock).subscribe(eq(expectedTopic), any(StompFrameHandler.class));
     }

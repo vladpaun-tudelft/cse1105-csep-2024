@@ -203,6 +203,17 @@ public class NoteCtrl {
             Optional<ButtonType> buttonType = alert.showAndWait();
 
             if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
+                if (!server.isServerAvailable(currentNote.collection.serverURL)) {
+                    String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
+                    dialogStyler.createStyledAlert(
+                            Alert.AlertType.INFORMATION,
+                            bundle.getString("serverCouldNotBeReached.text"),
+                            bundle.getString("serverCouldNotBeReached.text"),
+                            alertText
+                    ).showAndWait();
+                    return;
+                }
+
                 deleteNote(currentNote, collectionNotes, allNotes);
                 noteBody.clear();
                 notificationsCtrl.pushNotification(bundle.getString("deleteSuccess"), false);
@@ -241,7 +252,18 @@ public class NoteCtrl {
     public void saveAllPendingNotes() {
         try {
             for (Note note : updatePendingNotes) {
-                server.updateNote(note);
+                if (!server.isServerAvailable(note.collection.serverURL)) {
+                    String alertText = bundle.getString("noteUpdateError") + "\n" + note.title;
+                    dialogStyler.createStyledAlert(
+                            Alert.AlertType.INFORMATION,
+                            bundle.getString("serverCouldNotBeReached.text"),
+                            bundle.getString("serverCouldNotBeReached.text"),
+                            alertText
+                    ).showAndWait();
+                }
+                else {
+                    server.updateNote(note);
+                }
             }
             updatePendingNotes.clear();
         } catch (Exception e) {

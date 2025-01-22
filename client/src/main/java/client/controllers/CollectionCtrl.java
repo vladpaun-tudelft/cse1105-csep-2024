@@ -374,6 +374,17 @@ public class CollectionCtrl {
      * A method used to move note from one collection to the other
      */
     public void moveNoteFromCollection(Note currentNote, Collection selectedCollection) {
+        if (!server.isServerAvailable(currentNote.collection.serverURL) || !server.isServerAvailable(selectedCollection.serverURL)) {
+            String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    bundle.getString("serverCouldNotBeReached.text"),
+                    bundle.getString("serverCouldNotBeReached.text"),
+                    alertText
+            ).showAndWait();
+            return;
+        }
+
         RadioMenuItem selectedRadioMenuItem = collectionSelect.getToggles().stream()
                 .filter(toggle -> toggle instanceof RadioMenuItem item && item.getText().equals(selectedCollection.title))
                 .map(toggle -> (RadioMenuItem) toggle)

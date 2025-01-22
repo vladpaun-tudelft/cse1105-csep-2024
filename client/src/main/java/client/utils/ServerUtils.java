@@ -78,6 +78,10 @@ public class ServerUtils {
 	}
 
 	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<Long> consumer) {
+		if (!isServerAvailable(selectedNote.collection.serverURL)) {
+			return;
+		}
+
 		if (embeddedFilesSubscription != null && session != null) {
 			try {
 				embeddedFilesSubscription.unsubscribe();
@@ -99,6 +103,10 @@ public class ServerUtils {
 	}
 
 	public void registerForEmbeddedFilesDeleteUpdates(Note selectedNote, Consumer<Long> consumer) {
+		if (!isServerAvailable(selectedNote.collection.serverURL)) {
+			return;
+		}
+
 		if (embeddedFilesDeleteUpdates != null && session != null) {
 			try {
 				embeddedFilesDeleteUpdates.unsubscribe();
@@ -121,6 +129,10 @@ public class ServerUtils {
 
 	public void registerForEmbeddedFilesRenameUpdates(Note selectedNote,
 													  Consumer<Object[]> consumer) {
+		if (!isServerAvailable(selectedNote.collection.serverURL)) {
+			return;
+		}
+
 		if (embeddedFilesRenameUpdates != null && session != null) {
 			try {
 				embeddedFilesRenameUpdates.unsubscribe();
