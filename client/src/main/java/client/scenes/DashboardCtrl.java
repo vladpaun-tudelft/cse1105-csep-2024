@@ -1,5 +1,6 @@
 package client.scenes;
 
+import ch.qos.logback.classic.Logger;
 import client.Language;
 import client.LanguageManager;
 import client.Main;
@@ -697,7 +698,7 @@ public class DashboardCtrl implements Initializable {
 
             boolean isWithinWord = removedSegment.matches("\\w*") && addedSegment.matches("\\w*");
 
-            if (!newBody.isBlank() && (!actionHistory.isEmpty() && "editBody".equals(actionHistory.peek().getType()) &&
+            if (!newBody.isBlank() && (!actionHistory.isEmpty() && ActionType.EDIT_BODY.equals(actionHistory.peek().getType()) &&
                     actionHistory.peek().getNote().equals(currentNote))) {
 
                 if (isWithinWord) {
@@ -713,8 +714,9 @@ public class DashboardCtrl implements Initializable {
                 actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, null, newBody));
             }
         }
-
     }
+
+
 
     public void deleteSelectedNote() {
         noteCtrl.deleteSelectedNote(currentNote, collectionNotes, allNotes);
@@ -890,8 +892,9 @@ public class DashboardCtrl implements Initializable {
      * CTRL + Z - Undoes the last action done to a note
      */
     public void undoLastAction(KeyEvent event) {
-        if (actionHistory.isEmpty()) {
-            return; // No actions to undo
+
+        if(actionHistory.isEmpty()){
+            return;
         }
 
         Action lastAction = actionHistory.pop();
@@ -923,8 +926,9 @@ public class DashboardCtrl implements Initializable {
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
             }
             case ActionType.MOVE_MULTIPLE_NOTES -> {
-                collectionCtrl.moveMultipleNotes((Collection) lastAction.getNewState(), (ObservableList<Collection>) lastAction.getPreviousState2());
+                collectionCtrl.moveMultipleNotes((Collection)lastAction.getPreviousState());
             }
+
             /*case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
                 collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
             }*/

@@ -277,7 +277,7 @@ public class CustomTreeCell extends TreeCell<Object> {
 
             originalNoteTitle = newTitle;
 
-            dashboardCtrl.getActionHistory().push(new Action(ActionType.EDIT_TITLE, note, oldTitle, uniqueTitle));
+            dashboardCtrl.getActionHistory().push(new Action(ActionType.EDIT_TITLE, note, oldTitle, null ,uniqueTitle));
             notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
         } catch (ClientErrorException e) {
             notificationsCtrl.pushNotification(bundle.getString("invalid.name"), true);

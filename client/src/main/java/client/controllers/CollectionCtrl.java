@@ -181,10 +181,13 @@ public class CollectionCtrl {
                 dashboardCtrl.refreshTreeView();
                dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
                 dashboardCtrl.selectNoteInTreeView(currentNote);
+
             }
             else if(collectionView.getSelectionModel().getSelectedItems().size() > 1) {
+                //dashboardCtrl.setProgrammaticChange(true);
+                moveMultipleNotes(selectedCollection);
+               // dashboardCtrl.setProgrammaticChange(false);
 
-                moveMultipleNotes(selectedCollection, null);
 
             }
             else if (dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size() > 1) {
@@ -359,16 +362,19 @@ public class CollectionCtrl {
     /**
      * A method used to move note from one collection to the other
      */
+    /**
+     * A method used to move note from one collection to the other
+     */
     public void moveNoteFromCollection(Note currentNote, Collection selectedCollection) {
         RadioMenuItem selectedRadioMenuItem = collectionSelect.getToggles().stream()
                 .filter(toggle -> toggle instanceof RadioMenuItem item && item.getText().equals(selectedCollection.title))
                 .map(toggle -> (RadioMenuItem) toggle)
                 .findFirst().orElse(null);
         if (selectedRadioMenuItem != null && dashboardCtrl.getCurrentNote() != null) {
-
+            dashboardCtrl.setProgrammaticChange(true);
             moveNote(currentNote, selectedCollection);
 
-            dashboardCtrl.setProgrammaticChange(true);
+
             if(dashboardCtrl.getCurrentCollection() != null ) {
                 selectedRadioMenuItem.fire();   // If not in all note view
                 collectionView.getSelectionModel().select(currentNote);
@@ -377,8 +383,11 @@ public class CollectionCtrl {
 
             collectionSelect.selectToggle(selectedRadioMenuItem);
             moveNotesButton.hide();
+
+
         }
     }
+
 
     public void moveNote(Note currentNote, Collection selectedCollection) {
         currentNote.collection = selectedCollection;
@@ -437,31 +446,32 @@ public class CollectionCtrl {
      *
      * @param destinationCollection destination collection
      */
-    public void moveMultipleNotes(Collection destinationCollection, ObservableList<Collection> collectionOfNotes) {
+    public void moveMultipleNotes(Collection destinationCollection) {
 
         if (collectionView != null &&
                 collectionView.getSelectionModel().getSelectedItems().size() > 1) {
-
+            dashboardCtrl.setProgrammaticChange(true);
             ObservableList<Note> selectedItems = collectionView.getSelectionModel().getSelectedItems();
             List<Note> notesToMove = new ArrayList<>(selectedItems);
-
-
-
             //used to reselect notes
             List<Note> previouslySelectedNotes = new ArrayList<>(selectedItems);
-            List<Collection> previouslySelectedCollections = new ArrayList<>();
+            Collection currentCollection = previouslySelectedNotes.get(0).collection;
+
             for (Note note : notesToMove) {
-                previouslySelectedCollections.add(note.collection);
                 moveNoteFromCollection(note, destinationCollection);
             }
-            dashboardCtrl.getActionHistory().push(new Action
-                    (ActionType.MOVE_MULTIPLE_NOTES,null,  previouslySelectedNotes, previouslySelectedCollections, destinationCollection ));
+
+
+
             dashboardCtrl.refreshTreeView();
             collectionView.getSelectionModel().clearSelection();
             //reselect items
             for (Note note : previouslySelectedNotes) {
                 collectionView.getSelectionModel().select(note);
             }
+            dashboardCtrl.getActionHistory().push(new Action
+                    (ActionType.MOVE_MULTIPLE_NOTES, null , currentCollection, null, destinationCollection ));
+            dashboardCtrl.setProgrammaticChange(false);
             if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("movedNotesMultiple") + destinationCollection.title, false);
         }
 
