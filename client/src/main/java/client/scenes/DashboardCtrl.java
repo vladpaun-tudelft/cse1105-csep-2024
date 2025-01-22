@@ -1,6 +1,5 @@
 package client.scenes;
 
-import ch.qos.logback.classic.Logger;
 import client.Language;
 import client.LanguageManager;
 import client.Main;
@@ -929,9 +928,13 @@ public class DashboardCtrl implements Initializable {
                 collectionCtrl.moveMultipleNotes((Collection)lastAction.getPreviousState());
             }
 
-            /*case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
-                collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
-            }*/
+            case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
+                collectionCtrl.moveMultipleNotesInTreeView(
+                        null,
+                        true,
+                        (ObservableList<TreeItem<Note>>) lastAction.getPreviousState());
+
+            }
             default -> throw new UnsupportedOperationException(bundle.getString("undoUnsupported.text") + lastAction.getType());
         }
         event.consume();
