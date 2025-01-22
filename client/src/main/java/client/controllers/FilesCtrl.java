@@ -1,6 +1,8 @@
 package client.controllers;
 
 import client.LanguageManager;
+import client.entities.Action;
+import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
 import client.ui.DialogStyler;
 import client.utils.Config;
@@ -13,6 +15,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
+import lombok.Setter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,15 +27,17 @@ import java.util.*;
 
 public class FilesCtrl {
     private final ServerUtils serverUtils;
-    private FileChooser fileChooser;
-    private DashboardCtrl dashboardCtrl;
+    // for testing purposes
+    @Setter private FileChooser fileChooser;
+    @Setter private DashboardCtrl dashboardCtrl;
 
     private HBox filesView;
-    private DialogStyler dialogStyler = new DialogStyler();
+    @Setter private DialogStyler dialogStyler = new DialogStyler();
 
     private Config config;
     private LanguageManager languageManager;
     private ResourceBundle bundle;
+
 
     @Inject
     public FilesCtrl(ServerUtils serverUtils, FileChooser fileChooser, Config config) {
@@ -44,32 +49,13 @@ public class FilesCtrl {
         this.bundle = this.languageManager.getBundle();
     }
 
-    public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
-        this.dashboardCtrl = dashboardCtrl;
-    }
-
     public void setReferences(HBox filesView) {
         this.filesView = filesView;
     }
 
-    // for testing purposes
-    public void setFileChooser(FileChooser fileChooser) {
-        this.fileChooser = fileChooser;
-    }
-
-    public void setDialogStyler(DialogStyler dialogStyler) {
-        this.dialogStyler = dialogStyler;
-    }
-
     public EmbeddedFile addFile(Note currentNote) {
         if (currentNote == null) {
-            Alert alert = dialogStyler.createStyledAlert(
-                    Alert.AlertType.INFORMATION,
-                    bundle.getString("error.text"),
-                    bundle.getString("error.text"),
-                    bundle.getString("noNoteSelected.text")
-            );
-            alert.showAndWait();
+            showNoNoteSelectedAlert();
             return null;
         }
 
@@ -87,55 +73,25 @@ public class FilesCtrl {
         fileChooser.setTitle(bundle.getString("uploadFile.text"));
         File uploadedFile = fileChooser.showOpenDialog(null);
         if (uploadedFile != null) {
-            if (uploadedFile.isDirectory()) {
-                Alert alert = dialogStyler.createStyledAlert(
-                        Alert.AlertType.INFORMATION,
-                        bundle.getString("fileError.text"),
-                        bundle.getString("fileError.text"),
-                        bundle.getString("directoriesCannotBeUploaded.text")
-                );
-                alert.showAndWait();
-                return null;
-            }
+            if (!validateUploadedFile(currentNote, uploadedFile)) return null;
 
-            if (!checkFileName(currentNote, uploadedFile.getName())) {
-                Alert alert = dialogStyler.createStyledAlert(
-                        Alert.AlertType.INFORMATION,
-                        bundle.getString("fileError.text"),
-                        bundle.getString("fileError.text"),
-                        bundle.getString("fileWithNameAlreadyExists.text")
-                );
-                alert.showAndWait();
-                return null;
-            }
-
-            if (uploadedFile.length() > 10 * 1024 * 1024 /*10MB*/) {
-                Alert alert = dialogStyler.createStyledAlert(
-                        Alert.AlertType.INFORMATION,
-                        bundle.getString("uploadError.text"),
-                        bundle.getString("uploadError.text"),
-                        bundle.getString("thisFileIsTooLarge.text")
-                );
-                alert.showAndWait();
-                return null;
-            }
-
-            try {
-                EmbeddedFile e = serverUtils.addFile(currentNote, uploadedFile);
-                serverUtils.send("/app/notes/" + currentNote.getId() + "/files", e.getId());
-                return e;
-            } catch (Exception exception) {
-                Alert alert = dialogStyler.createStyledAlert(
-                        Alert.AlertType.INFORMATION,
-                        bundle.getString("uploadError.text"),
-                        bundle.getString("uploadError.text"),
-                        bundle.getString("errorUploadingFile.text")
-                );
-                alert.showAndWait();
-                return null;
-            }
+            EmbeddedFile embeddedFile = addFileInputted(currentNote, uploadedFile);
+            return embeddedFile;
         }
         return null;
+    }
+
+    public EmbeddedFile addFileInputted(Note currentNote, File file) {
+
+        try {
+            EmbeddedFile embeddedFile = serverUtils.addFile(currentNote, file);
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", embeddedFile.getId());
+            return embeddedFile;
+        } catch (Exception exception) {
+            showErrorUploadingFileAlert();
+            return null;
+        }
+
     }
 
     /**
@@ -239,6 +195,9 @@ public class FilesCtrl {
         deleteTooltip.setShowDelay(Duration.seconds(0.5));
         deleteButton.setTooltip(deleteTooltip);
         deleteButton.setOnAction(event -> {
+            dashboardCtrl.getActionHistory().push(
+                    new Action(ActionType.DELETE_FILE,currentNote,null,null, file)
+            );
             deleteFile(currentNote, file);
         });
 
@@ -312,12 +271,21 @@ public class FilesCtrl {
                 alert.showAndWait();
                 return;
             }
+            if (dashboardCtrl.getActionHistory() != null) {
+                dashboardCtrl.getActionHistory().push(
+                        new Action(ActionType.EDIT_FILE_NAME,currentNote,file.getFileName(),fileName.get(), file)
+                );
+            }
+
             // currentNote.getEmbeddedFiles().remove(file);
-            EmbeddedFile e = serverUtils.renameFile(currentNote, file, fileName.get());
-            Object[] renameRequest = {e.getId(), fileName.get()};
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", renameRequest);
-            persistFileName(currentNote, file.getFileName(), fileName.get());
+            renameFileInputted(file, fileName.get(), currentNote);
         }
+    }
+    public void renameFileInputted(EmbeddedFile file, String fileName, Note currentNote) {
+        EmbeddedFile e = serverUtils.renameFile(currentNote, file, fileName);
+        Object[] renameRequest = {e.getId(), fileName};
+        serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", renameRequest);
+        persistFileName(currentNote, file.getFileName(), fileName);
     }
 
     public void persistFileName(Note currentNote, String oldName, String newName) {
@@ -354,4 +322,61 @@ public class FilesCtrl {
             }
         }
     }
+
+    private void showErrorUploadingFileAlert() {
+        Alert alert = dialogStyler.createStyledAlert(
+                Alert.AlertType.INFORMATION,
+                bundle.getString("uploadError.text"),
+                bundle.getString("uploadError.text"),
+                bundle.getString("errorUploadingFile.text")
+        );
+        alert.showAndWait();
+    }
+
+    private boolean validateUploadedFile(Note currentNote, File uploadedFile) {
+        if (uploadedFile.isDirectory()) {
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    bundle.getString("fileError.text"),
+                    bundle.getString("fileError.text"),
+                    bundle.getString("directoriesCannotBeUploaded.text")
+            );
+            alert.showAndWait();
+            return false;
+        }
+
+        if (!checkFileName(currentNote, uploadedFile.getName())) {
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    bundle.getString("fileError.text"),
+                    bundle.getString("fileError.text"),
+                    bundle.getString("fileWithNameAlreadyExists.text")
+            );
+            alert.showAndWait();
+            return false;
+        }
+
+        if (uploadedFile.length() > 10 * 1024 * 1024 /*10MB*/) {
+            Alert alert = dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    bundle.getString("uploadError.text"),
+                    bundle.getString("uploadError.text"),
+                    bundle.getString("thisFileIsTooLarge.text")
+            );
+            alert.showAndWait();
+            return false;
+        }
+        return true;
+    }
+
+    private void showNoNoteSelectedAlert() {
+        Alert alert = dialogStyler.createStyledAlert(
+                Alert.AlertType.INFORMATION,
+                bundle.getString("error.text"),
+                bundle.getString("error.text"),
+                bundle.getString("noNoteSelected.text")
+        );
+        alert.showAndWait();
+    }
+
 }
