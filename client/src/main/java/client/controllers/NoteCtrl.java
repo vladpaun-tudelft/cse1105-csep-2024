@@ -104,8 +104,10 @@ public class NoteCtrl {
             collectionView.getItems().add(newNote);
             collectionView.getSelectionModel().clearSelection();
             collectionView.getSelectionModel().select(newNote);
+            collectionView.scrollTo(newNote);
         } else {
             dashboardCtrl.selectNoteInTreeView(newNote);
+            treeView.scrollTo(treeView.getSelectionModel().getSelectedIndex()-1);
         }
 
         return newNote;

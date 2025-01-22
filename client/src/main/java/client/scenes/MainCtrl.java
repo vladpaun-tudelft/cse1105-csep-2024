@@ -210,27 +210,34 @@ scene.setFill(Color.TRANSPARENT);
                         dashboardCtrl.selectNextNote();
                         dashboardCtrl.allNotesView.getSelectionModel().clearSelection
                                 (dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()-1);
+                        dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()-1);
 
                     } else if (event.isAltDown() && event.isShiftDown()) {
                         dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                         dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                         dashboardCtrl.selectNextNote();
+                        dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()-1);
                     }
                     dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                     dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                     event.consume();
                 }
                 case UP -> {
+
                     if (event.isAltDown() && !event.isShiftDown()) {
                         dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
                         dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
                         dashboardCtrl.selectPreviousNote();
                         dashboardCtrl.allNotesView.getSelectionModel().clearSelection
                                 (dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()+1);
+                        dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()-1);
+
                     } else if (event.isAltDown() && event.isShiftDown()) {
                         dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                         dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                         dashboardCtrl.selectPreviousNote();
+                        dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()-1);
+
                     }
                     dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                     dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);

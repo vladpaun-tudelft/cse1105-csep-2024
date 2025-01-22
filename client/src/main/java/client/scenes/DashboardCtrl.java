@@ -356,6 +356,8 @@ public class DashboardCtrl implements Initializable {
                 if (!isProgrammaticChange) actionHistory.clear();
 
                 currentNote = (Note) newValue;
+
+
                 noteCtrl.showCurrentNote(currentNote);
 
                 markdownViewBlocker.setVisible(false);

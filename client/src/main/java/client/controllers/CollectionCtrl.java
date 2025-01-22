@@ -180,6 +180,11 @@ public class CollectionCtrl {
                 dashboardCtrl.refreshTreeView();
                dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
                 dashboardCtrl.selectNoteInTreeView(currentNote);
+                //if(dashboardCtrl.getCurrentCollection() == null) {
+                //    dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex());
+                //} else {
+                 //   dashboardCtrl.collectionView.scrollTo(dashboardCtrl.collectionView.getSelectionModel().getSelectedIndex());
+                //}
             }
             else if(collectionView.getSelectionModel().getSelectedItems().size() > 1) {
                 //dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_MULTIPLE_NOTES, currentNote, currentNote.collection, selectedCollection));
@@ -494,6 +499,9 @@ public class CollectionCtrl {
         for (TreeItem<Note> treeItem : itemsToSelect) {
             dashboardCtrl.allNotesView.getSelectionModel().select(treeItem);
         }
+        dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()
+                - dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size()/2);
+
     }
 
     /**
