@@ -56,7 +56,7 @@ class NoteControllerTest {
         note3 = new Note("note3", "bla", collection2);
         note4 = new Note("note4", "bla", collection2);
 
-        embeddedFile = new EmbeddedFile(note1, "file.txt", "text/plain", new byte[]{1, 2, 3, 4});
+        embeddedFile = new EmbeddedFile(note1, "file.txt", "text/plain", new byte[]{1, 2, 3, 4}, null);
         embeddedFile.setId(1L);
     }
 

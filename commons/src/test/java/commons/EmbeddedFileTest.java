@@ -17,7 +17,7 @@ public class EmbeddedFileTest {
     void setUp() {
         note = new Note("Test Note", "Sample Content", null);
         fileContent = new byte[]{1, 2, 3, 4};
-        embeddedFile = new EmbeddedFile(note, "example.jpg", "image/jpeg", fileContent);
+        embeddedFile = new EmbeddedFile(note, "example.jpg", "image/jpeg", fileContent, null);
     }
 
     @Test

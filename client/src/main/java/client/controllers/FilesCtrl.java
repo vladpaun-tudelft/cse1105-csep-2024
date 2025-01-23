@@ -10,7 +10,6 @@ import client.utils.ServerUtils;
 import commons.EmbeddedFile;
 import commons.Note;
 import jakarta.inject.Inject;
-import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
