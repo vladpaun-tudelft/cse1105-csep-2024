@@ -100,6 +100,7 @@ public class DashboardCtrl implements Initializable {
     @FXML private MenuButton languageButton;
     @FXML private ScrollPane fileScrollPane;
     @FXML private Text filesText;
+    @FXML private Button accessibilityButton;
 
 
     // Variables
@@ -1238,14 +1239,25 @@ public class DashboardCtrl implements Initializable {
     @FXML
     public void toggleAccessibility(){
         if(isAccessible) {
+            accessibilityButton.getStyleClass().remove("no-accessibility-icon");
+            if (!accessibilityButton.getStyleClass().contains("accessibility-icon")) {
+                accessibilityButton.getStyleClass().add("accessibility-icon");
+            }
+
             root.getStylesheets().add(getClass().getResource("/css/color-styles.css").toExternalForm());
             root.getStylesheets().remove(getClass().getResource("/css/accessible-styles.css").toExternalForm());
             currentCss = getClass().getResource("/css/color-styles.css").toExternalForm();
         }else{
+            accessibilityButton.getStyleClass().remove("accessibility-icon");
+            if (!accessibilityButton.getStyleClass().contains("no-accessibility-icon")) {
+                accessibilityButton.getStyleClass().add("no-accessibility-icon");
+            }
+
             root.getStylesheets().add(getClass().getResource("/css/accessible-styles.css").toExternalForm());
             root.getStylesheets().remove(getClass().getResource("/css/color-styles.css").toExternalForm());
             currentCss = getClass().getResource("/css/accessible-styles.css").toExternalForm();
         }
+        notificationsCtrl.pushNotification(bundle.getString("toggled.accessibility"), false);
         isAccessible = !isAccessible;
     }
 }

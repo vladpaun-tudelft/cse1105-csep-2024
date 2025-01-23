@@ -12,3 +12,35 @@
     -main-text: black;
     -secondary-text: #000000;
 }
+
+.edit_icon {
+    -fx-background-image: url("icons/dark/edit_title.png");
+}
+.delete_icon {
+    -fx-background-image: url("icons/dark/trash.png");
+}
+.close_program_icon{
+    -fx-background-image: url("icons/dark/cross.png");
+}
+
+.add_note {
+    -fx-background-image: url("icons/dark/addFile.png");
+}
+.search_icon {
+    -fx-background-image: url("icons/dark/search.png");
+}
+.clear_search_icon {
+    -fx-background-image: url("icons/dark/clear_search.png");
+}
+
+.refresh_icon {
+    -fx-background-image: url("icons/dark/refresh.png");
+}
+
+.set_default_collection_icon {
+    -fx-background-image: url("icons/dark/set_default_collection.png");
+}
+
+.default_collection_icon{
+    -fx-background-image: url("icons/dark/default_collection.png");
+}

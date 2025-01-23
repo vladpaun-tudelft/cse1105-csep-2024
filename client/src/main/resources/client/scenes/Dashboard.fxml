@@ -80,7 +80,7 @@
                   <TreeView fx:id="allNotesView" layoutX="10.0" layoutY="296.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="33.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="73.0" />
                   <AnchorPane prefHeight="25.0" prefWidth="160.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="36.0">
                      <children>
-                              <TextField fx:id="searchField" onKeyTyped="#search" prefHeight="25.0" promptText="%searchField.promptText" style="-fx-background-color: #1E1F22;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="50.0">
+                              <TextField fx:id="searchField" onKeyTyped="#search" prefHeight="25.0" promptText="%searchField.promptText" style="-fx-background-color: -secondary-foreground;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="50.0">
                                   <font>
                                       <Font size="12.0" />
                                   </font>
@@ -279,7 +279,10 @@
                </font>
             </Label>
             <Region prefHeight="25.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-            <Button mnemonicParsing="false" onAction="#toggleAccessibility" prefHeight="25.0" prefWidth="164.0" style="-fx-background-color: -secondary-foreground;" text="Toggle accessibility" />
+            <Button fx:id="accessibilityButton" mnemonicParsing="false" onAction="#toggleAccessibility" prefHeight="24.0" style="-fx-background-color: -secondary-foreground;" styleClass="accessibility-icon" text="%toggle.accessibility">
+               <padding>
+                  <Insets left="5.0" right="20.0" />
+               </padding></Button>
                       <MenuButton fx:id="languageButton" minHeight="0.0" mnemonicParsing="false" prefHeight="25.0">
                <font>
                   <Font size="6.0" />
