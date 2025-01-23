@@ -182,16 +182,15 @@ class NoteControllerTest {
         assertEquals(collection2, response.getBody().get(3).collection);
     }
 
-//TODO    @Test
-//    public void addMessage() {
-//        collectionController.createCollection(collection1);
-//        noteController.createNote(note1);
-//
-//        Note result = noteController.addMessage(note1);
-//
-//        assertNotNull(result);
-//        assertEquals(note1, result);
-//    }
+TODO    @Test
+    public void addMessage() {
+        collectionController.createCollection(collection1);
+
+        Note result = noteController.addMessage(note1);
+
+        assertNotNull(result);
+        assertEquals(note1, result);
+    }
 
     @Test
     public void deleteNoteHandler() {
