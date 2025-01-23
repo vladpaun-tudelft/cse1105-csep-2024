@@ -287,11 +287,26 @@ public class CollectionCtrl {
         dashboardCtrl.setCollections(collections);
 
         if (!collections.isEmpty()) {
-            server.getWebSocketURL(
-                    config.readDefaultCollection().serverURL
-            );
-            dashboardCtrl.noteAdditionSync();
-            dashboardCtrl.noteDeletionSync();
+            if (server.isServerAvailable(config.readDefaultCollection().serverURL)) {
+                ServerUtils.getUnavailableCollections().remove(config.readDefaultCollection());
+                server.getWebSocketURL(
+                        config.readDefaultCollection().serverURL
+                );
+                dashboardCtrl.noteAdditionSync();
+                dashboardCtrl.noteDeletionSync();
+            }
+            else {
+                if (!ServerUtils.getUnavailableCollections().contains(config.readDefaultCollection())) {
+                    ServerUtils.getUnavailableCollections().add(config.readDefaultCollection());
+                }
+                dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        bundle.getString("error.text"),
+                        bundle.getString("error.text"),
+                        bundle.getString("unavailableDefaultCollectionError")
+                ).showAndWait();
+
+            }
         }
 
         Collection defaultCollection = collections.stream()
@@ -366,10 +381,22 @@ public class CollectionCtrl {
      * A method used to move note from one collection to the other
      */
     public void moveNoteFromCollection(Note currentNote, Collection selectedCollection) {
-
         if(selectedCollection.title==null){
             return;
         }
+        if (!server.isServerAvailable(currentNote.collection.serverURL) || !server.isServerAvailable(selectedCollection.serverURL)) {
+            String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    bundle.getString("serverCouldNotBeReached.text"),
+                    bundle.getString("serverCouldNotBeReached.text"),
+                    alertText
+            ).showAndWait();
+            return;
+        }
+
+
+
         RadioMenuItem selectedRadioMenuItem = collectionSelect.getToggles().stream()
                 .filter(toggle -> toggle instanceof RadioMenuItem item && item.getText().equals(selectedCollection.title))
                 .map(toggle -> (RadioMenuItem) toggle)

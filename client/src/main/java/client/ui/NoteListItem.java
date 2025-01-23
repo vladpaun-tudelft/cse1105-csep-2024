@@ -6,6 +6,7 @@ import client.entities.Action;
 import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
 import client.utils.Config;
+import client.utils.ServerUtils;
 import com.google.inject.Inject;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
@@ -44,6 +45,7 @@ public class NoteListItem extends ListCell<Note> {
     private Config config;
     private LanguageManager manager;
     private ResourceBundle bundle;
+    private final ServerUtils server;
 
     // Variables
     private String originalTitle;
@@ -51,13 +53,14 @@ public class NoteListItem extends ListCell<Note> {
     private static final int DOUBLE_CLICK_TIMEFRAME = 400;
 
     public NoteListItem(Label overviewTitle, Label markdownTitle, TextArea overviewBody,
-                        DashboardCtrl controller, NoteCtrl noteCtrl) {
+                        DashboardCtrl controller, NoteCtrl noteCtrl, ServerUtils server) {
 
         this.overviewTitle = overviewTitle;
         this.markdownTitle = markdownTitle;
         this.overviewBody = overviewBody;
         this.controller = controller;
         this.noteCtrl = noteCtrl;
+        this.server = server;
 
         this.manager = LanguageManager.getInstance(this.config);
         this.bundle = this.manager.getBundle();
@@ -149,6 +152,17 @@ public class NoteListItem extends ListCell<Note> {
     public void startEditing() {
         Note item = getItem();
         if (item != null) {
+            if (!server.isServerAvailable(item.collection.serverURL)) {
+                String alertText = bundle.getString("noteUpdateError") + "\n" + item.title;
+                dialogStyler.createStyledAlert(
+                        Alert.AlertType.INFORMATION,
+                        bundle.getString("serverCouldNotBeReached.text"),
+                        bundle.getString("serverCouldNotBeReached.text"),
+                        alertText
+                ).showAndWait();
+                return;
+            }
+
             originalTitle = item.getTitle();
 
             textField = new TextField(originalTitle);
