@@ -89,6 +89,7 @@ public class MainCtrl {
         popupStage.setTitle(manager.getBundle().getString("editCollections.text"));
 
         Scene scene = new Scene(FXML.load(EditCollectionsCtrl.class, manager.getBundle(), "client", "scenes", "EditCollections.fxml").getValue());
+        scene.getStylesheets().add(dashboardCtrl.getCurrentCss());
         scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
 scene.setFill(Color.TRANSPARENT);
         popupStage.setScene(scene);
