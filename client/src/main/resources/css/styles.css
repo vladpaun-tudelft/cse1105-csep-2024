@@ -157,7 +157,6 @@
     -fx-text-alignment: left;
     -fx-alignment: center-left;
     -fx-border-color: transparent;
-    -fx-background-color: transparent;
     -fx-background-insets: 15px;
 }
 .no-accessibility-icon {
@@ -168,7 +167,6 @@
     -fx-text-alignment: left;
     -fx-alignment: center-left;
     -fx-border-color: transparent;
-    -fx-background-color: transparent;
 }
 
 .search_bar_icon {

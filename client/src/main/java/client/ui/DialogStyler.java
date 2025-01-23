@@ -21,6 +21,7 @@ public class DialogStyler {
      * @param dialogPane The dialog pane to style
      */
     public void styleDialog(DialogPane dialogPane) {
+        dialogPane.getStylesheets().add(getClass().getResource("/css/color-styles.css").toExternalForm());
         dialogPane.getStylesheets().add(getClass().getResource(stylesheet).toExternalForm());
         dialogPane.getStyleClass().add("custom-dialog"); // Optional custom style class
     }

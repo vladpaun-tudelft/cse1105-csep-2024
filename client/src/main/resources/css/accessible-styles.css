@@ -44,3 +44,11 @@
 .default_collection_icon{
     -fx-background-image: url("icons/dark/default_collection.png");
 }
+
+.accessibility-icon {
+    -fx-background-image: url("icons/dark/accessibility.png");
+}
+
+.no-accessibility-icon {
+    -fx-background-image: url("icons/dark/no-accessibility.png");
+}
