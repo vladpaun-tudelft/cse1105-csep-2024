@@ -182,7 +182,7 @@ class NoteControllerTest {
         assertEquals(collection2, response.getBody().get(3).collection);
     }
 
-TODO    @Test
+    @Test
     public void addMessage() {
         collectionController.createCollection(collection1);
 
