@@ -37,12 +37,10 @@
     -fx-background-image: url("icons/dark/refresh.png");
 }
 
-.set_default_collection_icon {
-    -fx-background-image: url("icons/dark/FavouriteDark.png");
-}
+
 
 .default_collection_icon{
-    -fx-background-image: url("icons/dark/default_collection.png");
+    -fx-background-image: url("icons/dark/FavouriteDark.png");
 }
 
 .accessibility-button:hover{
