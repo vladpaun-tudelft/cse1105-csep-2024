@@ -1011,11 +1011,14 @@ public class DashboardCtrl implements Initializable {
                 filesCtrl.deleteFile(currentNote, addedFile);
             }
             case ActionType.DELETE_FILE -> {
+                EmbeddedFile embeddedFile = lastAction.getEmbeddedFile().get();
+                filesCtrl.addDeletedFile(currentNote, embeddedFile);
             }
             case ActionType.EDIT_FILE_NAME -> {
                 EmbeddedFile changedFile = lastAction.getEmbeddedFile().get();
                 String previousName = (String) lastAction.getPreviousState();
-                filesCtrl.renameFileInputted(changedFile, previousName, currentNote);
+                String newName = (String) lastAction.getNewState();
+                filesCtrl.renameFileByName(newName,previousName, currentNote);
             }
             case ActionType.MOVE_NOTE -> {
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
