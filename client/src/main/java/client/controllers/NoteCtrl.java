@@ -225,8 +225,10 @@ public class NoteCtrl {
 
     public void removeNoteFromClient(Note currentNote, ObservableList<Note> collectionNotes, ObservableList<Note> allNotes) {
         allNotes.remove(currentNote);
-        collectionView.getItems().remove(currentNote);
-        collectionView.refresh();
+        if (collectionView != null) {
+            collectionView.getItems().remove(currentNote);
+            collectionView.refresh();
+        }
     }
 
     public void updateAfterDelete(Note currentNote,
