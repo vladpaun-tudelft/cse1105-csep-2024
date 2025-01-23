@@ -280,6 +280,9 @@ public class CustomTreeCell extends TreeCell<Object> {
         String uniqueTitle = noteCtrl.generateUniqueTitle(dashboardCtrl.getAllNotes(), note, newTitle, false);
 
         try {
+            if (uniqueTitle.equals(oldTitle)) {
+                throw new IllegalArgumentException("Title cannot be the same as the current title");
+            }
             note.setTitle(uniqueTitle);
             noteCtrl.getUpdatePendingNotes().add(note);
             handleReferenceTitleChange(note, oldTitle, uniqueTitle);
@@ -293,8 +296,12 @@ public class CustomTreeCell extends TreeCell<Object> {
 
             dashboardCtrl.getActionHistory().push(new Action(ActionType.EDIT_TITLE, note, oldTitle, uniqueTitle));
             notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
-        } catch (ClientErrorException e) {
-            notificationsCtrl.pushNotification(bundle.getString("invalid.name"), true);
+        } catch (IllegalArgumentException | ClientErrorException e) {
+            if (e instanceof IllegalArgumentException) {
+                notificationsCtrl.pushNotification(bundle.getString("sameName"), true);
+            } else {
+                notificationsCtrl.pushNotification(bundle.getString("invalidName"), true);
+            }
             note.setTitle(originalNoteTitle);
         }
 
