@@ -7,6 +7,7 @@ import client.entities.Action;
 import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
 import client.utils.Config;
+import client.utils.ServerUtils;
 import com.google.inject.Inject;
 import commons.Collection;
 import commons.Note;
@@ -52,15 +53,17 @@ public class CustomTreeCell extends TreeCell<Object> {
     private Config config;
     private LanguageManager manager;
     private ResourceBundle bundle;
+    private final ServerUtils server;
 
 
-    public CustomTreeCell(DashboardCtrl dashboardCtrl, NoteCtrl noteCtrl, DialogStyler dialogStyler , NotificationsCtrl notificationsCtrl) {
+    public CustomTreeCell(DashboardCtrl dashboardCtrl, NoteCtrl noteCtrl, DialogStyler dialogStyler , NotificationsCtrl notificationsCtrl, ServerUtils server) {
         this.dashboardCtrl = dashboardCtrl;
         this.notificationsCtrl = notificationsCtrl;
         this.noteCtrl = noteCtrl;
         this.dialogStyler = dialogStyler;
         this.manager = LanguageManager.getInstance(this.config);
         this.bundle = this.manager.getBundle();
+        this.server = server;
 
         // Initialize Note components
         noteTitleLabel = new Label();
@@ -222,6 +225,17 @@ public class CustomTreeCell extends TreeCell<Object> {
     public void startEditing() {
         Note note = (Note) getItem();
         if (note == null) return;
+
+        if (!server.isServerAvailable(note.collection.serverURL)) {
+            String alertText = bundle.getString("noteUpdateError") + "\n" + note.title;
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    bundle.getString("serverCouldNotBeReached.text"),
+                    bundle.getString("serverCouldNotBeReached.text"),
+                    alertText
+            ).showAndWait();
+            return;
+        }
 
         originalNoteTitle = note.getTitle();
         noteTextField = new TextField(originalNoteTitle);

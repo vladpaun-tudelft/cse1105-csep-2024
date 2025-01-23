@@ -386,6 +386,7 @@
     -fx-min-height: 27px;
     -fx-pref-height: 27px;
     -fx-max-height: 27px;
+    -fx-min-width: 125px;
     -fx-alignment: center;
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
