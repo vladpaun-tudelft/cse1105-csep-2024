@@ -1028,6 +1028,11 @@ public class DashboardCtrl implements Initializable {
             }
             case ActionType.MOVE_NOTE -> {
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
+                if(currentCollection == null){
+                    allNotesView.scrollTo(allNotesView.getSelectionModel().getSelectedIndex());
+                } else {
+                    collectionView.scrollTo(collectionView.getSelectionModel().getSelectedIndex());
+                }
             }
             /*case ActionType.MOVE_MULTIPLE_NOTES -> {
                 collectionCtrl.moveMultipleNotes(destinationCollection);
