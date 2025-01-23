@@ -11,6 +11,7 @@
 
     -main-text: black;
     -secondary-text: #000000;
+    -fx-prompt-text-fill: black;
 }
 
 .edit_icon {
@@ -43,6 +44,13 @@
     -fx-background-image: url("icons/dark/FavouriteDark.png");
 }
 
+.set_default_collection_icon{
+    -fx-background-image: url("icons/set_default_collection.png");
+}
+.set_default_collection_icon:hover{
+    -fx-background-color: -main-selected;
+}
+
 .accessibility-button:hover{
     -fx-background-color: -main-selected !important;
 }
@@ -53,4 +61,15 @@
     -fx-pref-width: 18px;
     -fx-pref-height: 18px;
     -fx-cursor: hand;
+}
+
+.tooltip {
+    -fx-background-color: #333333; /* Background color */
+    -fx-text-fill: white;         /* Text color */
+    -fx-font-size: 12px;          /* Font size */
+    -fx-padding: 10px;            /* Padding around the text */
+    -fx-border-color: -main-selected;    /* Border color */
+    -fx-border-width: 2px;        /* Border width */
+    -fx-border-radius: 5px;       /* Rounded corners for border */
+    -fx-background-radius: 5px;   /* Rounded corners for background */
 }

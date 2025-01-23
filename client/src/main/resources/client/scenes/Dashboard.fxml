@@ -117,7 +117,7 @@
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor></Button>
-                  <MenuButton fx:id="currentCollectionTitle" layoutX="38.0" layoutY="3.0" maxHeight="-Infinity" maxWidth="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="145.0" style="-fx-font-weight: bold; -fx-font-size: 12px;" styleClass="current-collection-menuButton" text="%currentCollectionTitle.text" AnchorPane.leftAnchor="37.0" AnchorPane.rightAnchor="42.0" AnchorPane.topAnchor="2.0">
+                  <MenuButton fx:id="currentCollectionTitle" layoutX="38.0" layoutY="3.0" maxHeight="-Infinity" maxWidth="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="145.0" style="-fx-font-weight: bold; -fx-font-size: 14px;" styleClass="current-collection-menuButton" text="%currentCollectionTitle.text" AnchorPane.leftAnchor="37.0" AnchorPane.rightAnchor="42.0" AnchorPane.topAnchor="2.0">
 
                           <items>
                         <MenuItem fx:id="addCollectionButton" mnemonicParsing="false" onAction="#addCollection" text="%addCollectionButton.text" />

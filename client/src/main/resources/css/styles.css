@@ -322,7 +322,7 @@
 
 .current-collection-menuButton .custom-menu-item {
     -fx-text-fill: -main-text;
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
     -fx-padding: 0
 }
 
@@ -357,7 +357,7 @@
 .current-collection-label {
     -fx-text-fill: -main-text;
     -fx-padding: 6;
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
     -fx-pref-width: 250px;
     -fx-max-width: 250px;
 }

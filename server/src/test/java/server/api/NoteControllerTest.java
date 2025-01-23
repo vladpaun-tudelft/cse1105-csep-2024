@@ -6,7 +6,9 @@ import commons.Note;
 import net.minidev.json.JSONUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +16,11 @@ import server.service.CollectionService;
 import server.service.EmbeddedFileService;
 import server.service.NoteService;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 class NoteControllerTest {
@@ -352,5 +358,45 @@ class NoteControllerTest {
         var response = noteController.renameFile(1L, 1L, "new_name.txt");
 
         assertEquals(ResponseEntity.notFound().build(), response);
+    }
+
+    @Test
+    public void updateNoteWithInvalidDataTest() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        Note invalidNote = new Note("", "invalid", collection1);
+        var response = noteController.updateNote(1, invalidNote);
+
+        assertEquals(BAD_REQUEST, response.getStatusCode());
+        var actual = noteController.getNoteById(1);
+        assertEquals(ResponseEntity.ok(note1), actual);
+    }
+
+    @Test
+    public void duplicateNoteTitlesInSameCollectionTest() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        Note duplicateNote = new Note("note1", "different content", collection1);
+        var response = noteController.createNote(duplicateNote);
+
+        assertEquals(BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void uploadFileErrorTest() throws IOException {
+        // Set up a note
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        // Create a mock file and mock response
+        MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
+        doThrow(new IOException("File saving failed")).when(embeddedFileService).saveFile(any(Note.class), any(MultipartFile.class));
+
+
+        var response = noteController.uploadFile(1L, mockFile);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("Error uploading file"));
     }
 }
