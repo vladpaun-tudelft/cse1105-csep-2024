@@ -3,7 +3,8 @@ package client;
 public enum Language {
     ENGLISH("en", "English", "/css/icons/en.jpg"),
     DUTCH("nl", "Nederlands", "/css/icons/nl.jpg"),
-    ROMANIAN("ro", "Română", "/css/icons/ro.jpg");
+    ROMANIAN("ro", "Română", "/css/icons/ro.jpg"),
+    POLISH("pl", "Polski", "/css/icons/pl.jpg");
 
     private final String code;
     private final String displayName;
