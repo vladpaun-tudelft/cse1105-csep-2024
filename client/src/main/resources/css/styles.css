@@ -149,24 +149,25 @@
 .icon:hover {
     -fx-background-color: -main-selected;
 }
+
+.accessibility-button{
+    -fx-background-size: 15px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: right;
+    -fx-text-alignment: left;
+    -fx-alignment: center-left;
+    -fx-border-color: transparent;
+    -fx-background-color: -secondary-foreground;
+}
+.accessibility-button:hover{
+    -fx-background-color: -secondary-selected !important;
+}
+
 .accessibility-icon {
     -fx-background-image: url("icons/accessibility.png");
-    -fx-background-size: 15px;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: right;
-    -fx-text-alignment: left;
-    -fx-alignment: center-left;
-    -fx-border-color: transparent;
-    -fx-background-insets: 15px;
 }
 .no-accessibility-icon {
-    -fx-background-image: url("icons/no-accessibility.png");
-    -fx-background-size: 15px;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: right;
-    -fx-text-alignment: left;
-    -fx-alignment: center-left;
-    -fx-border-color: transparent;
+    -fx-background-image: url("icons/dark/no-accessibility.png");
 }
 
 .search_bar_icon {
@@ -635,7 +636,7 @@
 }
 
 .combo-box .text {
-    -fx-fill: white;
+    -fx-fill: -main-text;
 }
 
 /* Scrollbar styles */

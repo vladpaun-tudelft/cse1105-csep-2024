@@ -38,17 +38,21 @@
 }
 
 .set_default_collection_icon {
-    -fx-background-image: url("icons/dark/set_default_collection.png");
+    -fx-background-image: url("icons/dark/FavouriteDark.png");
 }
 
 .default_collection_icon{
     -fx-background-image: url("icons/dark/default_collection.png");
 }
 
-.accessibility-icon {
-    -fx-background-image: url("icons/dark/accessibility.png");
+.accessibility-button:hover{
+    -fx-background-color: -main-selected !important;
 }
 
-.no-accessibility-icon {
-    -fx-background-image: url("icons/dark/no-accessibility.png");
+.file-view-delete-button {
+    -fx-background-image: url("icons/dark/trash.png");
+    -fx-background-size: 18px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+    -fx-cursor: hand;
 }

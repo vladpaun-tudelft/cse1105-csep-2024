@@ -298,6 +298,9 @@ public class DashboardCtrl implements Initializable {
             main.start(primaryStage);
             DashboardCtrl dashboardCtrl = main.getDashboardCtrl();
 
+            dashboardCtrl.isAccessible = !isAccessible;
+            dashboardCtrl.toggleAccessibility();
+
             // transfer state
             if (isFullScreen) {
                 primaryStage.setFullScreen(true);
