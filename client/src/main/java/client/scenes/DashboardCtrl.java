@@ -1,6 +1,8 @@
 package client.scenes;
 
-import client.*;
+import client.Language;
+import client.LanguageManager;
+import client.Main;
 import client.controllers.*;
 import client.entities.Action;
 import client.entities.ActionType;
@@ -717,7 +719,21 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void deleteSelectedNote() {
-        noteCtrl.deleteSelectedNote(currentNote, collectionNotes, allNotes);
+        if (currentCollection == null) {
+            if (allNotesView.getSelectionModel().getSelectedItems().size() == 1) {
+                noteCtrl.deleteSelectedNote(currentNote, collectionNotes, allNotes);
+            } else {
+                noteCtrl.deleteMultipleNotesInTreeView(allNotes,
+                        allNotesView.getSelectionModel().getSelectedItems(),
+                        collectionNotes);
+            }
+        } else {
+            if(collectionView.getSelectionModel().getSelectedItems().size() == 1) {
+                noteCtrl.deleteSelectedNote(currentNote, collectionNotes, allNotes);
+            } else {
+                noteCtrl.deleteMultipleNotes(allNotes, collectionView.getSelectionModel().getSelectedItems(), collectionNotes);
+            }
+        }
         updateTagList();
     }
 

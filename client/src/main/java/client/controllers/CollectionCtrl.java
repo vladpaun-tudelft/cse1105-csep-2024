@@ -180,11 +180,13 @@ public class CollectionCtrl {
                 dashboardCtrl.refreshTreeView();
                dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
                 dashboardCtrl.selectNoteInTreeView(currentNote);
-                //if(dashboardCtrl.getCurrentCollection() == null) {
-                //    dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex());
-                //} else {
-                 //   dashboardCtrl.collectionView.scrollTo(dashboardCtrl.collectionView.getSelectionModel().getSelectedIndex());
-                //}
+                if (dashboardCtrl.getCurrentCollection() == null) {
+                    dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex());
+
+                } else {
+                    dashboardCtrl.collectionView.scrollTo(dashboardCtrl.collectionView.getSelectionModel().getSelectedIndex());
+
+                }
             }
             else if(collectionView.getSelectionModel().getSelectedItems().size() > 1) {
                 //dashboardCtrl.getActionHistory().push(new Action(ActionType.MOVE_MULTIPLE_NOTES, currentNote, currentNote.collection, selectedCollection));
@@ -364,6 +366,10 @@ public class CollectionCtrl {
      * A method used to move note from one collection to the other
      */
     public void moveNoteFromCollection(Note currentNote, Collection selectedCollection) {
+
+        if(selectedCollection.title==null){
+            return;
+        }
         RadioMenuItem selectedRadioMenuItem = collectionSelect.getToggles().stream()
                 .filter(toggle -> toggle instanceof RadioMenuItem item && item.getText().equals(selectedCollection.title))
                 .map(toggle -> (RadioMenuItem) toggle)
