@@ -228,7 +228,7 @@ public class NoteCtrl {
                            ObservableList<Note> collectionNotes,
                            ObservableList<Note> allNotes) {
         updatePendingNotes.remove(currentNote);
-        for (EmbeddedFile file : currentNote.getEmbeddedFiles()) {
+        for (EmbeddedFile file : currentNote.getEmbeddedFiles().stream().toList()) {
             server.deleteFile(currentNote, file);
             currentNote.getEmbeddedFiles().remove(file);
         }
