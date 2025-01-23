@@ -1,0 +1,75 @@
+* {
+    -main-foreground: white;
+    -secondary-foreground: #cacaca;
+    -main-background: #aeaeae;
+    -main-selected: #a6e1c2;
+    -secondary-selected: #5e7a97;
+    -tertiary-selected: #af3e38;
+    -dark-border: black;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+
+    -main-text: black;
+    -secondary-text: #000000;
+    -fx-prompt-text-fill: black;
+}
+
+.edit_icon {
+    -fx-background-image: url("icons/dark/edit_title.png");
+}
+.delete_icon {
+    -fx-background-image: url("icons/dark/trash.png");
+}
+.close_program_icon{
+    -fx-background-image: url("icons/dark/cross.png");
+}
+
+.add_note {
+    -fx-background-image: url("icons/dark/addFile.png");
+}
+.search_icon {
+    -fx-background-image: url("icons/dark/search.png");
+}
+.clear_search_icon {
+    -fx-background-image: url("icons/dark/clear_search.png");
+}
+
+.refresh_icon {
+    -fx-background-image: url("icons/dark/refresh.png");
+}
+
+
+
+.default_collection_icon{
+    -fx-background-image: url("icons/dark/FavouriteDark.png");
+}
+
+.set_default_collection_icon{
+    -fx-background-image: url("icons/set_default_collection.png");
+}
+.set_default_collection_icon:hover{
+    -fx-background-color: -main-selected !important;
+}
+
+.accessibility-button:hover{
+    -fx-background-color: -main-selected !important;
+}
+
+.file-view-delete-button {
+    -fx-background-image: url("icons/dark/trash.png");
+    -fx-background-size: 18px;
+    -fx-pref-width: 18px;
+    -fx-pref-height: 18px;
+    -fx-cursor: hand;
+}
+
+.tooltip {
+    -fx-background-color: #333333; /* Background color */
+    -fx-text-fill: white;         /* Text color */
+    -fx-font-size: 12px;          /* Font size */
+    -fx-padding: 10px;            /* Padding around the text */
+    -fx-border-color: -main-selected;    /* Border color */
+    -fx-border-width: 2px;        /* Border width */
+    -fx-border-radius: 5px;       /* Rounded corners for border */
+    -fx-background-radius: 5px;   /* Rounded corners for background */
+}

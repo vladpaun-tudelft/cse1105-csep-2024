@@ -185,7 +185,6 @@ class NoteControllerTest {
     @Test
     public void addMessage() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
 
         Note result = noteController.addMessage(note1);
 
@@ -352,5 +351,29 @@ class NoteControllerTest {
         var response = noteController.renameFile(1L, 1L, "new_name.txt");
 
         assertEquals(ResponseEntity.notFound().build(), response);
+    }
+
+    @Test
+    public void updateNoteWithInvalidDataTest() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        Note invalidNote = new Note("", "invalid", collection1);
+        var response = noteController.updateNote(1, invalidNote);
+
+        assertEquals(BAD_REQUEST, response.getStatusCode());
+        var actual = noteController.getNoteById(1);
+        assertEquals(ResponseEntity.ok(note1), actual);
+    }
+
+    @Test
+    public void duplicateNoteTitlesInSameCollectionTest() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+
+        Note duplicateNote = new Note("note1", "different content", collection1);
+        var response = noteController.createNote(duplicateNote);
+
+        assertEquals(BAD_REQUEST, response.getStatusCode());
     }
 }

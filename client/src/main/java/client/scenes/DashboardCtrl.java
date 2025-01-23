@@ -100,6 +100,7 @@ public class DashboardCtrl implements Initializable {
     @FXML private MenuButton languageButton;
     @FXML private ScrollPane fileScrollPane;
     @FXML private Text filesText;
+    @FXML private Button accessibilityButton;
 
 
     // Variables
@@ -115,6 +116,8 @@ public class DashboardCtrl implements Initializable {
     @Getter @Setter private boolean isProgrammaticChange = false;
     @Getter @Setter private Deque<Action> actionHistory = new ArrayDeque<>();
     private boolean isUndoBodyChange = false; // Flag for undo-triggered body changes
+    @Getter private boolean isAccessible = false;
+    @Getter private String currentCss;
 
     @Inject
     public DashboardCtrl(ServerUtils server,
@@ -149,6 +152,7 @@ public class DashboardCtrl implements Initializable {
 
         languageManager = LanguageManager.getInstance(config);
         setupLanguageButton();
+        currentCss = getClass().getResource("/css/color-styles.css").toExternalForm();
 
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = allNotes;
@@ -177,7 +181,7 @@ public class DashboardCtrl implements Initializable {
 
         collectionCtrl.setDashboardCtrl(this);
 
-        notificationsCtrl.setReferences(notificationsBar, notificationsLabel);
+        notificationsCtrl.setReferences(notificationsBar, notificationsLabel, this);
 
         noteCtrl.setReferences(
                 collectionView,
@@ -294,6 +298,9 @@ public class DashboardCtrl implements Initializable {
             main.start(primaryStage);
             DashboardCtrl dashboardCtrl = main.getDashboardCtrl();
 
+            dashboardCtrl.isAccessible = !isAccessible;
+            dashboardCtrl.toggleAccessibility();
+
             // transfer state
             if (isFullScreen) {
                 primaryStage.setFullScreen(true);
@@ -315,7 +322,7 @@ public class DashboardCtrl implements Initializable {
             dashboardCtrl.selectNoteInTreeView(backupCurrentNote);
             dashboardCtrl.getTagCtrl().selectTags(selectedTags);
             Platform.runLater(() -> dashboardCtrl.getCollectionView().getSelectionModel().select(backupCurrentNote));
-            Platform.runLater(() -> notificationsCtrl.pushNotification(bundle.getString("newLanguage"), false));
+            dashboardCtrl.notificationsCtrl.pushNotification(dashboardCtrl.bundle.getString("newLanguage"), false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1230,5 +1237,30 @@ public class DashboardCtrl implements Initializable {
         refreshTreeView(filteredCollections, filteredNotes, true);
 
         collectionView.getSelectionModel().clearSelection();
+    }
+
+    @FXML
+    public void toggleAccessibility(){
+        if(isAccessible) {
+            accessibilityButton.getStyleClass().remove("no-accessibility-icon");
+            if (!accessibilityButton.getStyleClass().contains("accessibility-icon")) {
+                accessibilityButton.getStyleClass().add("accessibility-icon");
+            }
+
+            root.getStylesheets().add(getClass().getResource("/css/color-styles.css").toExternalForm());
+            root.getStylesheets().remove(getClass().getResource("/css/accessible-styles.css").toExternalForm());
+            currentCss = getClass().getResource("/css/color-styles.css").toExternalForm();
+        }else{
+            accessibilityButton.getStyleClass().remove("accessibility-icon");
+            if (!accessibilityButton.getStyleClass().contains("no-accessibility-icon")) {
+                accessibilityButton.getStyleClass().add("no-accessibility-icon");
+            }
+
+            root.getStylesheets().add(getClass().getResource("/css/accessible-styles.css").toExternalForm());
+            root.getStylesheets().remove(getClass().getResource("/css/color-styles.css").toExternalForm());
+            currentCss = getClass().getResource("/css/accessible-styles.css").toExternalForm();
+        }
+        notificationsCtrl.pushNotification(bundle.getString("toggled.accessibility"), false);
+        isAccessible = !isAccessible;
     }
 }

@@ -83,6 +83,15 @@ public class NoteController {
         if (!collectionService.getAllCollections().contains(note.collection)) {
             return ResponseEntity.badRequest().build();
         }
+        boolean isDuplicateTitle = noteService
+                .getAllNotes()
+                .stream()
+                .anyMatch(existingNote -> existingNote.title.equals(note.title) && existingNote.collection.equals(note.collection));
+
+        if (isDuplicateTitle) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Note createdNote = noteService.save(note);
         return ResponseEntity.ok(createdNote);
     }

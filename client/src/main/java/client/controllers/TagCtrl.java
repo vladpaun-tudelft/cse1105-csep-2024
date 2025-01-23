@@ -106,7 +106,7 @@ public class TagCtrl {
                 // add "No tags" to the dropdown when no tags are available
                 if (availableTags.isEmpty()) {
                     comboBox.setPromptText(bundle.getString("noMoreTags.text"));
-                    comboBox.setStyle("-fx-text-fill: #f5f5f5; -fx-font-style: italic;");
+                    comboBox.setStyle("-fx-text-fill: -main-text; -fx-font-style: italic;");
                     comboBox.setDisable(true);
                 } else {
                     comboBox.setPromptText(bundle.getString("selectATag.text"));
@@ -125,6 +125,7 @@ public class TagCtrl {
                 }
             }
         }
+
     }
 
     /**
