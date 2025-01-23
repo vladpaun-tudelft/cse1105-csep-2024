@@ -31,7 +31,7 @@
                </styleClass>
             </Label>
             <Region prefHeight="30.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-            <Button mnemonicParsing="false" onAction="#onExitCollections" prefHeight="30.0" prefWidth="20.0">
+            <Button mnemonicParsing="false" onAction="#onExitCollections" prefHeight="30.0" prefWidth="20.0" style="-fx-background-color: -secondary-foreground;">
                <styleClass>
                   <String fx:value="close_program_icon" />
                   <String fx:value="icon" />
