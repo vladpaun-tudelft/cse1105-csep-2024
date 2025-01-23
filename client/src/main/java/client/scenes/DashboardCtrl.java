@@ -1,6 +1,8 @@
 package client.scenes;
 
-import client.*;
+import client.Language;
+import client.LanguageManager;
+import client.Main;
 import client.controllers.*;
 import client.entities.Action;
 import client.entities.ActionType;
@@ -756,24 +758,25 @@ public class DashboardCtrl implements Initializable {
 
             boolean isWithinWord = removedSegment.matches("\\w*") && addedSegment.matches("\\w*");
 
-            if (!newBody.isBlank() && (!actionHistory.isEmpty() && "editBody".equals(actionHistory.peek().getType()) &&
+            if (!newBody.isBlank() && (!actionHistory.isEmpty() && ActionType.EDIT_BODY.equals(actionHistory.peek().getType()) &&
                     actionHistory.peek().getNote().equals(currentNote))) {
 
                 if (isWithinWord) {
                     // Merge changes into the last action if they are within a word
                     Action lastAction = actionHistory.pop();
-                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, lastAction.getPreviousState(), newBody));
+                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, lastAction.getPreviousState(), null, newBody));
                 } else {
                     // Create a new action for changes across words or lines
-                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, newBody));
+                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, null, newBody));
                 }
             } else {
                 // Create a new action for the first change
-                actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, newBody));
+                actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, null, newBody));
             }
         }
-
     }
+
+
 
     public void deleteSelectedNote() {
         if(!server.isServerAvailable(currentNote.collection.serverURL)) {
@@ -857,7 +860,7 @@ public class DashboardCtrl implements Initializable {
         if (newFile != null) {
             filesCtrl.showFiles(currentNote);
             // Save the file addition action to the history
-            actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, newFile, null));
+            actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, newFile, null, null));
         }
     }
 
@@ -981,8 +984,9 @@ public class DashboardCtrl implements Initializable {
      * CTRL + Z - Undoes the last action done to a note
      */
     public void undoLastAction(KeyEvent event) {
-        if (actionHistory.isEmpty()) {
-            return; // No actions to undo
+
+        if(actionHistory.isEmpty()){
+            return;
         }
 
         Action lastAction = actionHistory.pop();
@@ -1018,14 +1022,25 @@ public class DashboardCtrl implements Initializable {
                 filesCtrl.renameFileInputted(changedFile, previousName, currentNote);
             }
             case ActionType.MOVE_NOTE -> {
+                isProgrammaticChange = true;
+                Note note = currentNote;
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
+                refreshTreeView();
+                allNotesView.getSelectionModel().clearSelection();
+                selectNoteInTreeView(note);
+                isProgrammaticChange = false;
             }
-            /*case ActionType.MOVE_MULTIPLE_NOTES -> {
-                collectionCtrl.moveMultipleNotes(destinationCollection);
-            }*/
-            /*case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
-                collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
-            }*/
+            case ActionType.MOVE_MULTIPLE_NOTES -> {
+                collectionCtrl.moveMultipleNotes((Collection)lastAction.getPreviousState());
+            }
+
+            case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
+                collectionCtrl.moveMultipleNotesInTreeView(
+                        null,
+                        true,
+                        (ObservableList<TreeItem<Note>>) lastAction.getPreviousState());
+
+            }
             default -> throw new UnsupportedOperationException(bundle.getString("undoUnsupported.text") + lastAction.getType());
         }
         event.consume();
