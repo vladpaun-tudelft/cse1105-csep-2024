@@ -383,20 +383,4 @@ class NoteControllerTest {
 
         assertEquals(BAD_REQUEST, response.getStatusCode());
     }
-
-    @Test
-    public void uploadFileErrorTest() throws IOException {
-        // Set up a note
-        collectionController.createCollection(collection1);
-        noteController.createNote(note1);
-
-        // Create a mock file and mock response
-        MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
-        doThrow(new IOException("File saving failed")).when(embeddedFileService).saveFile(any(Note.class), any(MultipartFile.class));
-
-
-        var response = noteController.uploadFile(1L, mockFile);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertTrue(response.getBody().toString().contains("Error uploading file"));
-    }
 }

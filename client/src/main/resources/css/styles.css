@@ -144,7 +144,6 @@
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
     -fx-border-color: transparent;
-    -fx-background-color: transparent;
 }
 .icon:hover {
     -fx-background-color: -main-selected;
@@ -303,6 +302,7 @@
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
 }
+.collection-list-view .list-cell {
 .collection-list-view .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: -main-text;
@@ -545,13 +545,19 @@
     -fx-background-radius: 4px 4px 0 0;
     -fx-border-radius: 4px 4px 0 0 ;
 }
-
+    .close-button{
+        -fx-background-color: -secondary-foreground;
+    }
 .close-button:hover{
     -fx-background-color: -tertiary-selected;
 }
-
+    .popup-button{
+        -fx-text-fill: -main-text;
+    }
 .popup-button:hover{
     -fx-background-color: -tertiary-selected;
+    -fx-text-fill: white;
+    
 }
 .popup-button:focused{
     -fx-background-color: -tertiary-selected;
