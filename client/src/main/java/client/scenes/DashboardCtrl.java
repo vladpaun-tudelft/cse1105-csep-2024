@@ -115,6 +115,7 @@ public class DashboardCtrl implements Initializable {
     @Getter @Setter private boolean isProgrammaticChange = false;
     @Getter @Setter private Deque<Action> actionHistory = new ArrayDeque<>();
     private boolean isUndoBodyChange = false; // Flag for undo-triggered body changes
+    @Getter private boolean isAccessible = false;
 
     @Inject
     public DashboardCtrl(ServerUtils server,
@@ -177,7 +178,7 @@ public class DashboardCtrl implements Initializable {
 
         collectionCtrl.setDashboardCtrl(this);
 
-        notificationsCtrl.setReferences(notificationsBar, notificationsLabel);
+        notificationsCtrl.setReferences(notificationsBar, notificationsLabel, this);
 
         noteCtrl.setReferences(
                 collectionView,
@@ -1230,5 +1231,17 @@ public class DashboardCtrl implements Initializable {
         refreshTreeView(filteredCollections, filteredNotes, true);
 
         collectionView.getSelectionModel().clearSelection();
+    }
+
+    @FXML
+    public void toggleAccessibility(){
+        if(isAccessible) {
+            root.getStylesheets().add(getClass().getResource("/css/color-styles.css").toExternalForm());
+            root.getStylesheets().remove(getClass().getResource("/css/accessible-styles.css").toExternalForm());
+        }else{
+            root.getStylesheets().add(getClass().getResource("/css/accessible-styles.css").toExternalForm());
+            root.getStylesheets().remove(getClass().getResource("/css/color-styles.css").toExternalForm());
+        }
+        isAccessible = !isAccessible;
     }
 }

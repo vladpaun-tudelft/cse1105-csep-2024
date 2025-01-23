@@ -33,6 +33,7 @@
 -->
 
 <?import java.lang.String?>
+<?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
@@ -59,7 +60,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
 
-<VBox fx:id="root" prefHeight="600.0" prefWidth="900.0" styleClass="mainView" stylesheets="@../../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
+<VBox fx:id="root" prefHeight="600.0" prefWidth="900.0" styleClass="mainView" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.DashboardCtrl">
     <children>
         <MenuBar styleClass="options-bar" VBox.vgrow="NEVER" />
         <SplitPane dividerPositions="0.2506" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" styleClass="content-view" VBox.vgrow="ALWAYS">
@@ -104,7 +105,7 @@
                            </cursor></Button>
                      </children>
                   </AnchorPane>
-                        <Button fx:id="deleteCollectionButton" layoutX="40.0" layoutY="539.0" mnemonicParsing="false" onAction="#deleteCollection" style="-fx-text-fill: #c73232;" text="%deleteCollectionButton.text" underline="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
+                        <Button fx:id="deleteCollectionButton" layoutX="40.0" layoutY="539.0" mnemonicParsing="false" onAction="#deleteCollection" style="-fx-text-fill: -tertiary-selected;" text="%deleteCollectionButton.text" underline="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0">
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor></Button>
@@ -116,7 +117,7 @@
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor></Button>
-                  <MenuButton fx:id="currentCollectionTitle" layoutX="31.0" layoutY="6.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" styleClass="current-collection-menuButton" text="%currentCollectionTitle.text" AnchorPane.leftAnchor="35.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="0.0">
+                  <MenuButton fx:id="currentCollectionTitle" layoutX="38.0" layoutY="3.0" maxHeight="-Infinity" maxWidth="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="145.0" style="-fx-font-weight: bold; -fx-font-size: 12px;" styleClass="current-collection-menuButton" text="%currentCollectionTitle.text" AnchorPane.leftAnchor="37.0" AnchorPane.rightAnchor="42.0" AnchorPane.topAnchor="2.0">
 
                           <items>
                         <MenuItem fx:id="addCollectionButton" mnemonicParsing="false" onAction="#addCollection" text="%addCollectionButton.text" />
@@ -135,7 +136,7 @@
                 </AnchorPane>
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
-                    <HBox fx:id="tagsRow" alignment="CENTER_LEFT" spacing="10.0" VBox.vgrow="NEVER">
+                    <HBox fx:id="tagsRow" alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-width: 1px;" VBox.vgrow="NEVER">
                         <children>
                             <Label fx:id="tagLabel" minWidth="-Infinity" styleClass="tagLabel" text="%tags.text" />
                             <ScrollPane fx:id="tagsScrollPane" fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER" HBox.hgrow="ALWAYS">
@@ -154,12 +155,12 @@
                                   <content>
                                       <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="551.0" prefWidth="329.0" styleClass="background-element">
                                           <children>
-                                              <TextArea fx:id="noteBody" layoutX="4.0" layoutY="47.0" onKeyReleased="#onBodyChanged" prefHeight="480.0" prefWidth="329.0" styleClass="background-element" wrapText="true" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="3.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="46.0">
+                                              <TextArea fx:id="noteBody" layoutX="4.0" layoutY="47.0" onKeyReleased="#onBodyChanged" prefHeight="480.0" prefWidth="329.0" style="-fx-font-weight: 400;" styleClass="background-element" wrapText="true" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="3.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="46.0">
                                                   <font>
                                                       <Font size="14.0" />
                                                   </font>
                                     </TextArea>
-                                              <Label fx:id="noteTitle" layoutX="8.666666666666666" layoutY="6.666666666666666" style="&#10;" text="%noteBody.placeholder" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                              <Label fx:id="noteTitle" layoutX="8.666666666666666" layoutY="6.666666666666666" style="-fx-font-size: 18px;" text="%noteBody.placeholder" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
                                                   <font>
                                                       <Font size="18.0" fx:id="x1" />
                                                   </font>
@@ -221,9 +222,9 @@
                                           <Cursor fx:constant="HAND" />
                                        </cursor>
                                     </Button>
-                                    <ScrollPane fx:id="fileScrollPane" fitToWidth="true" layoutX="57.599999999999994" layoutY="525.0" prefHeight="40.0" prefWidth="213.0" style="-fx-background-color: #1E1F22;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="57.0">
+                                    <ScrollPane fx:id="fileScrollPane" fitToWidth="true" layoutX="57.599999999999994" layoutY="525.0" prefHeight="40.0" prefWidth="213.0" style="-fx-background-color: -main-foreground;" vbarPolicy="NEVER" vmax="0.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="57.0">
                                        <content>
-                                          <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: #1E1F22;" styleClass="file-view" />
+                                          <HBox fx:id="filesView" prefHeight="30.0" style="-fx-spacing: 7; -fx-background-color: -main-background;" styleClass="file-view" />
                                        </content>
                                     </ScrollPane>
                                     <Label fx:id="filesViewBlocker" alignment="BOTTOM_LEFT" layoutX="4.0" layoutY="505.0" prefHeight="62.0" prefWidth="327.0" styleClass="background-element" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
@@ -233,9 +234,9 @@
                               </ScrollPane>
                               <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="-1.0" prefWidth="-1.0">
                                   <content>
-                                      <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" styleClass="background-element">
+                                      <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="571.0" prefWidth="441.0" style="-fx-background-color: #1E1F22;" styleClass="background-element">
                                           <children>
-                                              <Label fx:id="noteTitleMD" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="&#10;" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                              <Label fx:id="noteTitleMD" alignment="CENTER" layoutX="7.0" layoutY="8.0" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;" textAlignment="CENTER" wrapText="false" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
                                                   <font>
                                                       <Font name="System Bold" size="18.0" fx:id="x11" />
                                                   </font>
@@ -278,6 +279,7 @@
                </font>
             </Label>
             <Region prefHeight="25.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+            <Button mnemonicParsing="false" onAction="#toggleAccessibility" prefHeight="25.0" prefWidth="164.0" style="-fx-background-color: -secondary-foreground;" text="Toggle accessibility" />
                       <MenuButton fx:id="languageButton" minHeight="0.0" mnemonicParsing="false" prefHeight="25.0">
                <font>
                   <Font size="6.0" />
@@ -286,4 +288,8 @@
          </children>
       </HBox>
     </children>
+   <stylesheets>
+      <URL value="@../../css/styles.css" />
+      <URL value="@../../css/color-styles.css" />
+   </stylesheets>
 </VBox>

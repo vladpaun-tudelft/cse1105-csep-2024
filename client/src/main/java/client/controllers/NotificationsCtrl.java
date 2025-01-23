@@ -1,5 +1,6 @@
 package client.controllers;
 
+import client.scenes.DashboardCtrl;
 import com.google.inject.Inject;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
@@ -15,6 +16,7 @@ public class NotificationsCtrl {
 
     private HBox notificationBar;
     private Label notificationText;
+    private DashboardCtrl dashboardCtrl;
 
     private Timeline activeTimeline;
     private PauseTransition activePauseTransition;
@@ -25,16 +27,17 @@ public class NotificationsCtrl {
 
     }
 
-    public void setReferences(HBox notificationBox, Label notificationText) {
+    public void setReferences(HBox notificationBox, Label notificationText, DashboardCtrl dashboardCtrl) {
         this.notificationBar = notificationBox;
         this.notificationText = notificationText;
+        this.dashboardCtrl = dashboardCtrl;
     }
 
     public void pushNotification(String message, boolean isError) {
         if(isError) Toolkit.getDefaultToolkit().beep(); // play THAT windows sound
 
-        if(isError) notificationText.setStyle("-fx-text-fill:  white;"); // #ff2d45
-        else notificationText.setStyle("-fx-text-fill: white");
+        if(isError) notificationText.setStyle("-fx-text-fill:  -main-text;"); // #ff2d45
+        else notificationText.setStyle("-fx-text-fill: -main-text");
 
         notificationText.setOpacity(1.0);
 
@@ -95,7 +98,8 @@ public class NotificationsCtrl {
         if (!isError) startColor = "#424C3FFF"; // Green
             //6A854AFF
         // End color
-        String endColor = "#2B2D30";  // Main foreground color
+        String endColor = "#2B2D30";
+        if(dashboardCtrl.isAccessible()) endColor = "#FFFFFF";  // Main foreground color
 
         // Interpolate the RGB values for the first color
         int startRed = Integer.parseInt(startColor.substring(1, 3), 16);

@@ -148,7 +148,7 @@ public class CollectionCtrl {
                     Label label = new Label(filteredCollection.title);
                     label.maxWidthProperty().bind(listView.widthProperty().subtract(10)); // Set maximum width in pixels
                     label.setTextOverrun(OverrunStyle.ELLIPSIS); // Set overrun to ellipsis
-                    label.setStyle("-fx-text-fill: white;"); // Set text color to white
+                    label.setStyle("-fx-text-fill: -main-text;"); // Set text color to white
                     setGraphic(label);
                 }
             }

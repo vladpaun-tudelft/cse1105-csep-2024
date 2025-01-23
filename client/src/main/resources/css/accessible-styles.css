@@ -1,0 +1,14 @@
+* {
+    -main-foreground: white;
+    -secondary-foreground: #cacaca;
+    -main-background: #aeaeae;
+    -main-selected: #a6e1c2;
+    -secondary-selected: #5e7a97;
+    -tertiary-selected: #af3e38;
+    -dark-border: #1f2022;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+
+    -main-text: black;
+    -secondary-text: #000000;
+}

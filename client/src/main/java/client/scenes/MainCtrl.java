@@ -56,6 +56,7 @@ public class MainCtrl {
 
         this.dashboardCtrl = dashboard.getKey();
         this.dashboard = new Scene(dashboard.getValue());
+        this.dashboard.getStylesheets().add(getClass().getResource("/css/color-styles.css").toExternalForm());
         this.dashboard.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
 
         manager = LanguageManager.getInstance(config);
