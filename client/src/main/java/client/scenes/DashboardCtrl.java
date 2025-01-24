@@ -33,6 +33,7 @@ import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -223,10 +224,10 @@ public class DashboardCtrl implements Initializable {
         filesCtrl.setDashboardCtrl(this);
         filesCtrl.setReferences(filesView);
 
+        AnchorPane.setLeftAnchor(fileScrollPane, filesText.getLayoutX() + filesText.getBoundsInParent().getWidth() + 5);
         fileScrollPane.prefWidthProperty().bind(
                 addFileButton.layoutXProperty()
-                        .subtract(filesText.layoutXProperty())
-                        .subtract(filesText.getBoundsInParent().getWidth())
+                        .subtract(fileScrollPane.layoutXProperty())
                         .subtract(10) // 5px gap from each side
         );
 
