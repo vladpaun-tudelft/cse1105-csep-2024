@@ -18,7 +18,6 @@ package client;
 import client.scenes.DashboardCtrl;
 import client.scenes.MainCtrl;
 import client.utils.Config;
-import client.utils.ServerUtils;
 import com.google.inject.Injector;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -42,11 +41,9 @@ public class Main extends Application {
 	}
 
 	@Override
-	public void start(Stage primaryStage) throws Exception {
+	public void start(Stage primaryStage) {
 		Injector injector = createInjector(new MyModule());
 		MyFXML FXML = new MyFXML(injector);
-
-		var serverUtils = injector.getInstance(ServerUtils.class);
 
 		Config config = injector.getInstance(Config.class);
 		LanguageManager languageManager = LanguageManager.getInstance(config);

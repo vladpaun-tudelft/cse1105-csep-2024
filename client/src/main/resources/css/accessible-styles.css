@@ -51,6 +51,10 @@
     -fx-background-color: -main-selected !important;
 }
 
+.help-icon {
+    -fx-background-image: url("icons/dark/help_dark.png");
+}
+
 .accessibility-button:hover{
     -fx-background-color: -main-selected !important;
 }
