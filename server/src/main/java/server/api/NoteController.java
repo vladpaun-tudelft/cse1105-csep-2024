@@ -75,6 +75,13 @@ public class NoteController {
         return newFileName;
     }
 
+    @MessageMapping("/notes/{id}/body")
+    @SendTo("/topic/notes/{id}/body")
+    public String updateNoteBody(@DestinationVariable Long id,String updatedBody) {
+        System.out.println("Sending to: /topic/notes/" + id + "/body");
+        return updatedBody;
+    }
+
     @PostMapping(path = {"/", ""})
     public ResponseEntity<Note> createNote(@RequestBody Note note) {
         if (note == null || note.collection == null || note.title.isBlank()) {

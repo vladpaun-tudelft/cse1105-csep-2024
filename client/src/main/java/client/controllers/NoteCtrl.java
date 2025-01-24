@@ -298,6 +298,11 @@ public class NoteCtrl {
             if (!updatePendingNotes.contains(currentNote)) {
                 updatePendingNotes.add(currentNote);
             }
+
+            String destination = "/app/notes/" + currentNote.getId() + "/body";
+
+            // Send the updated body to the server
+            ServerUtils.getSession().send(destination, rawText);
         }
     }
 

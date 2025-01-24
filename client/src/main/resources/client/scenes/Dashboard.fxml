@@ -264,7 +264,7 @@
             </VBox>
             </items>
         </SplitPane>
-      <HBox fx:id="notificationsBar" maxHeight="25.0" prefHeight="25.0" prefWidth="200.0">
+      <HBox fx:id="notificationsBar" maxHeight="25.0" prefHeight="25.0">
          <styleClass>
             <String fx:value="notifications-bar" />
             <String fx:value="notifications-bar-faded" />

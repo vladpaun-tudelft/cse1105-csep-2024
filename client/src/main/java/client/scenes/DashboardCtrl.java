@@ -369,10 +369,11 @@ public class DashboardCtrl implements Initializable {
 
                 markdownViewBlocker.setVisible(false);
 
+                // FILE WEBSOCKETS
                 server.registerForEmbeddedFileUpdates(currentNote, embeddedFileId -> {
                     Platform.runLater(() -> {
-//                        filesCtrl.showFiles(currentNote);
                         filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId);
+
                     });
                 });
                 server.registerForEmbeddedFilesDeleteUpdates(currentNote, embeddedFileId -> {
@@ -386,6 +387,17 @@ public class DashboardCtrl implements Initializable {
                     });
                 });
 
+                // NOTE CONTENT WEBSOCKETS
+                server.registerForNoteBodyUpdates(currentNote, updatedBody -> {
+                    // Update the UI with the new note body
+                    System.out.println("Received updated body: " + updatedBody);
+
+                    // Example: Update the text area in the UI
+                    Platform.runLater(() -> {
+                        noteBody.setText(updatedBody);
+                    });
+                });
+
             } else {
                 currentNote = null;
                 // Show content blockers when no item is selected
@@ -395,6 +407,7 @@ public class DashboardCtrl implements Initializable {
                 filesViewBlocker.setVisible(true);
 
                 server.unregisterFromEmbeddedFileUpdates();
+                server.unregisterFromNoteUpdates();
             }
         });
 
@@ -460,6 +473,17 @@ public class DashboardCtrl implements Initializable {
                     server.registerForEmbeddedFilesRenameUpdates(currentNote, newFileName -> {
                         Platform.runLater(() -> {
                             filesCtrl.updateViewAfterRename(currentNote, newFileName);
+                        });
+                    });
+
+                    // NOTE CONTENT WEBSOCKETS
+                    server.registerForNoteBodyUpdates(currentNote, updatedBody -> {
+                        // Update the UI with the new note body
+                        System.out.println("Received updated body: " + updatedBody);
+
+                        // Example: Update the text area in the UI
+                        Platform.runLater(() -> {
+                            noteBody.setText(updatedBody);
                         });
                     });
 

@@ -64,8 +64,13 @@ public class ServerUtils {
 	private StompSession.Subscription embeddedFilesDeleteUpdates;
 	@Getter @Setter
 	private StompSession.Subscription embeddedFilesRenameUpdates;
+
+	@Getter @Setter
+	private StompSession.Subscription noteBodySubscription;
+
 	@Getter @Setter
 	private static List<Collection> unavailableCollections;
+
 
 	@Inject
 	public ServerUtils(Config config, DialogStyler dialogStyler) {
@@ -101,6 +106,36 @@ public class ServerUtils {
 			}
 		});
 	}
+
+	public void registerForNoteBodyUpdates(Note selectedNote, Consumer<String> consumer) {
+
+		if (!isServerAvailable(selectedNote.collection.serverURL)) {
+			return;
+		}
+
+		if (noteBodySubscription != null && session != null) {
+			try {
+				noteBodySubscription.unsubscribe();
+			} catch (IllegalStateException ignored) {}
+		}
+
+		String topic = "/topic/notes/" + selectedNote.getId() + "/body";
+		noteBodySubscription = session.subscribe(topic, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				System.out.println("Received message on the topic: " + topic);
+				return String.class;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				System.out.println("Received payload: " + payload);
+				consumer.accept((String) payload);
+			}
+		});
+	}
+
+
 
 	public void registerForEmbeddedFilesDeleteUpdates(Note selectedNote, Consumer<Long> consumer) {
 		if (!isServerAvailable(selectedNote.collection.serverURL)) {
@@ -174,6 +209,10 @@ public class ServerUtils {
 			} catch (IllegalStateException _) {}
 			embeddedFilesRenameUpdates = null;
 		}
+	}
+
+	public void unregisterFromNoteUpdates() {
+		// TODO Implement
 	}
 
 	public void getWebSocketURL(String serverURL) {
