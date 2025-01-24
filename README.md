@@ -9,7 +9,7 @@ This repository contains the NetNote application, developed as part of the CSE p
 ### Prerequisites
 To run the project, you need:
 - [Maven](https://maven.apache.org/install.html) installed on your system or the provided Maven wrapper (`mvnw`).
-- Java 17 or later.
+- Java 23 or later.
 
 ### Steps to Build and Run
 1. Clone the repository.
