@@ -356,7 +356,7 @@ public class DashboardCtrl implements Initializable {
         collectionView.setCellFactory(TextFieldListCell.forListView());
 
         // Set ListView entry as Title (editable)
-        collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server));
+        collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server,notificationsCtrl));
 
         collectionView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -1004,7 +1004,7 @@ public class DashboardCtrl implements Initializable {
                 noteTitle.setText(oldTitle);
                 noteTitleMD.setText(oldTitle);
                 refreshTreeView();
-                collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server));
+                collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server,notificationsCtrl));
             }
             case ActionType.ADD_FILE -> {
                 EmbeddedFile addedFile = (EmbeddedFile) lastAction.getPreviousState();
