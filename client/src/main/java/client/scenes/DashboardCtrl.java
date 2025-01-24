@@ -39,10 +39,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
+import javax.tools.Tool;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -104,7 +106,8 @@ public class DashboardCtrl implements Initializable {
     @FXML private ScrollPane fileScrollPane;
     @FXML private Text filesText;
     @FXML private Button accessibilityButton;
-
+    @FXML private Button refreshButton;
+    @FXML private Button searchButton;
 
     // Variables
     @Getter @Setter private Note currentNote = null;
@@ -156,6 +159,34 @@ public class DashboardCtrl implements Initializable {
         languageManager = LanguageManager.getInstance(config);
         setupLanguageButton();
         currentCss = getClass().getResource("/css/color-styles.css").toExternalForm();
+
+        // Tooltips
+        Tooltip refreshTooltip = new Tooltip(bundle.getString("refresh.text"));
+        refreshTooltip.setShowDelay(Duration.seconds(0.2));
+        refreshButton.setTooltip(refreshTooltip);
+
+        Tooltip addNoteTooltip = new Tooltip(bundle.getString("addNote.text"));
+        addNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        addButton.setTooltip(addNoteTooltip);
+
+        Tooltip clearSearchTooltip = new Tooltip(bundle.getString("clearSearch.text"));
+        clearSearchTooltip.setShowDelay(Duration.seconds(0.2));
+        clearSearchButton.setTooltip(clearSearchTooltip);
+
+        Tooltip searchTooltip = new Tooltip(bundle.getString("search.text"));
+        searchTooltip.setShowDelay(Duration.seconds(0.2));
+        searchButton.setTooltip(searchTooltip);
+
+        Tooltip deleteNoteTooltip = new Tooltip(bundle.getString("deleteNote.text"));
+        deleteNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        deleteButton.setTooltip(deleteNoteTooltip);
+
+        Tooltip languageTooltip = new Tooltip(bundle.getString("selectLanguage.text"));
+        languageTooltip.setShowDelay(Duration.seconds(0.2));
+        languageButton.setTooltip(languageTooltip);
+
+        // ---------
+
 
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = allNotes;
