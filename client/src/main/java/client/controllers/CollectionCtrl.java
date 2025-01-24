@@ -110,6 +110,7 @@ public class CollectionCtrl {
                         }
                     }
                 }
+                dashboardCtrl.showBlockers();
             }
             dashboardCtrl.filter();
             dashboardCtrl.updateTagList();

@@ -388,14 +388,7 @@ public class DashboardCtrl implements Initializable {
                 });
 
             } else {
-                currentNote = null;
-                // Show content blockers when no item is selected
-                contentBlocker.setVisible(true);
-                markdownViewBlocker.setVisible(true);
-                moveNotesButton.setText(bundle.getString("moveNote.text"));
-                filesViewBlocker.setVisible(true);
-
-                server.unregisterFromEmbeddedFileUpdates();
+                showBlockers();
             }
         });
 
@@ -465,15 +458,7 @@ public class DashboardCtrl implements Initializable {
                     });
 
                 } else {
-                    currentNote = null;
-                    allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-                    // Show content blockers when no item is selected
-                    contentBlocker.setVisible(true);
-                    markdownViewBlocker.setVisible(true);
-                    moveNotesButton.setText(bundle.getString("moveNote.text"));
-                    filesViewBlocker.setVisible(true);
-
-                    server.unregisterFromEmbeddedFileUpdates();
+                    showBlockers();
                 }
             }
         });
@@ -485,6 +470,18 @@ public class DashboardCtrl implements Initializable {
         // Set custom TreeCell factory for NoteTreeItem
         allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl, server));
 
+    }
+
+    public void showBlockers() {
+        currentNote = null;
+        allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        // Show content blockers when no item is selected
+        contentBlocker.setVisible(true);
+        markdownViewBlocker.setVisible(true);
+        moveNotesButton.setText(bundle.getString("moveNote.text"));
+        filesViewBlocker.setVisible(true);
+
+        server.unregisterFromEmbeddedFileUpdates();
     }
 
     /**
