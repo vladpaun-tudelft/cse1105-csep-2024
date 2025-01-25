@@ -224,7 +224,7 @@ public class NoteListItem extends ListCell<Note> {
 
             noteCtrl.saveAllPendingNotes();
 
-            controller.getActionHistory().push(new Action(ActionType.EDIT_TITLE, item, oldTitle, uniqueTitle));
+            controller.getActionHistory().push(new Action(ActionType.EDIT_TITLE, item, oldTitle, null ,uniqueTitle));
         } catch (IllegalArgumentException | ClientErrorException e) {
             if (e instanceof IllegalArgumentException) {
                 notificationsCtrl.pushNotification(bundle.getString("sameName"), true);
