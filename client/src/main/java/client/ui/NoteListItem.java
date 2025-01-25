@@ -18,6 +18,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.util.Duration;
 
 import java.util.ResourceBundle;
 
@@ -77,11 +78,17 @@ public class NoteListItem extends ListCell<Note> {
         deleteButton = new Button();
         deleteButton.getStyleClass().addAll("icon", "note_list_icon", "delete_icon");
         deleteButton.setCursor(Cursor.HAND);
+        Tooltip deleteNoteTooltip = new Tooltip(bundle.getString("deleteNote.text"));
+        deleteNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        deleteButton.setTooltip(deleteNoteTooltip);
 
         // Initialize the edit button
         editButton = new Button();
         editButton.getStyleClass().addAll("icon", "note_list_icon", "edit_icon");
         editButton.setCursor(Cursor.HAND);
+        Tooltip editNoteTooltip = new Tooltip(bundle.getString("editNote.text"));
+        editNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        editButton.setTooltip(editNoteTooltip);
 
         // Create layout
         hBox = new HBox(0);
@@ -224,7 +231,7 @@ public class NoteListItem extends ListCell<Note> {
 
             noteCtrl.saveAllPendingNotes();
 
-            controller.getActionHistory().push(new Action(ActionType.EDIT_TITLE, item, oldTitle, uniqueTitle));
+            controller.getActionHistory().push(new Action(ActionType.EDIT_TITLE, item, oldTitle, null ,uniqueTitle));
         } catch (IllegalArgumentException | ClientErrorException e) {
             if (e instanceof IllegalArgumentException) {
                 notificationsCtrl.pushNotification(bundle.getString("sameName"), true);

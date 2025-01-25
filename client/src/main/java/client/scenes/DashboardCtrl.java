@@ -39,6 +39,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -104,7 +105,8 @@ public class DashboardCtrl implements Initializable {
     @FXML private ScrollPane fileScrollPane;
     @FXML private Text filesText;
     @FXML private Button accessibilityButton;
-
+    @FXML private Button refreshButton;
+    @FXML private Button searchButton;
 
     // Variables
     @Getter @Setter private Note currentNote = null;
@@ -156,6 +158,38 @@ public class DashboardCtrl implements Initializable {
         languageManager = LanguageManager.getInstance(config);
         setupLanguageButton();
         currentCss = getClass().getResource("/css/color-styles.css").toExternalForm();
+
+        // Tooltips
+        Tooltip refreshTooltip = new Tooltip(bundle.getString("refresh.text"));
+        refreshTooltip.setShowDelay(Duration.seconds(0.2));
+        refreshButton.setTooltip(refreshTooltip);
+
+        Tooltip addNoteTooltip = new Tooltip(bundle.getString("addNote.text"));
+        addNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        addButton.setTooltip(addNoteTooltip);
+
+        Tooltip clearSearchTooltip = new Tooltip(bundle.getString("clearSearch.text"));
+        clearSearchTooltip.setShowDelay(Duration.seconds(0.2));
+        clearSearchButton.setTooltip(clearSearchTooltip);
+
+        Tooltip searchTooltip = new Tooltip(bundle.getString("search.text"));
+        searchTooltip.setShowDelay(Duration.seconds(0.2));
+        searchButton.setTooltip(searchTooltip);
+
+        Tooltip deleteNoteTooltip = new Tooltip(bundle.getString("deleteNote.text"));
+        deleteNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        deleteButton.setTooltip(deleteNoteTooltip);
+
+        Tooltip languageTooltip = new Tooltip(bundle.getString("selectLanguage.text"));
+        languageTooltip.setShowDelay(Duration.seconds(0.2));
+        languageButton.setTooltip(languageTooltip);
+
+        Tooltip moveNotesTooltip = new Tooltip(bundle.getString("moveSelectedNotes.text"));
+        moveNotesTooltip.setShowDelay(Duration.seconds(0.2));
+        moveNotesButton.setTooltip(moveNotesTooltip);
+
+        // ---------
+
 
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = allNotes;
@@ -388,14 +422,7 @@ public class DashboardCtrl implements Initializable {
                 });
 
             } else {
-                currentNote = null;
-                // Show content blockers when no item is selected
-                contentBlocker.setVisible(true);
-                markdownViewBlocker.setVisible(true);
-                moveNotesButton.setText(bundle.getString("moveNote.text"));
-                filesViewBlocker.setVisible(true);
-
-                server.unregisterFromEmbeddedFileUpdates();
+                showBlockers();
             }
         });
 
@@ -465,15 +492,7 @@ public class DashboardCtrl implements Initializable {
                     });
 
                 } else {
-                    currentNote = null;
-                    allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-                    // Show content blockers when no item is selected
-                    contentBlocker.setVisible(true);
-                    markdownViewBlocker.setVisible(true);
-                    moveNotesButton.setText(bundle.getString("moveNote.text"));
-                    filesViewBlocker.setVisible(true);
-
-                    server.unregisterFromEmbeddedFileUpdates();
+                    showBlockers();
                 }
             }
         });
@@ -485,6 +504,18 @@ public class DashboardCtrl implements Initializable {
         // Set custom TreeCell factory for NoteTreeItem
         allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl, server));
 
+    }
+
+    public void showBlockers() {
+        currentNote = null;
+        allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        // Show content blockers when no item is selected
+        contentBlocker.setVisible(true);
+        markdownViewBlocker.setVisible(true);
+        moveNotesButton.setText(bundle.getString("moveNote.text"));
+        filesViewBlocker.setVisible(true);
+
+        server.unregisterFromEmbeddedFileUpdates();
     }
 
     /**
@@ -759,24 +790,25 @@ public class DashboardCtrl implements Initializable {
 
             boolean isWithinWord = removedSegment.matches("\\w*") && addedSegment.matches("\\w*");
 
-            if (!newBody.isBlank() && (!actionHistory.isEmpty() && "editBody".equals(actionHistory.peek().getType()) &&
+            if (!newBody.isBlank() && (!actionHistory.isEmpty() && ActionType.EDIT_BODY.equals(actionHistory.peek().getType()) &&
                     actionHistory.peek().getNote().equals(currentNote))) {
 
                 if (isWithinWord) {
                     // Merge changes into the last action if they are within a word
                     Action lastAction = actionHistory.pop();
-                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, lastAction.getPreviousState(), newBody));
+                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, lastAction.getPreviousState(), null, newBody));
                 } else {
                     // Create a new action for changes across words or lines
-                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, newBody));
+                    actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, null, newBody));
                 }
             } else {
                 // Create a new action for the first change
-                actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, newBody));
+                actionHistory.push(new Action(ActionType.EDIT_BODY, currentNote, previousBody, null, newBody));
             }
         }
-
     }
+
+
 
     public void deleteSelectedNote() {
         if(!server.isServerAvailable(currentNote.collection.serverURL)) {
@@ -839,6 +871,8 @@ public class DashboardCtrl implements Initializable {
         }
         filter();
         updateTagList();
+        actionHistory.clear();
+
     }
 
     public void connectToCollection(Collection collection) {
@@ -874,7 +908,7 @@ public class DashboardCtrl implements Initializable {
         if (newFile != null) {
             filesCtrl.showFiles(currentNote);
             // Save the file addition action to the history
-            actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, newFile, null));
+            actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, newFile, null, null));
         }
     }
 
@@ -998,8 +1032,9 @@ public class DashboardCtrl implements Initializable {
      * CTRL + Z - Undoes the last action done to a note
      */
     public void undoLastAction(KeyEvent event) {
-        if (actionHistory.isEmpty()) {
-            return; // No actions to undo
+
+        if(actionHistory.isEmpty()){
+            return;
         }
 
         Action lastAction = actionHistory.pop();
@@ -1038,19 +1073,31 @@ public class DashboardCtrl implements Initializable {
                 filesCtrl.renameFileByName(newName,previousName, currentNote);
             }
             case ActionType.MOVE_NOTE -> {
+                isProgrammaticChange = true;
+                Note note = currentNote;
                 collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
+                refreshTreeView();
+                allNotesView.getSelectionModel().clearSelection();
+                selectNoteInTreeView(note);
+                allNotesView.scrollTo(allNotesView.getSelectionModel().getSelectedIndex());
+                isProgrammaticChange = false;
+            }
+            case ActionType.MOVE_MULTIPLE_NOTES -> {
+                collectionCtrl.moveMultipleNotes((Collection)lastAction.getPreviousState());
                 if(currentCollection == null){
                     allNotesView.scrollTo(allNotesView.getSelectionModel().getSelectedIndex());
                 } else {
                     collectionView.scrollTo(collectionView.getSelectionModel().getSelectedIndex());
                 }
             }
-            /*case ActionType.MOVE_MULTIPLE_NOTES -> {
-                collectionCtrl.moveMultipleNotes(destinationCollection);
-            }*/
-            /*case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
-                collectionCtrl.moveMultipleNotesInTreeView(destinationCollection);
-            }*/
+
+            case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {
+                collectionCtrl.moveMultipleNotesInTreeView(
+                        null,
+                        true,
+                        (ObservableList<TreeItem<Note>>) lastAction.getPreviousState());
+
+            }
             default -> throw new UnsupportedOperationException(bundle.getString("undoUnsupported.text") + lastAction.getType());
         }
         event.consume();
@@ -1287,5 +1334,9 @@ public class DashboardCtrl implements Initializable {
         }
         notificationsCtrl.pushNotification(bundle.getString("toggled.accessibility"), false);
         isAccessible = !isAccessible;
+    }
+
+    public void showHelpMenu() {
+        mainCtrl.showHelpMenu();
     }
 }

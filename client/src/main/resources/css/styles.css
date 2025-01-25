@@ -149,6 +149,22 @@
     -fx-background-color: -main-selected;
 }
 
+.help-button{
+    -fx-background-size: 15px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: right;
+    -fx-text-alignment: left;
+    -fx-alignment: center-left;
+    -fx-border-color: transparent;
+}
+.help-button:hover {
+    -fx-background-color: -main-selected;
+}
+.help-icon {
+    -fx-background-image: url("icons/dark/help_dark.png");
+}
+
+
 .accessibility-button{
     -fx-background-size: 15px;
     -fx-background-repeat: no-repeat;

@@ -139,25 +139,32 @@ To run the project, you need:
     - `CTRL + SHIFT + E` / `ALT + SHIFT + E` - Edit collection
 - **Delete:**
     - `ALT + DELETE` - Delete current note
-    - `ALT + SHIFT + DELETE` - Forget collection
 - **Navigation:**
     - `ALT + UP/DOWN ARROW` - Navigate notes
     - `ALT + SHIFT +UP/DOWN ARROW` - Select multiple notes
     - `ALT + LEFT/RIGHT ARROW` - Navigate collections
 - **Other Actions:**
-    - `CTRL + Z` / `ALT + Z` - Undo last note action
+    - ```CTRL + Z```or ```ALT + Z``` - Undo last note action
+        - Actions include:
+            1. Note title changes
+            2. Note body changes
+            3. Moving notes between collections
+            4. Moving multiple notes at the same time
+            5. Adding / Editing / Deleting embedded files
     - `ESCAPE` - Clear search and focus search field
     - `F5` - Refresh
     - `F11` / `ALT + ENTER` - Fullscreen
 
-### Collections Stage
-- **Collection Management:**
-    - `CTRL + N` / `ALT + N` - Add new collection
-    - `CTRL + S` / `ALT + S` - Save collection
-    - `ALT + C` - Create/Connect collection
-    - `ALT + DELETE` - Delete collection
-- **Navigation:**
-    - `UP/DOWN ARROW` - Navigate collections
-    - `TAB` / `SHIFT + TAB` - Navigate input fields & buttons
-- **Other Actions:**
-    - `ESCAPE` - Close stage
+#### Collections Stage
+- ```CTRL + N``` or ```ALT + N``` - Add new collection
+- ```CTRL + S``` or ```ALT + S``` - Save collection
+- ```ALT + C``` - Create/Connect collection
+- ```ALT + DELETE``` - Delete collection
+- ```ALT + SHIFT + DELETE``` - Forget collection
+
+
+- ```UP ARROW``` or ```DOWN ARROW``` - Navigate through collections
+- ```TAB``` or ```SHIFT + TAB``` - Navigate through input fields & buttons
+
+
+- ```ESCAPE``` - Close Stage

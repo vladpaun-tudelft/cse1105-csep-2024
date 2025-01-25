@@ -279,7 +279,7 @@ public class FilesCtrl {
             }
             if (dashboardCtrl.getActionHistory() != null) {
                 dashboardCtrl.getActionHistory().push(
-                        new Action(ActionType.EDIT_FILE_NAME,currentNote,file.getFileName(),fileName.get(), file)
+                        new Action(ActionType.EDIT_FILE_NAME,currentNote,file.getFileName(),null,fileName.get(), file)
                 );
             }
 
