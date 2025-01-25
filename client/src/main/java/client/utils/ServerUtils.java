@@ -136,7 +136,7 @@ public class ServerUtils {
 	}
 
 	public void registerForNoteTitleUpdates(Consumer<Note> consumer) {
-		if(noteBodySubscription!=null){
+		if(session==null){
 			return;
 		}
 
