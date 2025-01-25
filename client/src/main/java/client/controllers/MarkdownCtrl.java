@@ -200,7 +200,7 @@ public class MarkdownCtrl {
     /**
      * Converts markdown content to HTML, applying CSS and JavaScript for tooltips and interactivity.
      */
-    private String convertMarkdownToHtml(String markdown) {
+    public String convertMarkdownToHtml(String markdown) {
         markdown = convertFileNameToURL(markdown);
         String htmlContent = markdown == null || markdown.isEmpty() ? "" : renderer.render(parser.parse(markdown));
 

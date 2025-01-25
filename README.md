@@ -22,7 +22,7 @@ Once this is working, you can try importing the project into your favorite IDE.
 
 ## Keyboard Shortcuts
 #### Dashboard:
-- ```CTRL + N``` or ```ALT + N``` -- New Note
+- ```CTRL + N``` or ```ALT + N``` - New Note
 - ```CTRL + SHIFT + N``` or ```ALT + SHIFT + N``` - New Collection
 
 
@@ -33,6 +33,12 @@ Once this is working, you can try importing the project into your favorite IDE.
 - ```ALT + DELETE``` - Delete current note
 
 - ```CTRL + Z```or ```ALT + Z``` - Undo last note action
+    - Actions include:
+        1. Note title changes
+        2. Note body changes
+        3. Moving notes between collections
+        4. Moving multiple notes at the same time
+        5. Adding / Editing / Deleting embedded files
 
 
 - ```ALT + DOWN ARROW``` - Show next note
