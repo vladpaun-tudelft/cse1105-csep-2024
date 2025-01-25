@@ -10,9 +10,9 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
 
 public class HelpMenuCtrl implements Initializable {
@@ -41,20 +41,20 @@ public class HelpMenuCtrl implements Initializable {
 
     private void addText() {
         try {
-            String path = "HELP_" +
+            String resourcePath = "help/HELP_" +
                 switch (languageManager.getCurrentLanguage()) {
-                    case ENGLISH:
-                        yield "EN";
-                    case DUTCH:
-                        yield "NL";
-                    case ROMANIAN:
-                        yield "RO";
-                    case POLISH:
-                        yield "PL";
+                    case ENGLISH -> "EN";
+                    case DUTCH -> "NL";
+                    case ROMANIAN -> "RO";
+                    case POLISH -> "PL";
                 }
                 + ".md";
-            // Read the README.md file
-            String markdownContent = Files.readString(Path.of(path));
+
+            ClassLoader classLoader = getClass().getClassLoader();
+            InputStream inputStream = classLoader.getResourceAsStream(resourcePath);
+
+            // Read theckout e README.md file
+            String markdownContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
             // Convert Markdown to HTML
             String htmlContent = markdownCtrl.convertMarkdownToHtml(markdownContent);
