@@ -115,6 +115,7 @@ public class CollectionCtrl {
                 }
                 dashboardCtrl.showBlockers();
             }
+
             dashboardCtrl.filter();
             dashboardCtrl.updateTagList();
         });
@@ -193,7 +194,7 @@ public class CollectionCtrl {
                         }
 
 
-                        } else if (collectionView.getSelectionModel().getSelectedItems().size() > 1) {
+                    } else if (collectionView.getSelectionModel().getSelectedItems().size() > 1) {
                         //dashboardCtrl.setProgrammaticChange(true);
                         ObservableList<Note> selectedNotes = collectionView.getSelectionModel().getSelectedItems();
                         Collection currentCollection = selectedNotes.get(0).collection;
@@ -201,7 +202,6 @@ public class CollectionCtrl {
                         dashboardCtrl.getActionHistory().push(new Action
                                 (ActionType.MOVE_MULTIPLE_NOTES, null, currentCollection, null, selectedCollection));
                         // dashboardCtrl.setProgrammaticChange(false);
-
 
                     } else if (dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size() > 1) {
                         ObservableList<TreeItem<Note>> selectedNotes
@@ -318,6 +318,7 @@ public class CollectionCtrl {
                         config.readDefaultCollection().serverURL
                 );
                 dashboardCtrl.noteAdditionSync();
+                dashboardCtrl.noteTitleSync();
                 dashboardCtrl.noteDeletionSync();
             }
             else {
@@ -402,6 +403,9 @@ public class CollectionCtrl {
         ).showAndWait().filter(b -> b == ButtonType.OK).isPresent();
     }
 
+    /**
+     * A method used to move note from one collection to the other
+     */
     /**
      * A method used to move note from one collection to the other
      */
@@ -579,6 +583,7 @@ public class CollectionCtrl {
         for (TreeItem<Note> treeItem : itemsToSelect) {
             dashboardCtrl.allNotesView.getSelectionModel().select(treeItem);
         }
+
         dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()
                 - dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size()/2);
 

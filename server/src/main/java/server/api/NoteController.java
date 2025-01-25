@@ -46,6 +46,18 @@ public class NoteController {
         throw new RuntimeException("Failed to create note on server");
     }
 
+    @MessageMapping("/notes/{noteId}/body")
+    @SendTo("/topic/notes/{noteId}/body")
+    public Note updateBody(@DestinationVariable Long noteId, Note note) {
+        return note;
+    }
+
+    @MessageMapping("/notes/title")
+    @SendTo("/topic/notes/title")
+    public Note updateTitle(Note note) {
+        return note;
+    }
+
     @MessageMapping("/deleteNote")
     @SendTo("/topic/notes/delete")
     public Note deleteNoteHandler(Note note) {

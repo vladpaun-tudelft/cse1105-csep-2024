@@ -232,6 +232,9 @@ public class NoteListItem extends ListCell<Note> {
             noteCtrl.saveAllPendingNotes();
 
             controller.getActionHistory().push(new Action(ActionType.EDIT_TITLE, item, oldTitle, null ,uniqueTitle));
+            notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
+            noteCtrl.updateTitleWebsocket(item);
+
         } catch (IllegalArgumentException | ClientErrorException e) {
             if (e instanceof IllegalArgumentException) {
                 notificationsCtrl.pushNotification(bundle.getString("sameName"), true);

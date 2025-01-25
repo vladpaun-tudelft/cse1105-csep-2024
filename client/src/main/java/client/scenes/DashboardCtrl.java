@@ -251,6 +251,7 @@ public class DashboardCtrl implements Initializable {
 
         collectionCtrl.moveNotesInitialization();
 
+        noteTitleSync();
         listViewSetup(collectionNotes);
         treeViewSetup();
 
@@ -373,6 +374,22 @@ public class DashboardCtrl implements Initializable {
         });
     }
 
+    public void noteTitleSync() {
+        server.registerForNoteTitleUpdates(note -> {
+            Platform.runLater(() -> {
+                Note toUpdate = allNotes.stream().filter(n -> n.id == note.id).findFirst().get();
+                if(toUpdate!=null){
+                    toUpdate.setTitle(note.getTitle());
+                    if(toUpdate.equals(currentNote)){
+                        noteTitle.setText(note.getTitle());
+                    }
+                    collectionView.refresh();
+                    refreshTreeView();
+                }
+            });
+        });
+    }
+
     public void noteDeletionSync() {
         server.registerForMessages("/topic/notes/delete", Note.class, note -> {
             Platform.runLater(() -> {
@@ -395,6 +412,7 @@ public class DashboardCtrl implements Initializable {
         // Set ListView entry as Title (editable)
         collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server,notificationsCtrl));
 
+        noteTitleSync();
         collectionView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 if (!isProgrammaticChange) actionHistory.clear();
@@ -404,10 +422,11 @@ public class DashboardCtrl implements Initializable {
 
                 markdownViewBlocker.setVisible(false);
 
+                // FILE WEBSOCKETS
                 server.registerForEmbeddedFileUpdates(currentNote, embeddedFileId -> {
                     Platform.runLater(() -> {
-//                        filesCtrl.showFiles(currentNote);
                         filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId);
+
                     });
                 });
                 server.registerForEmbeddedFilesDeleteUpdates(currentNote, embeddedFileId -> {
@@ -421,7 +440,17 @@ public class DashboardCtrl implements Initializable {
                     });
                 });
 
+                // NOTE CONTENT WEBSOCKETS
+                server.registerForNoteBodyUpdates(currentNote, newContent -> {
+                    Platform.runLater(() -> {
+                        onNoteUpdate(newContent);
+                        refreshTreeView();
+                    });
+                });
+
             } else {
+                server.unregisterFromEmbeddedFileUpdates();
+                server.unregisterFromNoteBodyUpdates();
                 showBlockers();
             }
         });
@@ -453,6 +482,7 @@ public class DashboardCtrl implements Initializable {
                 if (change.wasAdded()) {
                     server.getWebSocketURL(change.getAddedSubList().getFirst().serverURL);
                     noteAdditionSync();
+                    noteTitleSync();
                     noteDeletionSync();
                 }
                 syncTreeView(virtualRoot, collections, allNotes, false);
@@ -491,6 +521,15 @@ public class DashboardCtrl implements Initializable {
                         });
                     });
 
+                    // NOTE CONTENT WEBSOCKETS
+                    server.registerForNoteBodyUpdates(currentNote, newContent -> {
+                        Platform.runLater(() -> {
+                            onNoteUpdate(newContent);
+                            refreshTreeView();
+                        });
+                    });
+
+
                 } else {
                     showBlockers();
                 }
@@ -506,6 +545,18 @@ public class DashboardCtrl implements Initializable {
 
     }
 
+    private void onNoteUpdate(Note newContent) {
+        if (currentNote.id == newContent.id) {
+            if (!currentNote.getBody().equals(newContent.getBody())) {
+                notificationsCtrl.pushNotification(bundle.getString("newContent"), false);
+            }
+            int caretPosition = noteBody.getCaretPosition();
+            noteBody.setText(newContent.getBody());
+            noteBody.positionCaret(caretPosition);
+            currentNote.setBody(newContent.getBody());
+        }
+    }
+
     public void showBlockers() {
         currentNote = null;
         allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -516,6 +567,7 @@ public class DashboardCtrl implements Initializable {
         filesViewBlocker.setVisible(true);
 
         server.unregisterFromEmbeddedFileUpdates();
+        server.unregisterFromNoteBodyUpdates();
     }
 
     /**
@@ -666,6 +718,7 @@ public class DashboardCtrl implements Initializable {
                     allNotes.addAll(server.getNotesByCollection(defaultCollection));
                     server.getWebSocketURL(defaultCollection.serverURL);
                     noteAdditionSync();
+                    noteTitleSync();
                     noteDeletionSync();
                 }
                 ServerUtils.getUnavailableCollections().remove(defaultCollection);
@@ -690,6 +743,7 @@ public class DashboardCtrl implements Initializable {
                    allNotes.addAll(server.getNotesByCollection(currentCollection));
                    server.getWebSocketURL(currentCollection.serverURL);
                    noteAdditionSync();
+                   noteTitleSync();
                    noteDeletionSync();
                }
                ServerUtils.getUnavailableCollections().remove(currentCollection);
@@ -745,6 +799,7 @@ public class DashboardCtrl implements Initializable {
         if (defaultCollection != null && server.isServerAvailable(defaultCollection.serverURL)) {
             server.getWebSocketURL(defaultCollection.serverURL);
             noteAdditionSync();
+            noteTitleSync();
             noteDeletionSync();
         }
     }
@@ -1079,6 +1134,7 @@ public class DashboardCtrl implements Initializable {
                 refreshTreeView();
                 allNotesView.getSelectionModel().clearSelection();
                 selectNoteInTreeView(note);
+
                 allNotesView.scrollTo(allNotesView.getSelectionModel().getSelectedIndex());
                 isProgrammaticChange = false;
             }

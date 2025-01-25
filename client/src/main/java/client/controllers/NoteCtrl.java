@@ -271,6 +271,10 @@ public class NoteCtrl {
                     ).showAndWait();
                 }
                 else {
+                    Note newNote = new Note(dashboardCtrl.getCurrentNote().getTitle(), dashboardCtrl.getCurrentNote().getBody(), dashboardCtrl.getCurrentCollection());
+                    newNote.id = dashboardCtrl.getCurrentNote().id;
+                    server.send("/app/notes/" + dashboardCtrl.getCurrentNote().id +"/body", newNote);
+
                     server.updateNote(note);
                 }
             }
@@ -300,6 +304,8 @@ public class NoteCtrl {
             if (!updatePendingNotes.contains(currentNote)) {
                 updatePendingNotes.add(currentNote);
             }
+
+
         }
     }
 
@@ -316,6 +322,12 @@ public class NoteCtrl {
         }
 
         return uniqueTitle;
+    }
+
+    public void updateTitleWebsocket(Note note){
+        Note newNote = new Note(note.getTitle(),"", dashboardCtrl.getCurrentCollection());
+        newNote.id = note.id;
+        server.send("/app/notes/title", newNote);
     }
 
     /**

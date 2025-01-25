@@ -64,8 +64,15 @@ public class ServerUtils {
 	private StompSession.Subscription embeddedFilesDeleteUpdates;
 	@Getter @Setter
 	private StompSession.Subscription embeddedFilesRenameUpdates;
+
+	@Getter @Setter
+	private StompSession.Subscription noteBodySubscription;
+	@Getter @Setter
+	private StompSession.Subscription noteTitleSubscription;
+
 	@Getter @Setter
 	private static List<Collection> unavailableCollections;
+
 
 	@Inject
 	public ServerUtils(Config config, DialogStyler dialogStyler) {
@@ -98,6 +105,51 @@ public class ServerUtils {
 			@Override
 			public void handleFrame(StompHeaders headers, Object payload) {
 				consumer.accept((Long) payload);
+			}
+		});
+	}
+
+	public void registerForNoteBodyUpdates(Note selectedNote, Consumer<Note> consumer) {
+
+		if (!isServerAvailable(selectedNote.collection.serverURL)) {
+			return;
+		}
+
+		if (noteBodySubscription != null && session != null) {
+			try {
+				noteBodySubscription.unsubscribe();
+			} catch (IllegalStateException ignored) {}
+		}
+
+		String topic = "/topic/notes/" + selectedNote.getId() + "/body";
+		noteBodySubscription = session.subscribe(topic, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return Note.class;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((Note) payload);
+			}
+		});
+	}
+
+	public void registerForNoteTitleUpdates(Consumer<Note> consumer) {
+		if(session==null){
+			return;
+		}
+
+		String dest = "/topic/notes/title";
+		noteTitleSubscription = session.subscribe(dest, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return Note.class;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((Note) payload);
 			}
 		});
 	}
@@ -175,6 +227,16 @@ public class ServerUtils {
 			embeddedFilesRenameUpdates = null;
 		}
 	}
+
+	public void unregisterFromNoteBodyUpdates() {
+		if (noteBodySubscription != null && session != null) {
+			try {
+				noteBodySubscription.unsubscribe();
+			} catch (IllegalStateException _) {}
+			noteBodySubscription = null;
+		}
+	}
+
 
 	public void getWebSocketURL(String serverURL) {
 		if (session != null) {
