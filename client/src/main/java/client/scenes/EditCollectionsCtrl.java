@@ -239,6 +239,7 @@ public class EditCollectionsCtrl implements Initializable {
 
             refreshListView();
         }
+        dashboardCtrl.getActionHistory().clear();
     }
     @FXML
     public void forgetCollection() {
