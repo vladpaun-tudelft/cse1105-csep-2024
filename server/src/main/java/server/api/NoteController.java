@@ -48,7 +48,7 @@ public class NoteController {
 
     @MessageMapping("/notes/{noteId}/body")
     @SendTo("/topic/notes/{noteId}/body")
-    public Note updateBody(@DestinationVariable Long noteId, Note note) {
+    public Note updateBody(Note note) {
         return note;
     }
 
