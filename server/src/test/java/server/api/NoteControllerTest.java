@@ -14,6 +14,8 @@ import server.service.CollectionService;
 import server.service.EmbeddedFileService;
 import server.service.NoteService;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -416,4 +418,43 @@ class NoteControllerTest {
 
         assertEquals(BAD_REQUEST, response.getStatusCode());
     }
+
+    @Test
+    public void renameFileWithEmptyNameTest() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+        embeddedFileRepository.save(embeddedFile);
+        var response = noteController.renameFile(1L, 1L, "");
+        EmbeddedFile renamedFile = response.getBody();
+        assertNotNull(renamedFile);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    public void deleteNonExistingFileTest() {
+        collectionController.createCollection(collection1);
+        noteController.createNote(note1);
+        var response = noteController.deleteFile(note1.getId(), 999L);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    public void getAllNotesWhenEmptyTest() {
+        var response = noteController.getAllNotes();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    public void createNoteIdAssignmentTest() {
+        collectionController.createCollection(collection1);
+        var response = noteController.createNote(note1);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().id);
+        assertTrue(response.getBody().id > 0);
+    }
 }
+
+
+

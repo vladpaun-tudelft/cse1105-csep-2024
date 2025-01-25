@@ -185,6 +185,29 @@ class CollectionControllerTest {
     }
 
     @Test
+    public void getCollectionByTitleTest() {
+        collectionController.createCollection(collection1);
+        collectionController.createCollection(collection2);
+        collectionController.createCollection(collection3);
+        collectionController.createCollection(collection4);
+
+        collection1.title = "Title1";
+        collection2.title = "Title2";
+        collection3.title = "Title3";
+        collection4.title = "Title4";
+
+        ResponseEntity<Collection> actual1 = collectionController.getCollectionByTitle("Title1");
+        ResponseEntity<Collection> actual2 = collectionController.getCollectionByTitle("Title2");
+        ResponseEntity<Collection> actual3 = collectionController.getCollectionByTitle("Title3");
+        ResponseEntity<Collection> actual4 = collectionController.getCollectionByTitle("Title4");
+
+        assertEquals(ResponseEntity.ok(collection1), actual1);
+        assertEquals(ResponseEntity.ok(collection2), actual2);
+        assertEquals(ResponseEntity.ok(collection3), actual3);
+        assertEquals(ResponseEntity.ok(collection4), actual4);
+    }
+
+    @Test
     public void getCollectionByIdTest() {
         collectionController.createCollection(collection1);
         collectionController.createCollection(collection2);
@@ -200,6 +223,34 @@ class CollectionControllerTest {
         assertEquals(ResponseEntity.ok(collection2), actual2);
         assertEquals(ResponseEntity.ok(collection3), actual3);
         assertEquals(ResponseEntity.ok(collection4), actual4);
+    }
+
+    @Test
+    public void testCollectionsHaveUniqueTitles() {
+
+        // Create the collections
+        collectionController.createCollection(collection1);
+        collectionController.createCollection(collection2);
+        collectionController.createCollection(collection3);
+        collectionController.createCollection(collection4);
+
+        var response = collectionController.getAllCollections();
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        assertEquals(4, response.getBody().size());
+
+        var firstTitle = response.getBody().get(0).title;
+        var secondTitle = response.getBody().get(1).title;
+        var thirdTitle = response.getBody().get(2).title;
+        var fourthTitle = response.getBody().get(3).title;
+
+        assertNotEquals(firstTitle, secondTitle);
+        assertNotEquals(firstTitle, thirdTitle);
+        assertNotEquals(firstTitle, fourthTitle);
+        assertNotEquals(secondTitle, thirdTitle);
+        assertNotEquals(secondTitle, fourthTitle);
+        assertNotEquals(thirdTitle, fourthTitle);
     }
 
     @Test
@@ -265,5 +316,54 @@ class CollectionControllerTest {
 
         var actual3 = collectionController.updateCollection(1, new Collection("collection2", "http://localhost:8080/"));
         assertEquals(ResponseEntity.status(HttpStatus.CONFLICT).body("Duplicated collection title"), actual3);
+    }
+
+    @Test
+    public void getNotesInNonExistentCollectionTest() {
+        String nonExistentTitle = "CollectionDoesNotExist";
+        var response = collectionController.getNotesInCollection(nonExistentTitle);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    public void createCollectionsSameTitleDifferentServerURLTest() {
+        var firstResponse = collectionController.createCollection(collection1);
+        assertEquals(HttpStatus.OK, firstResponse.getStatusCode());
+
+        Collection sameTitleDiffURL = new Collection(collection1.title, "differentServerURL");
+        var secondResponse = collectionController.createCollection(sameTitleDiffURL);
+
+        assertEquals(HttpStatus.CONFLICT, secondResponse.getStatusCode());
+        assertEquals("Duplicated collection title.", secondResponse.getBody());
+    }
+
+    @Test
+    public void updateCollectionWithBlankServerURLTest() {
+        collectionController.createCollection(collection1);
+        Collection blankURLUpdate = new Collection(collection1.title, "");
+        long existingId = 1L;
+        var updateResponse = collectionController.updateCollection(existingId, blankURLUpdate);
+
+        assertEquals(HttpStatus.BAD_REQUEST, updateResponse.getStatusCode());
+        assertEquals("A collection needs a serverURL.", updateResponse.getBody());
+    }
+
+    @Test
+    public void updateCollectionWithNullServerURLTest() {
+        collectionController.createCollection(collection1);
+        Collection nullURLUpdate = new Collection(collection1.title, null);
+        long existingId = 1L;
+        var updateResponse = collectionController.updateCollection(existingId, nullURLUpdate);
+        assertEquals(HttpStatus.BAD_REQUEST, updateResponse.getStatusCode());
+        assertEquals("A collection needs a serverURL.", updateResponse.getBody());
+    }
+
+    @Test
+    public void createCollectionWithNullServerURLTest() {
+        Collection invalidUrlCollection = new Collection("InvalidURLCollection", null);
+        var response = collectionController.createCollection(invalidUrlCollection);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 }
