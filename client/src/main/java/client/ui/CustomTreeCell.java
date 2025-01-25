@@ -303,6 +303,8 @@ public class CustomTreeCell extends TreeCell<Object> {
 
             dashboardCtrl.getActionHistory().push(new Action(ActionType.EDIT_TITLE, note, oldTitle, null ,uniqueTitle));
             notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
+
+            noteCtrl.updateTitleWebsocket(note);
         } catch (IllegalArgumentException | ClientErrorException e) {
             if (e instanceof IllegalArgumentException) {
                 notificationsCtrl.pushNotification(bundle.getString("sameName"), true);

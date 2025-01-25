@@ -449,13 +449,6 @@ public class DashboardCtrl implements Initializable {
                 });
 
             } else {
-                currentNote = null;
-                // Show content blockers when no item is selected
-                contentBlocker.setVisible(true);
-                markdownViewBlocker.setVisible(true);
-                moveNotesButton.setText(bundle.getString("moveNote.text"));
-                filesViewBlocker.setVisible(true);
-
                 server.unregisterFromEmbeddedFileUpdates();
                 server.unregisterFromNoteUpdates();
                 showBlockers();

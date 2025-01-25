@@ -320,11 +320,14 @@ public class NoteCtrl {
             uniqueTitle = baseTitle + " (" + counter + ")";
             counter++;
         }
-        Note newNote = new Note(uniqueTitle,"", dashboardCtrl.getCurrentCollection());
-        newNote.id = note.id;
-        server.send("/app/notes/title", newNote);
 
         return uniqueTitle;
+    }
+
+    public void updateTitleWebsocket(Note note){
+        Note newNote = new Note(note.getTitle(),"", dashboardCtrl.getCurrentCollection());
+        newNote.id = note.id;
+        server.send("/app/notes/title", newNote);
     }
 
     /**
