@@ -49,7 +49,6 @@ public class NoteController {
     @MessageMapping("/notes/{noteId}/body")
     @SendTo("/topic/notes/{noteId}/body")
     public Note updateBody(@DestinationVariable Long noteId, Note note) {
-        System.out.println("body change");
         return note;
     }
 

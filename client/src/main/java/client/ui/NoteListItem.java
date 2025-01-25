@@ -2,6 +2,7 @@ package client.ui;
 
 import client.LanguageManager;
 import client.controllers.NoteCtrl;
+import client.controllers.NotificationsCtrl;
 import client.entities.Action;
 import client.entities.ActionType;
 import client.scenes.DashboardCtrl;
@@ -17,6 +18,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.util.Duration;
 
 import java.util.ResourceBundle;
 
@@ -46,6 +48,7 @@ public class NoteListItem extends ListCell<Note> {
     private LanguageManager manager;
     private ResourceBundle bundle;
     private final ServerUtils server;
+    private final NotificationsCtrl notificationsCtrl;
 
     // Variables
     private String originalTitle;
@@ -53,8 +56,8 @@ public class NoteListItem extends ListCell<Note> {
     private static final int DOUBLE_CLICK_TIMEFRAME = 400;
 
     public NoteListItem(Label overviewTitle, Label markdownTitle, TextArea overviewBody,
-                        DashboardCtrl controller, NoteCtrl noteCtrl, ServerUtils server) {
-
+                        DashboardCtrl controller, NoteCtrl noteCtrl, ServerUtils server, NotificationsCtrl notificationsCtrl) {
+        this.notificationsCtrl = notificationsCtrl;
         this.overviewTitle = overviewTitle;
         this.markdownTitle = markdownTitle;
         this.overviewBody = overviewBody;
@@ -75,11 +78,17 @@ public class NoteListItem extends ListCell<Note> {
         deleteButton = new Button();
         deleteButton.getStyleClass().addAll("icon", "note_list_icon", "delete_icon");
         deleteButton.setCursor(Cursor.HAND);
+        Tooltip deleteNoteTooltip = new Tooltip(bundle.getString("deleteNote.text"));
+        deleteNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        deleteButton.setTooltip(deleteNoteTooltip);
 
         // Initialize the edit button
         editButton = new Button();
         editButton.getStyleClass().addAll("icon", "note_list_icon", "edit_icon");
         editButton.setCursor(Cursor.HAND);
+        Tooltip editNoteTooltip = new Tooltip(bundle.getString("editNote.text"));
+        editNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        editButton.setTooltip(editNoteTooltip);
 
         // Create layout
         hBox = new HBox(0);
@@ -208,26 +217,28 @@ public class NoteListItem extends ListCell<Note> {
         String oldTitle = item.getTitle();
 
         // Ensure the title is unique in the current collection
-        String uniqueTitle = noteCtrl.generateUniqueTitle(controller.getAllNotes(),item, newTitle, false);
+        String uniqueTitle = noteCtrl.generateUniqueTitle(controller.getAllNotes(), item, newTitle, false);
         try {
+            if (uniqueTitle.equals(oldTitle)) {
+                throw new IllegalArgumentException("Title cannot be the same as the current title");
+            }
+
             item.setTitle(uniqueTitle); // Update the title of the Note
             noteTitle.setText(uniqueTitle);
-            noteCtrl.getUpdatePendingNotes().add(item);// Notify NoteCtrl of the change
+            noteCtrl.getUpdatePendingNotes().add(item); // Notify NoteCtrl of the change
 
             handleReferenceTitleChange(item, oldTitle, uniqueTitle);
 
             noteCtrl.saveAllPendingNotes();
 
-            controller.getActionHistory().push(new Action(ActionType.EDIT_TITLE, item, oldTitle, null, uniqueTitle));
-        } catch (ClientErrorException e) {
-            Alert alert = dialogStyler.createStyledAlert(
-                    Alert.AlertType.ERROR,
-                    bundle.getString("error.text"),
-                    bundle.getString("error.text"),
-                    e.getResponse().readEntity(String.class)
-            );
-            alert.showAndWait();
 
+            controller.getActionHistory().push(new Action(ActionType.EDIT_TITLE, item, oldTitle, null ,uniqueTitle));
+        } catch (IllegalArgumentException | ClientErrorException e) {
+            if (e instanceof IllegalArgumentException) {
+                notificationsCtrl.pushNotification(bundle.getString("sameName"), true);
+            } else {
+                notificationsCtrl.pushNotification(bundle.getString("invalidName"), true);
+            }
             item.setTitle(oldTitle);
             noteTitle.setText(oldTitle);
         }

@@ -2,6 +2,8 @@ package commons;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -30,7 +32,18 @@ public class EmbeddedFile {
     @Column(nullable = false)
     private LocalDateTime uploadedAt;
 
+    private File file;
+
     public EmbeddedFile() {}
+
+    public EmbeddedFile(Note note, String fileName, String fileType, byte[] fileContent, File file) {
+        this.note = note;
+        this.fileName = fileName;
+        this.fileType = fileType;
+        this.fileContent = fileContent;
+        this.uploadedAt = LocalDateTime.now();
+        this.file = file;
+    }
 
     public EmbeddedFile(Note note, String fileName, String fileType, byte[] fileContent) {
         this.note = note;
@@ -38,6 +51,7 @@ public class EmbeddedFile {
         this.fileType = fileType;
         this.fileContent = fileContent;
         this.uploadedAt = LocalDateTime.now();
+        this.file = null;
     }
 
     // Getters and Setters
@@ -76,6 +90,15 @@ public class EmbeddedFile {
     public LocalDateTime getUploadedAt() {
         return uploadedAt;
     }
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+
 
     @Override
     public boolean equals(Object o) {

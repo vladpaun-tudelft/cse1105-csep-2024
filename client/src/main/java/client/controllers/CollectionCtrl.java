@@ -102,6 +102,9 @@ public class CollectionCtrl {
                 for (Toggle toggle : collectionSelect.getToggles()) {
                     if (toggle instanceof RadioMenuItem) {
                         RadioMenuItem item = (RadioMenuItem) toggle;
+                        if (selectedCollection == null) {
+                            return;
+                        }
                         if (item.getText().equals(selectedCollection.title)) {
                             collectionSelect.selectToggle(item);
                             item.fire();
@@ -110,7 +113,9 @@ public class CollectionCtrl {
                         }
                     }
                 }
+                dashboardCtrl.showBlockers();
             }
+
             dashboardCtrl.filter();
             dashboardCtrl.updateTagList();
         });
@@ -182,6 +187,12 @@ public class CollectionCtrl {
                         dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
                         dashboardCtrl.selectNoteInTreeView(currentNote);
                         dashboardCtrl.setProgrammaticChange(false);
+                        if (dashboardCtrl.getCurrentCollection() == null) {
+                            dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex());
+                        } else {
+                            dashboardCtrl.collectionView.scrollTo(dashboardCtrl.collectionView.getSelectionModel().getSelectedIndex());
+                        }
+
 
                     } else if (collectionView.getSelectionModel().getSelectedItems().size() > 1) {
                         //dashboardCtrl.setProgrammaticChange(true);
@@ -191,7 +202,6 @@ public class CollectionCtrl {
                         dashboardCtrl.getActionHistory().push(new Action
                                 (ActionType.MOVE_MULTIPLE_NOTES, null, currentCollection, null, selectedCollection));
                         // dashboardCtrl.setProgrammaticChange(false);
-
 
                     } else if (dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size() > 1) {
                         ObservableList<TreeItem<Note>> selectedNotes
@@ -400,6 +410,9 @@ public class CollectionCtrl {
      * A method used to move note from one collection to the other
      */
     public void moveNoteFromCollection(Note currentNote, Collection selectedCollection) {
+        if(selectedCollection.title==null){
+            return;
+        }
         if (!server.isServerAvailable(currentNote.collection.serverURL) || !server.isServerAvailable(selectedCollection.serverURL)) {
             String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
             dialogStyler.createStyledAlert(
@@ -410,6 +423,8 @@ public class CollectionCtrl {
             ).showAndWait();
             return;
         }
+
+
 
         RadioMenuItem selectedRadioMenuItem = collectionSelect.getToggles().stream()
                 .filter(toggle -> toggle instanceof RadioMenuItem item && item.getText().equals(selectedCollection.title))
@@ -568,6 +583,10 @@ public class CollectionCtrl {
         for (TreeItem<Note> treeItem : itemsToSelect) {
             dashboardCtrl.allNotesView.getSelectionModel().select(treeItem);
         }
+
+        dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()
+                - dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size()/2);
+
         dashboardCtrl.setProgrammaticChange(false);
     }
 

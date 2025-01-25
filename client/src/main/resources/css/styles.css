@@ -178,6 +178,7 @@
     -fx-background-size: 15px;
     -fx-pref-width: 25px;
     -fx-pref-height: 25px;
+    -fx-background-color: -main-selected;
 }
 .note_list_icon:hover {
     -fx-background-color: -main-background;
@@ -187,6 +188,7 @@
     -fx-background-size: 15px;
     -fx-pref-width: 25px;
     -fx-pref-height: 25px;
+    -fx-background-color: transparent;
 }
 .collection_list_icon:hover {
     -fx-background-color: -main-background;
@@ -197,6 +199,9 @@
 }
 .delete_icon {
     -fx-background-image: url("icons/trash.png");
+}
+.delete_icon_in_body_note {
+    -fx-background-color: -main-background;
 }
 .close_program_icon{
     -fx-background-image: url("icons/cross.png");
@@ -302,7 +307,7 @@
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
 }
-.collection-list-view .list-cell {
+
 .collection-list-view .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: -main-text;
@@ -416,25 +421,27 @@
 .file-view-edit-button {
     -fx-background-image: url("icons/edit.png");
     -fx-background-size: 18px;
+    -fx-background-color: transparent;
     -fx-pref-height: 18px;
     -fx-pref-width: 18px;
     -fx-cursor: hand;
 }
 
 .file-view-edit-button:hover {
-    -fx-background-color: transparent;
+    -fx-background-color: -main-selected !important;
 }
 
 .file-view-delete-button {
     -fx-background-image: url("icons/trash.png");
     -fx-background-size: 18px;
+    -fx-background-color: transparent;
     -fx-pref-width: 18px;
     -fx-pref-height: 18px;
     -fx-cursor: hand;
 }
 
 .file-view-delete-button:hover {
-    -fx-background-color: transparent;
+    -fx-background-color: -main-selected !important;
 }
 
 
@@ -557,7 +564,7 @@
 .popup-button:hover{
     -fx-background-color: -tertiary-selected;
     -fx-text-fill: white;
-    
+
 }
 .popup-button:focused{
     -fx-background-color: -tertiary-selected;

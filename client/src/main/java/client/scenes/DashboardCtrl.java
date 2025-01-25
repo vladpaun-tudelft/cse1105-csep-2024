@@ -33,11 +33,13 @@ import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -103,7 +105,8 @@ public class DashboardCtrl implements Initializable {
     @FXML private ScrollPane fileScrollPane;
     @FXML private Text filesText;
     @FXML private Button accessibilityButton;
-
+    @FXML private Button refreshButton;
+    @FXML private Button searchButton;
 
     // Variables
     @Getter @Setter private Note currentNote = null;
@@ -155,6 +158,38 @@ public class DashboardCtrl implements Initializable {
         languageManager = LanguageManager.getInstance(config);
         setupLanguageButton();
         currentCss = getClass().getResource("/css/color-styles.css").toExternalForm();
+
+        // Tooltips
+        Tooltip refreshTooltip = new Tooltip(bundle.getString("refresh.text"));
+        refreshTooltip.setShowDelay(Duration.seconds(0.2));
+        refreshButton.setTooltip(refreshTooltip);
+
+        Tooltip addNoteTooltip = new Tooltip(bundle.getString("addNote.text"));
+        addNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        addButton.setTooltip(addNoteTooltip);
+
+        Tooltip clearSearchTooltip = new Tooltip(bundle.getString("clearSearch.text"));
+        clearSearchTooltip.setShowDelay(Duration.seconds(0.2));
+        clearSearchButton.setTooltip(clearSearchTooltip);
+
+        Tooltip searchTooltip = new Tooltip(bundle.getString("search.text"));
+        searchTooltip.setShowDelay(Duration.seconds(0.2));
+        searchButton.setTooltip(searchTooltip);
+
+        Tooltip deleteNoteTooltip = new Tooltip(bundle.getString("deleteNote.text"));
+        deleteNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        deleteButton.setTooltip(deleteNoteTooltip);
+
+        Tooltip languageTooltip = new Tooltip(bundle.getString("selectLanguage.text"));
+        languageTooltip.setShowDelay(Duration.seconds(0.2));
+        languageButton.setTooltip(languageTooltip);
+
+        Tooltip moveNotesTooltip = new Tooltip(bundle.getString("moveSelectedNotes.text"));
+        moveNotesTooltip.setShowDelay(Duration.seconds(0.2));
+        moveNotesButton.setTooltip(moveNotesTooltip);
+
+        // ---------
+
 
         allNotes = FXCollections.observableArrayList(server.getAllNotes());
         collectionNotes = allNotes;
@@ -224,10 +259,10 @@ public class DashboardCtrl implements Initializable {
         filesCtrl.setDashboardCtrl(this);
         filesCtrl.setReferences(filesView);
 
+        AnchorPane.setLeftAnchor(fileScrollPane, filesText.getLayoutX() + filesText.getBoundsInParent().getWidth() + 5);
         fileScrollPane.prefWidthProperty().bind(
                 addFileButton.layoutXProperty()
-                        .subtract(filesText.layoutXProperty())
-                        .subtract(filesText.getBoundsInParent().getWidth())
+                        .subtract(fileScrollPane.layoutXProperty())
                         .subtract(10) // 5px gap from each side
         );
 
@@ -375,7 +410,7 @@ public class DashboardCtrl implements Initializable {
         collectionView.setCellFactory(TextFieldListCell.forListView());
 
         // Set ListView entry as Title (editable)
-        collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server));
+        collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server,notificationsCtrl));
 
         noteTitleSync();
         collectionView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -423,6 +458,7 @@ public class DashboardCtrl implements Initializable {
 
                 server.unregisterFromEmbeddedFileUpdates();
                 server.unregisterFromNoteUpdates();
+                showBlockers();
             }
         });
 
@@ -502,15 +538,7 @@ public class DashboardCtrl implements Initializable {
 
 
                 } else {
-                    currentNote = null;
-                    allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-                    // Show content blockers when no item is selected
-                    contentBlocker.setVisible(true);
-                    markdownViewBlocker.setVisible(true);
-                    moveNotesButton.setText(bundle.getString("moveNote.text"));
-                    filesViewBlocker.setVisible(true);
-
-                    server.unregisterFromEmbeddedFileUpdates();
+                    showBlockers();
                 }
             }
         });
@@ -525,8 +553,8 @@ public class DashboardCtrl implements Initializable {
     }
 
     private void onNoteUpdate(Note newContent) {
-        if(currentNote.id == newContent.id) {
-            if(!currentNote.getBody().equals(newContent.getBody())){
+        if (currentNote.id == newContent.id) {
+            if (!currentNote.getBody().equals(newContent.getBody())) {
                 // NEW CONTENT MESSAGE
             }
             int caretPosition = noteBody.getCaretPosition();
@@ -534,6 +562,18 @@ public class DashboardCtrl implements Initializable {
             noteBody.positionCaret(caretPosition);
             currentNote.setBody(newContent.getBody());
         }
+    }
+
+    public void showBlockers() {
+        currentNote = null;
+        allNotesView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        // Show content blockers when no item is selected
+        contentBlocker.setVisible(true);
+        markdownViewBlocker.setVisible(true);
+        moveNotesButton.setText(bundle.getString("moveNote.text"));
+        filesViewBlocker.setVisible(true);
+
+        server.unregisterFromEmbeddedFileUpdates();
     }
 
     /**
@@ -842,7 +882,21 @@ public class DashboardCtrl implements Initializable {
             ).showAndWait();
         }
 
-        noteCtrl.deleteSelectedNote(currentNote, collectionNotes, allNotes);
+        if (currentCollection == null) {
+            if (allNotesView.getSelectionModel().getSelectedItems().size() == 1) {
+                noteCtrl.deleteSelectedNote(currentNote, collectionNotes, allNotes);
+            } else {
+                noteCtrl.deleteMultipleNotesInTreeView(allNotes,
+                        allNotesView.getSelectionModel().getSelectedItems(),
+                        collectionNotes);
+            }
+        } else {
+            if(collectionView.getSelectionModel().getSelectedItems().size() == 1) {
+                noteCtrl.deleteSelectedNote(currentNote, collectionNotes, allNotes);
+            } else {
+                noteCtrl.deleteMultipleNotes(allNotes, collectionView.getSelectionModel().getSelectedItems(), collectionNotes);
+            }
+        }
         updateTagList();
     }
 
@@ -878,6 +932,8 @@ public class DashboardCtrl implements Initializable {
         }
         filter();
         updateTagList();
+        actionHistory.clear();
+
     }
 
     public void connectToCollection(Collection collection) {
@@ -1061,18 +1117,21 @@ public class DashboardCtrl implements Initializable {
                 noteTitle.setText(oldTitle);
                 noteTitleMD.setText(oldTitle);
                 refreshTreeView();
-                collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server));
+                collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server,notificationsCtrl));
             }
             case ActionType.ADD_FILE -> {
                 EmbeddedFile addedFile = (EmbeddedFile) lastAction.getPreviousState();
                 filesCtrl.deleteFile(currentNote, addedFile);
             }
             case ActionType.DELETE_FILE -> {
+                EmbeddedFile embeddedFile = lastAction.getEmbeddedFile().get();
+                filesCtrl.addDeletedFile(currentNote, embeddedFile);
             }
             case ActionType.EDIT_FILE_NAME -> {
                 EmbeddedFile changedFile = lastAction.getEmbeddedFile().get();
                 String previousName = (String) lastAction.getPreviousState();
-                filesCtrl.renameFileInputted(changedFile, previousName, currentNote);
+                String newName = (String) lastAction.getNewState();
+                filesCtrl.renameFileByName(newName,previousName, currentNote);
             }
             case ActionType.MOVE_NOTE -> {
                 isProgrammaticChange = true;
@@ -1081,10 +1140,17 @@ public class DashboardCtrl implements Initializable {
                 refreshTreeView();
                 allNotesView.getSelectionModel().clearSelection();
                 selectNoteInTreeView(note);
+
+                allNotesView.scrollTo(allNotesView.getSelectionModel().getSelectedIndex());
                 isProgrammaticChange = false;
             }
             case ActionType.MOVE_MULTIPLE_NOTES -> {
                 collectionCtrl.moveMultipleNotes((Collection)lastAction.getPreviousState());
+                if(currentCollection == null){
+                    allNotesView.scrollTo(allNotesView.getSelectionModel().getSelectedIndex());
+                } else {
+                    collectionView.scrollTo(collectionView.getSelectionModel().getSelectedIndex());
+                }
             }
 
             case ActionType.MOVE_MULTIPLE_NOTES_TREE -> {

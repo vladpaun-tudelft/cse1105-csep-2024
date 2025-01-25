@@ -137,7 +137,6 @@ public class ServerUtils {
 
 	public void registerForNoteTitleUpdates(Consumer<Note> consumer) {
 		if(noteBodySubscription!=null){
-			System.out.println("subscribed!");
 			return;
 		}
 
@@ -150,7 +149,6 @@ public class ServerUtils {
 
 			@Override
 			public void handleFrame(StompHeaders headers, Object payload) {
-				System.out.println(((Note)payload).getTitle());
 				consumer.accept((Note) payload);
 			}
 		});

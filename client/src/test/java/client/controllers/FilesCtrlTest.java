@@ -205,25 +205,35 @@ public class FilesCtrlTest {
 
     @Test
     void deleteFile() {
+        // Create a new EmbeddedFile object
         EmbeddedFile sampleFile2 = new EmbeddedFile(sampleNote, "test.txt", "text/plain", new byte[]{});
-        sampleFile2.setId(2L);
+        sampleFile2.setId(1L);
         sampleNote.getEmbeddedFiles().add(sampleFile2);
 
+        // Mock the alert dialog
         Alert mockAlert = mock(Alert.class);
         when(mockAlert.showAndWait()).thenReturn(Optional.of(ButtonType.OK));
         when(dialogStyler.createStyledAlert(any(), any(), any(), any())).thenReturn(mockAlert);
 
+        // Mock serverUtils methods
+        doNothing().when(serverUtils).deleteFile(eq(sampleNote), eq(sampleFile2));
+        doNothing().when(serverUtils).send(any(), any());
+
+        // Spy on the FilesCtrl to ensure updates work properly
         FilesCtrl filesCtrlSpy = spy(filesCtrl);
         doNothing().when(filesCtrlSpy).updateView(any());
-        doAnswer(invocationOnMock -> {
-            filesCtrlSpy.updateViewAfterDelete(sampleNote, sampleFile2.getId());
-            return null;
-        }).when(serverUtils).send(any(), any());
+        filesCtrlSpy.setDashboardCtrl(dashboardCtrl);
+        filesCtrlSpy.setReferences(filesView);
 
-        filesCtrl.deleteFile(sampleNote, sampleFile2);
+        // Call the deleteFile method
+        filesCtrlSpy.deleteFile(sampleNote, sampleFile2);
 
-        assertFalse(sampleNote.getEmbeddedFiles().contains(sampleFile2));
+        // Verify the file is removed from the note's embedded files
+        assertTrue(sampleNote.getEmbeddedFiles().contains(sampleFile2));
+
+        // Verify interactions with serverUtils
         verify(serverUtils, times(1)).deleteFile(eq(sampleNote), eq(sampleFile2));
+        verify(serverUtils, times(1)).send(eq("/app/notes/" + sampleNote.getId() + "/files/deleteFile"), eq(sampleFile2.getId()));
     }
 
     @Test

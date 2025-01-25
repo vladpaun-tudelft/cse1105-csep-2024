@@ -20,6 +20,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.util.Duration;
 
 import java.util.ResourceBundle;
 
@@ -76,10 +77,16 @@ public class CustomTreeCell extends TreeCell<Object> {
         editNoteButton = new Button();
         editNoteButton.getStyleClass().addAll("icon", "note_list_icon", "edit_icon");
         editNoteButton.setCursor(Cursor.HAND);
+        Tooltip editNoteTooltip = new Tooltip(bundle.getString("editNote.text"));
+        editNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        editNoteButton.setTooltip(editNoteTooltip);
 
         deleteNoteButton = new Button();
         deleteNoteButton.getStyleClass().addAll("icon", "note_list_icon", "delete_icon");
         deleteNoteButton.setCursor(Cursor.HAND);
+        Tooltip deleteNoteTooltip = new Tooltip(bundle.getString("deleteNote.text"));
+        deleteNoteTooltip.setShowDelay(Duration.seconds(0.2));
+        deleteNoteButton.setTooltip(deleteNoteTooltip);
 
         noteHBox = new HBox(0);
         noteHBox.getChildren().addAll(noteTitleLabel, noteSpacer, editNoteButton, deleteNoteButton);
@@ -280,6 +287,9 @@ public class CustomTreeCell extends TreeCell<Object> {
         String uniqueTitle = noteCtrl.generateUniqueTitle(dashboardCtrl.getAllNotes(), note, newTitle, false);
 
         try {
+            if (uniqueTitle.equals(oldTitle)) {
+                throw new IllegalArgumentException("Title cannot be the same as the current title");
+            }
             note.setTitle(uniqueTitle);
             noteCtrl.getUpdatePendingNotes().add(note);
             handleReferenceTitleChange(note, oldTitle, uniqueTitle);
@@ -293,8 +303,12 @@ public class CustomTreeCell extends TreeCell<Object> {
 
             dashboardCtrl.getActionHistory().push(new Action(ActionType.EDIT_TITLE, note, oldTitle, null ,uniqueTitle));
             notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
-        } catch (ClientErrorException e) {
-            notificationsCtrl.pushNotification(bundle.getString("invalid.name"), true);
+        } catch (IllegalArgumentException | ClientErrorException e) {
+            if (e instanceof IllegalArgumentException) {
+                notificationsCtrl.pushNotification(bundle.getString("sameName"), true);
+            } else {
+                notificationsCtrl.pushNotification(bundle.getString("invalidName"), true);
+            }
             note.setTitle(originalNoteTitle);
         }
 

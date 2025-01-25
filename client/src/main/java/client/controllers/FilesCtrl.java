@@ -86,12 +86,12 @@ public class FilesCtrl {
         try {
             EmbeddedFile embeddedFile = serverUtils.addFile(currentNote, file);
             serverUtils.send("/app/notes/" + currentNote.getId() + "/files", embeddedFile.getId());
+
             return embeddedFile;
         } catch (Exception exception) {
             showErrorUploadingFileAlert();
             return null;
         }
-
     }
 
     /**
@@ -140,7 +140,7 @@ public class FilesCtrl {
         if (currentNote == null) {
             return;
         }
-        EmbeddedFile fileToRemove = new EmbeddedFile(currentNote, "", "", null);
+        EmbeddedFile fileToRemove = new EmbeddedFile(currentNote, "", "", null, null);
         fileToRemove.setId(fileId);
         currentNote.getEmbeddedFiles().remove(fileToRemove);
         updateView(currentNote);
@@ -175,7 +175,7 @@ public class FilesCtrl {
         fileName.setTooltip(infoTooltip);
 
         fileName.setOnMouseReleased(event -> {
-            downloadFile(currentNote, file);
+            downloadFile(file);
         });
 
         Button editButton = new Button();
@@ -237,9 +237,15 @@ public class FilesCtrl {
                 ).showAndWait();
                 return;
             }
+            EmbeddedFile efToRemove = currentNote.getEmbeddedFiles().stream()
+                    .filter(embeddedFile -> embeddedFile.getFileName().equals(file.getFileName()))
+                    .findFirst().orElse(null);
 
-            serverUtils.deleteFile(currentNote, file);
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/deleteFile", file.getId());
+            serverUtils.deleteFile(
+                    currentNote,
+                    efToRemove
+            );
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/deleteFile", efToRemove.getId());
         }
     }
 
@@ -287,6 +293,13 @@ public class FilesCtrl {
         serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", renameRequest);
         persistFileName(currentNote, file.getFileName(), fileName);
     }
+    public void renameFileByName(String oldName, String fileName, Note currentNote) {
+        EmbeddedFile efToRename = currentNote.getEmbeddedFiles().stream()
+                .filter(embeddedFile -> embeddedFile.getFileName().equals(oldName))
+                .findFirst().orElse(null);
+
+        renameFileInputted(efToRename, fileName, currentNote);
+    }
 
     public void persistFileName(Note currentNote, String oldName, String newName) {
         String body = currentNote.getBody();
@@ -297,14 +310,14 @@ public class FilesCtrl {
         dashboardCtrl.getNoteCtrl().showCurrentNote(currentNote);
     }
 
-    public void downloadFile(Note currentNote, EmbeddedFile embeddedFile) {
+    public void downloadFile(EmbeddedFile embeddedFile) {
         fileChooser.setTitle(bundle.getString("saveFile.text"));
         fileChooser.setInitialFileName(embeddedFile.getFileName());
         fileChooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter(embeddedFile.getFileType() + " files", "*." + embeddedFile.getFileType())
         );
 
-        File fileToSave = fileChooser.showSaveDialog(null);
+        File fileToSave =  fileChooser.showSaveDialog(null);
 
         if (fileToSave != null) {
             try (FileOutputStream fos = new FileOutputStream(fileToSave)) {
@@ -379,4 +392,24 @@ public class FilesCtrl {
         alert.showAndWait();
     }
 
+    public EmbeddedFile addDeletedFile(Note currentNote, EmbeddedFile ef) {
+        try {
+            File file = ef.getFile();
+            String newFileName = ef.getFileName();
+
+            EmbeddedFile embeddedFile = serverUtils.addFile(currentNote, file);
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", embeddedFile.getId());
+
+            EmbeddedFile e = serverUtils.renameFile(currentNote, embeddedFile, newFileName);
+            Object[] renameRequest = {embeddedFile.getId(), newFileName};
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", renameRequest);
+            persistFileName(currentNote, e.getFileName(), newFileName);
+
+            return embeddedFile;
+        } catch (Exception exception) {
+            showErrorUploadingFileAlert();
+            exception.printStackTrace();
+            return null;
+        }
+    }
 }
