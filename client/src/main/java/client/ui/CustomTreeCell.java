@@ -124,14 +124,6 @@ public class CustomTreeCell extends TreeCell<Object> {
     }
 
     private void configureNoteEventHandlers() {
-        // Delete button functionality
-
-        /*deleteNoteButton.setOnAction(event -> {
-            Note note = (Note) getItem();
-            if (note != null) {
-                dashboardCtrl.deleteSelectedNote();
-            }
-        });*/
         deleteNoteButton.setOnAction(event -> {
             ObservableList<TreeItem<Note>> treeItems = dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems();
             if (treeItems.size() > 1) {

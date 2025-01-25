@@ -372,7 +372,6 @@ public class CollectionCtrl {
 
         Collection previousCollection = collections.stream().filter(c -> !c.equals(collection)).findFirst().orElse(null);
         dashboardCtrl.setDefaultCollection(previousCollection);
-        config.setDefaultCollection(previousCollection);
 
         // delete collection from server
         if (delete) {
@@ -470,7 +469,6 @@ public class CollectionCtrl {
             config.writeToFile(addedCollection);
             if (dashboardCtrl.getDefaultCollection() == null) {
                 dashboardCtrl.setDefaultCollection(addedCollection);
-                config.setDefaultCollection(addedCollection);
             }
 
             collections.add(addedCollection);

@@ -468,7 +468,6 @@ public class EditCollectionsCtrl implements Initializable {
 
     public void setDefaultCollection(Collection item) {
         dashboardCtrl.setDefaultCollection(item);
-        config.setDefaultCollection(item);
     }
 
     public void refreshDefaultCollection() {

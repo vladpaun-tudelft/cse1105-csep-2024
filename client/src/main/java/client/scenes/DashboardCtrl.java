@@ -111,7 +111,7 @@ public class DashboardCtrl implements Initializable {
     // Variables
     @Getter @Setter private Note currentNote = null;
     @Getter @Setter private Collection currentCollection = null;
-    @Getter @Setter private Collection defaultCollection = null;
+    @Getter private Collection defaultCollection = null;
     @Getter @Setter private Collection destinationCollection = null;
     @Getter @Setter public ObservableList<Collection> collections;
     @Getter @Setter private ObservableList<Note> allNotes;
@@ -944,8 +944,7 @@ public class DashboardCtrl implements Initializable {
 
         config.writeToFile(collection);
         if (defaultCollection == null) {
-            defaultCollection = collection;
-            config.setDefaultCollection(collection);
+            setDefaultCollection(collection);
         }
 
         // add entry in collections menu
@@ -965,6 +964,11 @@ public class DashboardCtrl implements Initializable {
             // Save the file addition action to the history
             actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, null, null, null, newFile));
         }
+    }
+
+    public void setDefaultCollection(Collection collection) {
+        defaultCollection = collection;
+        config.setDefaultCollection(collection);
     }
 
     // Temporary solution
