@@ -1,76 +1,58 @@
 package client.controllers;
 
 import client.scenes.DashboardCtrl;
-import client.ui.DialogStyler;
 import client.utils.Config;
 import client.utils.ServerUtils;
 import commons.Collection;
 import commons.Note;
-import javafx.scene.control.ListView;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class CollectionCtrlTest {
-
-    @Mock
     private ServerUtils serverMock;
-
-    @Mock
     private Config configMock;
-
-    @Mock
     private NoteCtrl noteCtrlMock;
-
-    @Mock
-    private SearchCtrl searchCtrlMock;
-
-    @Mock
     private DashboardCtrl dashboardCtrlMock;
-
-    @Mock
-    private DialogStyler dialogStylerMock;
-
-    @InjectMocks
     private CollectionCtrl collectionCtrl;
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        collectionCtrl = new CollectionCtrl(serverMock, configMock, noteCtrlMock, searchCtrlMock, null);
+        serverMock = mock(ServerUtils.class);
+        configMock = mock(Config.class);
+        noteCtrlMock = mock(NoteCtrl.class);
+        dashboardCtrlMock = mock(DashboardCtrl.class);
+
+        collectionCtrl = new CollectionCtrl(serverMock, configMock, noteCtrlMock);
         collectionCtrl.setDashboardCtrl(dashboardCtrlMock);
-        noteCtrlMock.setUpdatePendingNotes(new ArrayList<>());
-    }
 
-    @Test
-    public void testViewNotes_WithCurrentCollection() {
-
-    }
-
-    @Test
-    public void testViewNotes_NoCurrentCollection() {
-
-    }
-
-    @Test
-    public void testDeleteCollection_Success() {
-
-    }
-
-    @Test
-    public void testDeleteCollection_Cancellation() {
-
+        when(serverMock.isServerAvailable(anyString())).thenReturn(true);
+        when(noteCtrlMock.isTitleDuplicate(any(), any(), any(), anyBoolean())).thenReturn(false);
+        when(noteCtrlMock.getUpdatePendingNotes()).thenReturn(new ArrayList<>());
+        doNothing().when(noteCtrlMock).saveAllPendingNotes();
     }
 
     @Test
     public void testMoveNoteFromCollection() {
+        serverMock = mock(ServerUtils.class);
+        configMock = mock(Config.class);
+        noteCtrlMock = mock(NoteCtrl.class);
+        dashboardCtrlMock = mock(DashboardCtrl.class);
+
+        collectionCtrl = new CollectionCtrl(serverMock, configMock, noteCtrlMock);
+        collectionCtrl.setDashboardCtrl(dashboardCtrlMock);
+
+        when(serverMock.isServerAvailable(anyString())).thenReturn(true);
+        when(noteCtrlMock.isTitleDuplicate(any(), any(), any(), anyBoolean())).thenReturn(false);
+        when(noteCtrlMock.getUpdatePendingNotes()).thenReturn(new ArrayList<>());
+        doNothing().when(noteCtrlMock).saveAllPendingNotes();
+
         Collection collection1 = new Collection("testCollection1", "https://localhost:8080/");
         Collection collection2 = new Collection("testCollection2", "https://localhost:8080/");
         Note note = new Note("test1", "body", collection1);
