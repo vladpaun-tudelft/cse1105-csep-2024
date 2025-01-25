@@ -228,6 +228,16 @@ public class ServerUtils {
 		}
 	}
 
+	public void unregisterFromNoteBodyUpdates() {
+		if (noteBodySubscription != null && session != null) {
+			try {
+				noteBodySubscription.unsubscribe();
+			} catch (IllegalStateException _) {}
+			noteBodySubscription = null;
+		}
+	}
+
+
 	public void getWebSocketURL(String serverURL) {
 		if (session != null) {
 			try {

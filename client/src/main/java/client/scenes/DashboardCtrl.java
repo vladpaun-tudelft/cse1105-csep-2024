@@ -450,6 +450,7 @@ public class DashboardCtrl implements Initializable {
 
             } else {
                 server.unregisterFromEmbeddedFileUpdates();
+                server.unregisterFromNoteBodyUpdates();
                 showBlockers();
             }
         });
@@ -566,6 +567,7 @@ public class DashboardCtrl implements Initializable {
         filesViewBlocker.setVisible(true);
 
         server.unregisterFromEmbeddedFileUpdates();
+        server.unregisterFromNoteBodyUpdates();
     }
 
     /**
