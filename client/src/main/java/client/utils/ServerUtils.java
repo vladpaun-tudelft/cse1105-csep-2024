@@ -228,10 +228,6 @@ public class ServerUtils {
 		}
 	}
 
-	public void unregisterFromNoteUpdates() {
-		// TODO Implement
-	}
-
 	public void getWebSocketURL(String serverURL) {
 		if (session != null) {
 			try {

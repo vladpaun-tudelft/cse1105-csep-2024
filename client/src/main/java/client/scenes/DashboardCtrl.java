@@ -450,7 +450,6 @@ public class DashboardCtrl implements Initializable {
 
             } else {
                 server.unregisterFromEmbeddedFileUpdates();
-                server.unregisterFromNoteUpdates();
                 showBlockers();
             }
         });
