@@ -24,8 +24,8 @@ class CollectionControllerTest {
     private TestCollectionRepository collectionRepo;
     private TestEmbeddedFileRepository embeddedFileRepository;
 
-    Collection collection1, collection2;
-    Note note1, note2, note3, note4;
+    Collection collection1, collection2, collection3, collection4;
+    Note note1, note2, note3, note4, note5, note6, note7, note8;
 
     @BeforeEach
     void setUp() {
@@ -42,11 +42,17 @@ class CollectionControllerTest {
 
         collection1 = new Collection("collection1", "http://localhost:8080/");
         collection2 = new Collection("collection2", "http://localhost:8080/");
+        collection3 = new Collection("collection3", "http://localhost:8080/");
+        collection4 = new Collection("collection4", "http://localhost:8080/");
 
         note1 = new Note("note1", "bla", collection1);
         note2 = new Note("note2", "bla", collection1);
         note3 = new Note("note3", "bla", collection2);
         note4 = new Note("note4", "bla", collection2);
+        note5 = new Note("note5", "bla", collection3);
+        note6 = new Note("note6", "bla", collection3);
+        note7 = new Note("note7", "bla", collection4);
+        note8 = new Note("note8", "bla", collection4);
     }
 
     @Test
@@ -85,11 +91,17 @@ class CollectionControllerTest {
     void getAllNotesTest() {
         collectionController.createCollection(collection1);
         collectionController.createCollection(collection2);
+        collectionController.createCollection(collection3);
+        collectionController.createCollection(collection4);
 
         noteController.createNote(note1);
         noteController.createNote(note2);
         noteController.createNote(note3);
         noteController.createNote(note4);
+        noteController.createNote(note5);
+        noteController.createNote(note6);
+        noteController.createNote(note7);
+        noteController.createNote(note8);
 
         var response = collectionController.getAllNotes();
 
@@ -97,65 +109,97 @@ class CollectionControllerTest {
 
         assertNotNull(response.getBody());
 
-        assertEquals(4, response.getBody().size());
+        assertEquals(8, response.getBody().size());
 
         assertEquals("note1", response.getBody().get(0).title);
         assertEquals("note2", response.getBody().get(1).title);
         assertEquals("note3", response.getBody().get(2).title);
         assertEquals("note4", response.getBody().get(3).title);
+        assertEquals("note5", response.getBody().get(4).title);
+        assertEquals("note6", response.getBody().get(5).title);
+        assertEquals("note7", response.getBody().get(6).title);
+        assertEquals("note8", response.getBody().get(7).title);
     }
 
     @Test
     public void getNotesInCollectionTest() {
         collectionController.createCollection(collection1);
         collectionController.createCollection(collection2);
+        collectionController.createCollection(collection3);
+        collectionController.createCollection(collection4);
 
         noteController.createNote(note1);
         noteController.createNote(note2);
         noteController.createNote(note3);
         noteController.createNote(note4);
+        noteController.createNote(note5);
+        noteController.createNote(note6);
+        noteController.createNote(note7);
+        noteController.createNote(note8);
 
         var response1 = collectionController.getNotesInCollection(collection1.title);
         var response2 = collectionController.getNotesInCollection(collection2.title);
+        var response3 = collectionController.getNotesInCollection(collection3.title);
+        var response4 = collectionController.getNotesInCollection(collection4.title);
 
         assertEquals(200, response1.getStatusCodeValue());
         assertEquals(200, response2.getStatusCodeValue());
+        assertEquals(200, response3.getStatusCodeValue());
+        assertEquals(200, response4.getStatusCodeValue());
 
         assertNotNull(response1.getBody());
         assertNotNull(response2.getBody());
+        assertNotNull(response3.getBody());
+        assertNotNull(response4.getBody());
 
         assertEquals(2, response1.getBody().size());
         assertEquals(2, response2.getBody().size());
+        assertEquals(2, response3.getBody().size());
+        assertEquals(2, response4.getBody().size());
 
         assertEquals("note1", response1.getBody().get(0).title);
         assertEquals("note2", response1.getBody().get(1).title);
         assertEquals("note3", response2.getBody().get(0).title);
         assertEquals("note4", response2.getBody().get(1).title);
+        assertEquals("note5", response3.getBody().get(0).title);
+        assertEquals("note6", response3.getBody().get(1).title);
+        assertEquals("note7", response4.getBody().get(0).title);
+        assertEquals("note8", response4.getBody().get(1).title);
     }
 
     @Test
     public void getAllCollectionsTest() {
         collectionController.createCollection(collection1);
         collectionController.createCollection(collection2);
+        collectionController.createCollection(collection3);
+        collectionController.createCollection(collection4);
 
         var response = collectionController.getAllCollections();
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
-        assertEquals(2, response.getBody().size());
+        assertEquals(4, response.getBody().size());
         assertEquals("collection1", response.getBody().get(0).title);
         assertEquals("collection2", response.getBody().get(1).title);
+        assertEquals("collection3", response.getBody().get(2).title);
+        assertEquals("collection4", response.getBody().get(3).title);
     }
 
     @Test
     public void getCollectionByIdTest() {
         collectionController.createCollection(collection1);
         collectionController.createCollection(collection2);
+        collectionController.createCollection(collection3);
+        collectionController.createCollection(collection4);
 
         var actual1 = collectionController.getCollectionById(1);
         var actual2 = collectionController.getCollectionById(2);
+        var actual3 = collectionController.getCollectionById(3);
+        var actual4 = collectionController.getCollectionById(4);
 
         assertEquals(ResponseEntity.ok(collection1), actual1);
         assertEquals(ResponseEntity.ok(collection2), actual2);
+        assertEquals(ResponseEntity.ok(collection3), actual3);
+        assertEquals(ResponseEntity.ok(collection4), actual4);
     }
 
     @Test
