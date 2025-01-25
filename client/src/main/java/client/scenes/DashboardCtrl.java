@@ -216,6 +216,7 @@ public class DashboardCtrl implements Initializable {
 
         collectionCtrl.moveNotesInitialization();
 
+        noteTitleSync();
         listViewSetup(collectionNotes);
         treeViewSetup();
 
@@ -338,10 +339,18 @@ public class DashboardCtrl implements Initializable {
         });
     }
 
-    public void noteContentSync() {
-        server.registerForMessages("/topic/notes/content", Note.class, note -> {
+    public void noteTitleSync() {
+        server.registerForNoteTitleUpdates(note -> {
             Platform.runLater(() -> {
-                System.out.println("nada");
+                Note toUpdate = allNotes.stream().filter(n -> n.id == note.id).findFirst().get();
+                if(toUpdate!=null){
+                    toUpdate.setTitle(note.getTitle());
+                    if(toUpdate.equals(currentNote)){
+                        noteTitle.setText(note.getTitle());
+                    }
+                    collectionView.refresh();
+                    refreshTreeView();
+                }
             });
         });
     }
@@ -368,6 +377,7 @@ public class DashboardCtrl implements Initializable {
         // Set ListView entry as Title (editable)
         collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server));
 
+        noteTitleSync();
         collectionView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 if (!isProgrammaticChange) actionHistory.clear();
@@ -396,10 +406,10 @@ public class DashboardCtrl implements Initializable {
                 });
 
                 // NOTE CONTENT WEBSOCKETS
-                server.registerForNoteContentUpdates(currentNote, newContent -> {
+                server.registerForNoteBodyUpdates(currentNote, newContent -> {
                     Platform.runLater(() -> {
                         onNoteUpdate(newContent);
-                        collectionView.refresh();
+                        refreshTreeView();
                     });
                 });
 
@@ -443,7 +453,7 @@ public class DashboardCtrl implements Initializable {
                 if (change.wasAdded()) {
                     server.getWebSocketURL(change.getAddedSubList().getFirst().serverURL);
                     noteAdditionSync();
-
+                    noteTitleSync();
                     noteDeletionSync();
                 }
                 syncTreeView(virtualRoot, collections, allNotes, false);
@@ -483,7 +493,7 @@ public class DashboardCtrl implements Initializable {
                     });
 
                     // NOTE CONTENT WEBSOCKETS
-                    server.registerForNoteContentUpdates(currentNote, newContent -> {
+                    server.registerForNoteBodyUpdates(currentNote, newContent -> {
                         Platform.runLater(() -> {
                             onNoteUpdate(newContent);
                             refreshTreeView();
@@ -516,13 +526,13 @@ public class DashboardCtrl implements Initializable {
 
     private void onNoteUpdate(Note newContent) {
         if(currentNote.id == newContent.id) {
+            if(!currentNote.getBody().equals(newContent.getBody())){
+                // NEW CONTENT MESSAGE
+            }
             int caretPosition = noteBody.getCaretPosition();
             noteBody.setText(newContent.getBody());
-            noteTitle.setText(newContent.getTitle());
             noteBody.positionCaret(caretPosition);
-
             currentNote.setBody(newContent.getBody());
-            currentNote.setTitle(newContent.getTitle());
         }
     }
 
@@ -674,7 +684,7 @@ public class DashboardCtrl implements Initializable {
                     allNotes.addAll(server.getNotesByCollection(defaultCollection));
                     server.getWebSocketURL(defaultCollection.serverURL);
                     noteAdditionSync();
-
+                    noteTitleSync();
                     noteDeletionSync();
                 }
                 ServerUtils.getUnavailableCollections().remove(defaultCollection);
@@ -699,7 +709,7 @@ public class DashboardCtrl implements Initializable {
                    allNotes.addAll(server.getNotesByCollection(currentCollection));
                    server.getWebSocketURL(currentCollection.serverURL);
                    noteAdditionSync();
-
+                   noteTitleSync();
                    noteDeletionSync();
                }
                ServerUtils.getUnavailableCollections().remove(currentCollection);
@@ -755,7 +765,7 @@ public class DashboardCtrl implements Initializable {
         if (defaultCollection != null && server.isServerAvailable(defaultCollection.serverURL)) {
             server.getWebSocketURL(defaultCollection.serverURL);
             noteAdditionSync();
-
+            noteTitleSync();
             noteDeletionSync();
         }
     }

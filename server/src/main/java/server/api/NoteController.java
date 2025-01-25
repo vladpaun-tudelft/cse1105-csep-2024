@@ -46,9 +46,16 @@ public class NoteController {
         throw new RuntimeException("Failed to create note on server");
     }
 
-    @MessageMapping("/notes/{noteId}/content")
-    @SendTo("/topic/notes/{noteId}/content")
-    public Note updateContent(@DestinationVariable Long noteId, Note note) {
+    @MessageMapping("/notes/{noteId}/body")
+    @SendTo("/topic/notes/{noteId}/body")
+    public Note updateBody(@DestinationVariable Long noteId, Note note) {
+        System.out.println("body change");
+        return note;
+    }
+
+    @MessageMapping("/notes/title")
+    @SendTo("/topic/notes/title")
+    public Note updateTitle(Note note) {
         return note;
     }
 
@@ -79,13 +86,6 @@ public class NoteController {
     public Object[] sendMessageAfterRename(@DestinationVariable Long noteId,
                                                                         Object[] newFileName) {
         return newFileName;
-    }
-
-    @MessageMapping("/notes/{id}/body")
-    @SendTo("/topic/notes/{id}/body")
-    public String updateNoteBody(@DestinationVariable Long id,String updatedBody) {
-        System.out.println("Sending to: /topic/notes/" + id + "/body");
-        return updatedBody;
     }
 
     @PostMapping(path = {"/", ""})

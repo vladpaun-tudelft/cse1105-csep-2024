@@ -66,7 +66,9 @@ public class ServerUtils {
 	private StompSession.Subscription embeddedFilesRenameUpdates;
 
 	@Getter @Setter
-	private StompSession.Subscription noteContentSubscription;
+	private StompSession.Subscription noteBodySubscription;
+	@Getter @Setter
+	private StompSession.Subscription noteTitleSubscription;
 
 	@Getter @Setter
 	private static List<Collection> unavailableCollections;
@@ -107,47 +109,20 @@ public class ServerUtils {
 		});
 	}
 
-	public void registerForNoteBodyUpdates(Note selectedNote, Consumer<String> consumer) {
+	public void registerForNoteBodyUpdates(Note selectedNote, Consumer<Note> consumer) {
 
 		if (!isServerAvailable(selectedNote.collection.serverURL)) {
 			return;
 		}
 
-		if (noteContentSubscription != null && session != null) {
+		if (noteBodySubscription != null && session != null) {
 			try {
-				noteContentSubscription.unsubscribe();
+				noteBodySubscription.unsubscribe();
 			} catch (IllegalStateException ignored) {}
 		}
 
 		String topic = "/topic/notes/" + selectedNote.getId() + "/body";
-		noteContentSubscription = session.subscribe(topic, new StompFrameHandler() {
-			@Override
-			public Type getPayloadType(StompHeaders headers) {
-				System.out.println("Received message on the topic: " + topic);
-				return String.class;
-			}
-
-			@Override
-			public void handleFrame(StompHeaders headers, Object payload) {
-				System.out.println("Received payload: " + payload);
-				consumer.accept((String) payload);
-			}
-		});
-	}
-
-	public void registerForNoteContentUpdates(Note selectedNote, Consumer<Note> consumer) {
-		if (!isServerAvailable(selectedNote.collection.serverURL)) {
-			return;
-		}
-
-		if (noteContentSubscription != null && session != null) {
-			try {
-				noteContentSubscription.unsubscribe();
-			} catch (IllegalStateException ignored) {}
-		}
-
-		String dest = "/topic/notes/"+selectedNote.id+"/content";
-		this.session.subscribe(dest, new StompFrameHandler() {
+		noteBodySubscription = session.subscribe(topic, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {
 				return Note.class;
@@ -155,6 +130,27 @@ public class ServerUtils {
 
 			@Override
 			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((Note) payload);
+			}
+		});
+	}
+
+	public void registerForNoteTitleUpdates(Consumer<Note> consumer) {
+		if(noteBodySubscription!=null){
+			System.out.println("subscribed!");
+			return;
+		}
+
+		String dest = "/topic/notes/title";
+		noteTitleSubscription = session.subscribe(dest, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return Note.class;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				System.out.println(((Note)payload).getTitle());
 				consumer.accept((Note) payload);
 			}
 		});
@@ -281,7 +277,6 @@ public class ServerUtils {
 		if (this.session == null) {
 			return;
         }
-		System.out.println("registered on: " + dest);
 		this.session.subscribe(dest, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {

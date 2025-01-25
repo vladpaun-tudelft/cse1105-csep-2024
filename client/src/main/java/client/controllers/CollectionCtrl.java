@@ -308,6 +308,7 @@ public class CollectionCtrl {
                         config.readDefaultCollection().serverURL
                 );
                 dashboardCtrl.noteAdditionSync();
+                dashboardCtrl.noteTitleSync();
                 dashboardCtrl.noteDeletionSync();
             }
             else {
