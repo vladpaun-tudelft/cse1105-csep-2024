@@ -548,7 +548,7 @@ public class DashboardCtrl implements Initializable {
     private void onNoteUpdate(Note newContent) {
         if (currentNote.id == newContent.id) {
             if (!currentNote.getBody().equals(newContent.getBody())) {
-                // NEW CONTENT MESSAGE
+                notificationsCtrl.pushNotification(bundle.getString("newContent"), false);
             }
             int caretPosition = noteBody.getCaretPosition();
             noteBody.setText(newContent.getBody());
