@@ -52,7 +52,7 @@
 }
 
 .help-icon {
-    -fx-background-image: url("icons/dark/help_dark.png");
+    -fx-background-image: url("icons/help.png");
 }
 
 .accessibility-button:hover{

@@ -161,7 +161,7 @@
     -fx-background-color: -main-selected;
 }
 .help-icon {
-    -fx-background-image: url("icons/help.png");
+    -fx-background-image: url("icons/dark/help_dark.png");
 }
 
 
