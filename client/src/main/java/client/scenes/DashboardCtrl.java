@@ -338,6 +338,14 @@ public class DashboardCtrl implements Initializable {
         });
     }
 
+    public void noteContentSync() {
+        server.registerForMessages("/topic/notes/content", Note.class, note -> {
+            Platform.runLater(() -> {
+                System.out.println("nada");
+            });
+        });
+    }
+
     public void noteDeletionSync() {
         server.registerForMessages("/topic/notes/delete", Note.class, note -> {
             Platform.runLater(() -> {
@@ -388,13 +396,10 @@ public class DashboardCtrl implements Initializable {
                 });
 
                 // NOTE CONTENT WEBSOCKETS
-                server.registerForNoteBodyUpdates(currentNote, updatedBody -> {
-                    // Update the UI with the new note body
-                    System.out.println("Received updated body: " + updatedBody);
-
-                    // Example: Update the text area in the UI
+                server.registerForNoteContentUpdates(currentNote, newContent -> {
                     Platform.runLater(() -> {
-                        noteBody.setText(updatedBody);
+                        onNoteUpdate(newContent);
+                        collectionView.refresh();
                     });
                 });
 
@@ -438,6 +443,7 @@ public class DashboardCtrl implements Initializable {
                 if (change.wasAdded()) {
                     server.getWebSocketURL(change.getAddedSubList().getFirst().serverURL);
                     noteAdditionSync();
+
                     noteDeletionSync();
                 }
                 syncTreeView(virtualRoot, collections, allNotes, false);
@@ -477,15 +483,13 @@ public class DashboardCtrl implements Initializable {
                     });
 
                     // NOTE CONTENT WEBSOCKETS
-                    server.registerForNoteBodyUpdates(currentNote, updatedBody -> {
-                        // Update the UI with the new note body
-                        System.out.println("Received updated body: " + updatedBody);
-
-                        // Example: Update the text area in the UI
+                    server.registerForNoteContentUpdates(currentNote, newContent -> {
                         Platform.runLater(() -> {
-                            noteBody.setText(updatedBody);
+                            onNoteUpdate(newContent);
+                            refreshTreeView();
                         });
                     });
+
 
                 } else {
                     currentNote = null;
@@ -508,6 +512,18 @@ public class DashboardCtrl implements Initializable {
         // Set custom TreeCell factory for NoteTreeItem
         allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl, server));
 
+    }
+
+    private void onNoteUpdate(Note newContent) {
+        if(currentNote.id == newContent.id) {
+            int caretPosition = noteBody.getCaretPosition();
+            noteBody.setText(newContent.getBody());
+            noteTitle.setText(newContent.getTitle());
+            noteBody.positionCaret(caretPosition);
+
+            currentNote.setBody(newContent.getBody());
+            currentNote.setTitle(newContent.getTitle());
+        }
     }
 
     /**
@@ -658,6 +674,7 @@ public class DashboardCtrl implements Initializable {
                     allNotes.addAll(server.getNotesByCollection(defaultCollection));
                     server.getWebSocketURL(defaultCollection.serverURL);
                     noteAdditionSync();
+
                     noteDeletionSync();
                 }
                 ServerUtils.getUnavailableCollections().remove(defaultCollection);
@@ -682,6 +699,7 @@ public class DashboardCtrl implements Initializable {
                    allNotes.addAll(server.getNotesByCollection(currentCollection));
                    server.getWebSocketURL(currentCollection.serverURL);
                    noteAdditionSync();
+
                    noteDeletionSync();
                }
                ServerUtils.getUnavailableCollections().remove(currentCollection);
@@ -737,6 +755,7 @@ public class DashboardCtrl implements Initializable {
         if (defaultCollection != null && server.isServerAvailable(defaultCollection.serverURL)) {
             server.getWebSocketURL(defaultCollection.serverURL);
             noteAdditionSync();
+
             noteDeletionSync();
         }
     }

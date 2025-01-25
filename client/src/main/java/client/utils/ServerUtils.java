@@ -66,7 +66,7 @@ public class ServerUtils {
 	private StompSession.Subscription embeddedFilesRenameUpdates;
 
 	@Getter @Setter
-	private StompSession.Subscription noteBodySubscription;
+	private StompSession.Subscription noteContentSubscription;
 
 	@Getter @Setter
 	private static List<Collection> unavailableCollections;
@@ -113,14 +113,14 @@ public class ServerUtils {
 			return;
 		}
 
-		if (noteBodySubscription != null && session != null) {
+		if (noteContentSubscription != null && session != null) {
 			try {
-				noteBodySubscription.unsubscribe();
+				noteContentSubscription.unsubscribe();
 			} catch (IllegalStateException ignored) {}
 		}
 
 		String topic = "/topic/notes/" + selectedNote.getId() + "/body";
-		noteBodySubscription = session.subscribe(topic, new StompFrameHandler() {
+		noteContentSubscription = session.subscribe(topic, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {
 				System.out.println("Received message on the topic: " + topic);
@@ -135,7 +135,30 @@ public class ServerUtils {
 		});
 	}
 
+	public void registerForNoteContentUpdates(Note selectedNote, Consumer<Note> consumer) {
+		if (!isServerAvailable(selectedNote.collection.serverURL)) {
+			return;
+		}
 
+		if (noteContentSubscription != null && session != null) {
+			try {
+				noteContentSubscription.unsubscribe();
+			} catch (IllegalStateException ignored) {}
+		}
+
+		String dest = "/topic/notes/"+selectedNote.id+"/content";
+		this.session.subscribe(dest, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return Note.class;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept((Note) payload);
+			}
+		});
+	}
 
 	public void registerForEmbeddedFilesDeleteUpdates(Note selectedNote, Consumer<Long> consumer) {
 		if (!isServerAvailable(selectedNote.collection.serverURL)) {
@@ -258,6 +281,7 @@ public class ServerUtils {
 		if (this.session == null) {
 			return;
         }
+		System.out.println("registered on: " + dest);
 		this.session.subscribe(dest, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {

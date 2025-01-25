@@ -269,6 +269,7 @@ public class NoteCtrl {
                     ).showAndWait();
                 }
                 else {
+
                     server.updateNote(note);
                 }
             }
@@ -299,10 +300,10 @@ public class NoteCtrl {
                 updatePendingNotes.add(currentNote);
             }
 
-            String destination = "/app/notes/" + currentNote.getId() + "/body";
+            Note newNote = new Note(dashboardCtrl.getCurrentNote().getTitle(), dashboardCtrl.getCurrentNote().getBody(), dashboardCtrl.getCurrentCollection());
+            newNote.id = dashboardCtrl.getCurrentNote().id;
+            server.send("/app/notes/" + dashboardCtrl.getCurrentNote().id +"/content", newNote);
 
-            // Send the updated body to the server
-            ServerUtils.getSession().send(destination, rawText);
         }
     }
 
@@ -317,6 +318,9 @@ public class NoteCtrl {
             uniqueTitle = baseTitle + " (" + counter + ")";
             counter++;
         }
+        Note newNote = new Note(uniqueTitle,note.getBody(), dashboardCtrl.getCurrentCollection());
+        newNote.id = note.id;
+        server.send("/app/notes/" + dashboardCtrl.getCurrentNote().id +"/content", newNote);
 
         return uniqueTitle;
     }
