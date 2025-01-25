@@ -184,6 +184,10 @@ public class DashboardCtrl implements Initializable {
         languageTooltip.setShowDelay(Duration.seconds(0.2));
         languageButton.setTooltip(languageTooltip);
 
+        Tooltip moveNotesTooltip = new Tooltip(bundle.getString("moveSelectedNotes.text"));
+        moveNotesTooltip.setShowDelay(Duration.seconds(0.2));
+        moveNotesButton.setTooltip(moveNotesTooltip);
+
         // ---------
 
 
