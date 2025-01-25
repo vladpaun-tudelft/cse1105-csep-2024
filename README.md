@@ -114,6 +114,12 @@ To run the project, you need:
 
 ---
 
+## HCI
+1. A high-contrast mode was implemented, which can be toggled on and off using the button at the bottom of the app.
+2. Tooltips have been added to all icon-buttons in order to clearly inform the user about the actions of these buttons.
+
+---
+
 ## Other considerations
 1. As per the requirements, the ```config.json``` and ```markdown.css``` files can be found:
     - At ```"C:\Users\username\AppData\Roaming\NetNote\"```on Windows;
