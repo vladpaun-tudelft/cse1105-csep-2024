@@ -1390,4 +1390,8 @@ public class DashboardCtrl implements Initializable {
         notificationsCtrl.pushNotification(bundle.getString("toggled.accessibility"), false);
         isAccessible = !isAccessible;
     }
+
+    public void showHelpMenu() {
+        mainCtrl.showHelpMenu();
+    }
 }

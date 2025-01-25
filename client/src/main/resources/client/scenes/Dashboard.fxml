@@ -281,6 +281,15 @@
                   <Font size="6.0" />
                </font>
             </MenuButton>
+            <Button mnemonicParsing="false" onAction="#showHelpMenu" prefHeight="24.0" text="%help.menu">
+               <styleClass>
+                  <String fx:value="help-icon" />
+                  <String fx:value="help-button" />
+               </styleClass>
+               <padding>
+                  <Insets left="5.0" right="20.0" />
+               </padding>
+            </Button>
          </children>
       </HBox>
     </children>

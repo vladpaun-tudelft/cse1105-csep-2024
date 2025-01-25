@@ -26,6 +26,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
@@ -76,6 +77,39 @@ public class MainCtrl {
         scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
         return controllerClass.cast(fxml.getKey());
     }
+
+    public HelpMenuCtrl showHelpMenu() {
+        // Load the HelpMenuCtrl and its associated FXML
+        Pair<HelpMenuCtrl, Parent> helpMenu = FXML.load(HelpMenuCtrl.class, manager.getBundle(), "client", "scenes", "HelpMenu.fxml");
+        HelpMenuCtrl helpMenuCtrl = helpMenu.getKey(); // Single instance of HelpMenuCtrl
+        Parent root = helpMenu.getValue();
+
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.initStyle(StageStyle.TRANSPARENT);
+        popupStage.setTitle(manager.getBundle().getString("helpMenuTitle"));
+
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(dashboardCtrl.getCurrentCss());
+        scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        scene.setFill(Color.TRANSPARENT);
+
+        popupStage.setScene(scene);
+        helpMenuCtrl.setReferences(popupStage, dashboardCtrl.getMarkdownCtrl()); // Properly set the stage on the single instance
+
+        // Add keyboard shortcuts
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                popupStage.close();
+                event.consume();
+            }
+        });
+
+        Platform.runLater(popupStage::showAndWait);
+
+        return helpMenuCtrl;
+    }
+
 
     /**
      * Opens the EditCollections scene as a popup.
@@ -233,17 +267,16 @@ scene.setFill(Color.TRANSPARENT);
                         dashboardCtrl.allNotesView.getSelectionModel().clearSelection
                                 (dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()+1);
                         dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()-1);
-
+                        event.consume();
                     } else if (event.isAltDown() && event.isShiftDown()) {
                         dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                         dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                         dashboardCtrl.selectPreviousNote();
                         dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex()-1);
-
+                        event.consume();
                     }
                     dashboardCtrl.collectionView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                     dashboardCtrl.allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-                    event.consume();
                 }
                 case TAB -> {
 
