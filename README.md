@@ -142,6 +142,7 @@ To run the project, you need:
     - `ALT + SHIFT + DELETE` - Forget collection
 - **Navigation:**
     - `ALT + UP/DOWN ARROW` - Navigate notes
+    - `ALT + SHIFT +UP/DOWN ARROW` - Select multiple notes
     - `ALT + LEFT/RIGHT ARROW` - Navigate collections
 - **Other Actions:**
     - `CTRL + Z` / `ALT + Z` - Undo last note action
