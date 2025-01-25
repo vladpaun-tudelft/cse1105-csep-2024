@@ -9,6 +9,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 
@@ -22,7 +23,7 @@ import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 public class Collection {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    public long id;
+    public UUID id;
 
     @Column(unique = true, nullable = false)
     public String title;

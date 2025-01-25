@@ -451,7 +451,7 @@ public class CollectionCtrl {
             currentNote.setTitle(noteCtrl.generateUniqueTitle(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false));
         }
         noteCtrl.getUpdatePendingNotes().add(currentNote);
-        noteCtrl.saveAllPendingNotes();
+        noteCtrl.saveAllPendingNotes(dashboardCtrl);
         if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("movedNote") + selectedCollection.title, false);
     }
 

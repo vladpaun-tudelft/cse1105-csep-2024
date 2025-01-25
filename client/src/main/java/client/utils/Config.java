@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import client.ui.DialogStyler;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +33,7 @@ public class Config {
                 configFile.createNewFile();
                 // Initialize the file with an empty list and no defaultCollectionId
                 ObjectMapper objectMapper = new ObjectMapper();
-                objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, new ConfigData(new ArrayList<>(), -1, DEFAULT_LANGUAGE));
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, new ConfigData(new ArrayList<>(), null, DEFAULT_LANGUAGE));
             } catch (IOException e) {
                 if(!fileError) {
                     dialogStyler.createStyledAlert(
@@ -87,7 +88,7 @@ public class Config {
     public void writeAllToFile(List<Collection> collections) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            long defaultId = readDefaultCollectionId(); // Preserve the existing default ID
+            UUID defaultId = readDefaultCollectionId(); // Preserve the existing default ID
             String currentLanguage = getCurrentLanguage();
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, new ConfigData(collections, defaultId, currentLanguage));
         } catch (IOException e) {
@@ -116,7 +117,7 @@ public class Config {
         }
 
         // Handle null defaultCollection
-        long defaultCollectionId = -1;
+        UUID defaultCollectionId = null;
         if (defaultCollection != null) {
             if (!collections.contains(defaultCollection)) {
                 dialogStyler.createStyledAlert(
@@ -150,7 +151,7 @@ public class Config {
             ObjectMapper objectMapper = new ObjectMapper();
             ConfigData configData = objectMapper.readValue(configFile, ConfigData.class);
             for (Collection collection : configData.getCollections()) {
-                if (collection.id == configData.getDefaultCollectionId()) {
+                if (collection.id.equals(configData.getDefaultCollectionId())) {
                     return collection;
                 }
             }
@@ -165,13 +166,13 @@ public class Config {
         return null;
     }
 
-    private long readDefaultCollectionId() {
+    private UUID readDefaultCollectionId() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             ConfigData configData = objectMapper.readValue(configFile, ConfigData.class);
             return configData.getDefaultCollectionId();
         } catch (IOException e) {
-            return -1; // Return -1 if there's an issue reading the file
+            return null; // Return null if there's an issue reading the file
         }
     }
 
@@ -236,13 +237,13 @@ public class Config {
     // Inner class to represent the full config data
     private static class ConfigData {
         private List<Collection> collections;
-        private long defaultCollectionId;
+        private UUID defaultCollectionId;
         private String language;
 
         // Default constructor for Jackson
         public ConfigData() {}
 
-        public ConfigData(List<Collection> collections, long defaultCollectionId, String language) {
+        public ConfigData(List<Collection> collections, UUID defaultCollectionId, String language) {
             this.collections = collections;
             this.defaultCollectionId = defaultCollectionId;
             this.language = language;
@@ -256,11 +257,11 @@ public class Config {
             this.collections = collections;
         }
 
-        public long getDefaultCollectionId() {
+        public UUID getDefaultCollectionId() {
             return defaultCollectionId;
         }
 
-        public void setDefaultCollectionId(long defaultCollectionId) {
+        public void setDefaultCollectionId(UUID defaultCollectionId) {
             this.defaultCollectionId = defaultCollectionId;
         }
 

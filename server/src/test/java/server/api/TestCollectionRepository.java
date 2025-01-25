@@ -12,6 +12,7 @@ import server.database.CollectionRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class TestCollectionRepository implements CollectionRepository {
@@ -39,7 +40,7 @@ public class TestCollectionRepository implements CollectionRepository {
     }
 
     @Override
-    public void deleteAllByIdInBatch(Iterable<Long> longs) {
+    public void deleteAllByIdInBatch(Iterable<UUID > longs) {
 
     }
 
@@ -49,17 +50,17 @@ public class TestCollectionRepository implements CollectionRepository {
     }
 
     @Override
-    public Collection getOne(Long aLong) {
+    public Collection getOne(UUID  aUUID ) {
         return null;
     }
 
     @Override
-    public Collection getById(Long aLong) {
+    public Collection getById(UUID  aUUID ) {
         return null;
     }
 
     @Override
-    public Collection getReferenceById(Long aLong) {
+    public Collection getReferenceById(UUID  aUUID ) {
         return null;
     }
 
@@ -112,7 +113,7 @@ public class TestCollectionRepository implements CollectionRepository {
                 return entity;
             }
         }
-        entity.id = collections.size()+1;
+        entity.id = UUID.randomUUID();
         collections.add(entity);
         return entity;
     }
@@ -123,12 +124,12 @@ public class TestCollectionRepository implements CollectionRepository {
     }
 
     @Override
-    public Optional<Collection> findById(Long aLong) {
-        return collections.stream().filter(e -> e.id == aLong).findFirst();
+    public Optional<Collection> findById(UUID aUUID ) {
+        return collections.stream().filter(e -> e.id.equals(aUUID)).findFirst();
     }
 
     @Override
-    public boolean existsById(Long aLong) {
+    public boolean existsById(UUID  aUUID ) {
         return false;
     }
 
@@ -138,7 +139,7 @@ public class TestCollectionRepository implements CollectionRepository {
     }
 
     @Override
-    public List<Collection> findAllById(Iterable<Long> longs) {
+    public List<Collection> findAllById(Iterable<UUID > longs) {
         return List.of();
     }
 
@@ -148,8 +149,8 @@ public class TestCollectionRepository implements CollectionRepository {
     }
 
     @Override
-    public void deleteById(Long aLong) {
-        collections.removeIf(e -> e.id == aLong);
+    public void deleteById(UUID  aUUID ) {
+        collections.removeIf(e -> e.id.equals(aUUID) );
 
     }
 
@@ -159,7 +160,7 @@ public class TestCollectionRepository implements CollectionRepository {
     }
 
     @Override
-    public void deleteAllById(Iterable<? extends Long> longs) {
+    public void deleteAllById(Iterable<? extends UUID > longs) {
 
     }
 

@@ -6,6 +6,7 @@ import server.database.CollectionRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CollectionService {
@@ -20,11 +21,11 @@ public class CollectionService {
         return collectionRepository.save(collection);
     }
 
-    public void deleteById(long id) {
+    public void deleteById(UUID id) {
         collectionRepository.deleteById(id);
     }
 
-    public Optional<Collection> findById(long id) {
+    public Optional<Collection> findById(UUID id) {
         return collectionRepository.findById(id);
     }
 
@@ -36,7 +37,7 @@ public class CollectionService {
         return collectionRepository.findByTitle(title);
     }
 
-    public Optional<Collection> getCollectionById(long id) {
+    public Optional<Collection> getCollectionById(UUID id) {
         return collectionRepository.findById(id);
     }
 }

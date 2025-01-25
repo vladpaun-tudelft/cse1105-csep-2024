@@ -84,7 +84,7 @@ public class ServerUtils {
 		this.bundle = this.manager.getBundle();
 	}
 
-	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<Long> consumer) {
+	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<UUID> consumer) {
 		if (!isServerAvailable(selectedNote.collection.serverURL)) {
 			return;
 		}
@@ -99,12 +99,12 @@ public class ServerUtils {
 		embeddedFilesSubscription = session.subscribe(topic, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {
-				return Long.TYPE;
+				return UUID.class;
 			}
 
 			@Override
 			public void handleFrame(StompHeaders headers, Object payload) {
-				consumer.accept((Long) payload);
+				consumer.accept((UUID) payload);
 			}
 		});
 	}
@@ -154,7 +154,7 @@ public class ServerUtils {
 		});
 	}
 
-	public void registerForEmbeddedFilesDeleteUpdates(Note selectedNote, Consumer<Long> consumer) {
+	public void registerForEmbeddedFilesDeleteUpdates(Note selectedNote, Consumer<UUID> consumer) {
 		if (!isServerAvailable(selectedNote.collection.serverURL)) {
 			return;
 		}
@@ -169,12 +169,12 @@ public class ServerUtils {
 		embeddedFilesDeleteUpdates = session.subscribe(topic, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {
-				return Long.TYPE;
+				return UUID.class;
 			}
 
 			@Override
 			public void handleFrame(StompHeaders headers, Object payload) {
-				consumer.accept((Long) payload);
+				consumer.accept((UUID) payload);
 			}
 		});
 	}
@@ -440,7 +440,7 @@ public class ServerUtils {
 				.put(Entity.entity(file, APPLICATION_JSON), EmbeddedFile.class);
 	}
 
-	public EmbeddedFile getFileById(Note note, Long fileId) {
+	public EmbeddedFile getFileById(Note note, UUID fileId) {
 		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;
 		return ClientBuilder.newClient(new ClientConfig())
 				.target(note.collection.serverURL).path("api/notes/" + note.id + "/files/" + fileId + "/getFile")
@@ -459,8 +459,8 @@ public class ServerUtils {
 		return result;
 	}
 
-	public long getCollectionID(Collection collection) {
-		if (!isServerAvailableWithAlert(collection.serverURL)) return -1;
+	public UUID getCollectionID(Collection collection) {
+		if (!isServerAvailableWithAlert(collection.serverURL)) return null;
 		Collection fetchedCollection = ClientBuilder.newClient(new ClientConfig())
 				.target(collection.serverURL).path("/api/collection/title/" + collection.title)
 				.request(APPLICATION_JSON)

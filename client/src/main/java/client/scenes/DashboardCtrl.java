@@ -377,7 +377,7 @@ public class DashboardCtrl implements Initializable {
     public void noteTitleSync() {
         server.registerForNoteTitleUpdates(note -> {
             Platform.runLater(() -> {
-                Note toUpdate = allNotes.stream().filter(n -> n.id == note.id).findFirst().get();
+                Note toUpdate = allNotes.stream().filter(n -> n.id.equals(note.id)).findFirst().get();
                 if(toUpdate!=null){
                     toUpdate.setTitle(note.getTitle());
                     if(toUpdate.equals(currentNote)){
@@ -546,7 +546,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     private void onNoteUpdate(Note newContent) {
-        if (currentNote.id == newContent.id) {
+        if (currentNote.id.equals(newContent.id)) {
             if (!currentNote.getBody().equals(newContent.getBody())) {
                 notificationsCtrl.pushNotification(bundle.getString("newContent"), false);
             }
@@ -963,7 +963,7 @@ public class DashboardCtrl implements Initializable {
         if (newFile != null) {
             filesCtrl.showFiles(currentNote);
             // Save the file addition action to the history
-            actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, newFile, null, null));
+            actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, null, null, null, newFile));
         }
     }
 
@@ -1114,7 +1114,7 @@ public class DashboardCtrl implements Initializable {
                 collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server,notificationsCtrl));
             }
             case ActionType.ADD_FILE -> {
-                EmbeddedFile addedFile = (EmbeddedFile) lastAction.getPreviousState();
+                EmbeddedFile addedFile = lastAction.getEmbeddedFile().get();
                 filesCtrl.deleteFile(currentNote, addedFile);
             }
             case ActionType.DELETE_FILE -> {

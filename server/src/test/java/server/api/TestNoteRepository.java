@@ -11,6 +11,7 @@ import server.database.NoteRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,7 @@ public class TestNoteRepository implements NoteRepository {
     }
 
     @Override
-    public void deleteAllByIdInBatch(Iterable<Long> longs) {
+    public void deleteAllByIdInBatch(Iterable<UUID> longs) {
 
     }
 
@@ -56,17 +57,17 @@ public class TestNoteRepository implements NoteRepository {
     }
 
     @Override
-    public Note getOne(Long aLong) {
+    public Note getOne(UUID aLong) {
         return null;
     }
 
     @Override
-    public Note getById(Long aLong) {
+    public Note getById(UUID aLong) {
         return null;
     }
 
     @Override
-    public Note getReferenceById(Long aLong) {
+    public Note getReferenceById(UUID aLong) {
         return null;
     }
 
@@ -113,7 +114,7 @@ public class TestNoteRepository implements NoteRepository {
                 return entity;
             }
         }
-        entity.id = (long) (notes.size()+1);
+        entity.id = UUID.randomUUID();
         notes.add(entity);
         return entity;
     }
@@ -124,14 +125,14 @@ public class TestNoteRepository implements NoteRepository {
     }
 
     @Override
-    public Optional<Note> findById(Long aLong) {
+    public Optional<Note> findById(UUID aLong) {
         return notes.stream()
-                .filter(note -> note.id == aLong)
+                .filter(note -> note.id.equals(aLong))
                 .findFirst();
     };
 
     @Override
-    public boolean existsById(Long aLong) {
+    public boolean existsById(UUID aLong) {
         return false;
     }
 
@@ -141,7 +142,7 @@ public class TestNoteRepository implements NoteRepository {
     }
 
     @Override
-    public List<Note> findAllById(Iterable<Long> longs) {
+    public List<Note> findAllById(Iterable<UUID> longs) {
         return List.of();
     }
 
@@ -151,7 +152,7 @@ public class TestNoteRepository implements NoteRepository {
     }
 
     @Override
-    public void deleteById(Long aLong) {
+    public void deleteById(UUID aLong) {
         notes.removeIf(note -> aLong.equals(note.id));
     }
 
@@ -161,7 +162,7 @@ public class TestNoteRepository implements NoteRepository {
     }
 
     @Override
-    public void deleteAllById(Iterable<? extends Long> longs) {
+    public void deleteAllById(Iterable<? extends UUID> longs) {
 
     }
 
