@@ -70,19 +70,19 @@ public class NoteController {
 
     @MessageMapping("/notes/{noteId}/files")
     @SendTo("/topic/notes/{noteId}/files")
-    public Long sendEmbeddedFileUpdate(@DestinationVariable Long noteId, Long embeddedFileId) {
+    public UUID sendEmbeddedFileUpdate(@DestinationVariable UUID noteId, UUID embeddedFileId) {
         return embeddedFileId;
     }
 
     @MessageMapping("/notes/{noteId}/files/deleteFile")
     @SendTo("/topic/notes/{noteId}/files/deleteFile")
-    public Long sendMessageAfterDelete(@DestinationVariable Long noteId, Long embeddedFileId) {
+    public UUID sendMessageAfterDelete(@DestinationVariable UUID noteId, UUID embeddedFileId) {
         return embeddedFileId;
     }
 
     @MessageMapping("/notes/{noteId}/files/renameFile")
     @SendTo("/topic/notes/{noteId}/files/renameFile")
-    public Object[] sendMessageAfterRename(@DestinationVariable Long noteId,
+    public Object[] sendMessageAfterRename(@DestinationVariable UUID noteId,
                                                                         Object[] newFileName) {
         return newFileName;
     }
@@ -109,7 +109,7 @@ public class NoteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateNote(@PathVariable long id, @RequestBody Note note) {
+    public ResponseEntity<?> updateNote(@PathVariable UUID id, @RequestBody Note note) {
         if (note == null || note.collection == null) {
             return ResponseEntity.badRequest().body("Invalid request");
         } else if (note.title.isBlank()) {
@@ -125,7 +125,7 @@ public class NoteController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteNote(@PathVariable long id) {
+    public ResponseEntity<Void> deleteNote(@PathVariable UUID id) {
         Optional<Note> note = noteService.findById(id);
         if (note.isPresent()) {
             try {
@@ -141,7 +141,7 @@ public class NoteController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Note> getNoteById(@PathVariable long id) {
+    public ResponseEntity<Note> getNoteById(@PathVariable UUID id) {
         Optional<Note> note = noteService.findById(id);
         return note.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -153,7 +153,7 @@ public class NoteController {
     }
 
     @PostMapping(path = "/{id}/files", consumes = MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadFile(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadFile(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
         Optional<Note> noteOpt = noteService.findById(id);
         if (noteOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -171,7 +171,7 @@ public class NoteController {
     }
 
     @GetMapping("/{noteId}/files/{fileName}")
-    public ResponseEntity<byte[]> getFileByName(@PathVariable Long noteId, @PathVariable String fileName) {
+    public ResponseEntity<byte[]> getFileByName(@PathVariable UUID noteId, @PathVariable String fileName) {
         List<EmbeddedFile> files = embeddedFileService.getFilesByNoteId(noteId);
         files = files.stream().filter(e -> Objects.equals(e.getFileName(), fileName)).toList();
         if (files.isEmpty()) {
@@ -183,7 +183,7 @@ public class NoteController {
     }
 
     @GetMapping("/{noteId}/files/{fileId}/getFile")
-    public ResponseEntity<EmbeddedFile> getFileById(@PathVariable Long noteId, @PathVariable Long fileId) {
+    public ResponseEntity<EmbeddedFile> getFileById(@PathVariable UUID noteId, @PathVariable UUID fileId) {
         Optional<EmbeddedFile> file = embeddedFileService.findById(fileId);
         if (file.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -192,19 +192,19 @@ public class NoteController {
     }
 
     @GetMapping("/{id}/files")
-    public ResponseEntity<List<EmbeddedFile>> getFiles(@PathVariable Long id) {
+    public ResponseEntity<List<EmbeddedFile>> getFiles(@PathVariable UUID id) {
         List<EmbeddedFile> files = embeddedFileService.getFilesByNoteId(id);
         return ResponseEntity.ok(files);
     }
 
     @DeleteMapping("/{noteId}/files/{fileId}")
-    public ResponseEntity<Void> deleteFile(@PathVariable Long noteId, @PathVariable Long fileId) {
+    public ResponseEntity<Void> deleteFile(@PathVariable UUID noteId, @PathVariable UUID fileId) {
         embeddedFileService.deleteFile(fileId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{noteId}/files/{fileId}/rename")
-    public ResponseEntity<EmbeddedFile> renameFile(@PathVariable Long noteId, @PathVariable Long fileId, @RequestParam String newFileName) {
+    public ResponseEntity<EmbeddedFile> renameFile(@PathVariable UUID noteId, @PathVariable UUID fileId, @RequestParam String newFileName) {
         Optional<EmbeddedFile> embeddedFileOpt = embeddedFileService.findById(fileId);
         if (embeddedFileOpt.isEmpty()) {
             return ResponseEntity.notFound().build();

@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
@@ -27,13 +26,12 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -66,7 +64,7 @@ class ServerUtilsTest {
     @Mock
     private StompSession.Subscription renameSubsciptionMock;
     @Mock
-    private Consumer<Long> consumerMock;
+    private Consumer<UUID> consumerMock;
     @Mock
     private Consumer<Object[]> renameConsumerMock;
 
@@ -161,7 +159,7 @@ class ServerUtilsTest {
     void updateNote() {
         Collection collection = new Collection("Collection Title", "http://mock-server.com");
         Note note = new Note("Updated Title", "Updated Body", collection);
-        note.id = 1L;
+        note.id = UUID.randomUUID();
 
         when(clientMock.target("http://mock-server.com")).thenReturn(targetMock);
         when(targetMock.path("api/notes/" + note.id)).thenReturn(targetMock);
@@ -235,9 +233,9 @@ class ServerUtilsTest {
     @Test
     void updateCollection() {
         Collection collection = new Collection("Collection Title", "http://mock-server.com");
-        collection.id = 1L;
+        collection.id = UUID.randomUUID();
         Collection updatedCollection = new Collection("Updated Collection Title", "http://mock-server.com");
-        updatedCollection.id = 1L;
+        updatedCollection.id = UUID.randomUUID();
 
         when(clientMock.target("http://mock-server.com")).thenReturn(targetMock);
         when(targetMock.path("/api/collection/" + collection.id)).thenReturn(targetMock);
@@ -251,14 +249,14 @@ class ServerUtilsTest {
         assertNotNull(result);
         assertEquals("Updated Collection Title", result.title);
         assertEquals("http://mock-server.com", result.serverURL);
-        assertEquals(1L, result.id);
+        assertEquals(updatedCollection.id, result.id);
         verify(builderMock).put(any(), eq(Collection.class));
     }
 
     @Test
     void deleteCollection() {
         Collection collection = new Collection("Collection Title", "http://mock-server.com");
-        collection.id = 1L;
+        collection.id = UUID.randomUUID();
 
         when(clientMock.target("http://mock-server.com")).thenReturn(targetMock);
         when(targetMock.path("/api/collection/" + collection.id)).thenReturn(targetMock);
@@ -268,7 +266,7 @@ class ServerUtilsTest {
 
         List<Note> mockNotes = new ArrayList<>();
         Note mockNote = new Note("note", "", collection);
-        mockNote.id = 1L;
+        mockNote.id = UUID.randomUUID();
         mockNotes.add(mockNote);
         doReturn(mockNotes).when(spyServerUtils).getNotesByCollection(collection);
 
@@ -281,7 +279,7 @@ class ServerUtilsTest {
     void addFile() {
         Collection collection = new Collection("Collection Title", "http://mock-server.com");
         Note note = new Note("Note", "Body", collection);
-        note.id = 1L;
+        note.id = UUID.randomUUID();
 
         File file = mock(File.class);
         when(file.getName()).thenReturn("file.txt");
@@ -309,9 +307,9 @@ class ServerUtilsTest {
     void getFileById() {
         Collection collection = new Collection("Collection Title", "http://mock-server.com");
         Note note = new Note("Note", "Body", collection);
-        note.id = 1L;
+        note.id = UUID.randomUUID();
         EmbeddedFile file = new EmbeddedFile(note, "file.txt", "text/plain", new byte[0]);
-        file.setId(1L);
+        file.setId(UUID.randomUUID());
 
         when(clientMock.target("http://mock-server.com")).thenReturn(targetMock);
         when(targetMock.path("api/notes/" + note.id + "/files/" + file.getId() + "/getFile")).thenReturn(targetMock);
@@ -328,9 +326,9 @@ class ServerUtilsTest {
     void deleteFile() {
         Collection collection = new Collection("Collection Title", "http://mock-server.com");
         Note note = new Note("Note", "Body", collection);
-        note.id = 1L;
+        note.id = UUID.randomUUID();
         EmbeddedFile file = new EmbeddedFile(note, "file.txt", "text/plain", new byte[0]);
-        file.setId(1L);
+        file.setId(UUID.randomUUID());
 
         when(clientMock.target("http://mock-server.com")).thenReturn(targetMock);
         when(targetMock.path("api/notes/" + note.id + "/files/" + file.getId())).thenReturn(targetMock);
@@ -347,9 +345,9 @@ class ServerUtilsTest {
     void renameFile() {
         Collection collection = new Collection("Collection Title", "http://mock-server.com");
         Note note = new Note("Note", "Body", collection);
-        note.id = 1L;
+        note.id = UUID.randomUUID();
         EmbeddedFile file = new EmbeddedFile(note, "file.txt", "text/plain", new byte[0]);
-        file.setId(1L);
+        file.setId(UUID.randomUUID());
 
         EmbeddedFile expected = new EmbeddedFile(note, "renamedFile.txt", "text/plain", new byte[0]);
 
@@ -371,7 +369,7 @@ class ServerUtilsTest {
     void getFilesByNote() {
         Collection collection = new Collection("Collection Title", "http://mock-server.com");
         Note note = new Note("Note Title", "Note Body", collection);
-        note.id = 1L;
+        note.id = UUID.randomUUID();
 
         EmbeddedFile file1 = new EmbeddedFile(note, "file1.txt", "text/plain", new byte[0]);
         EmbeddedFile file2 = new EmbeddedFile(note, "file2.txt", "text/plain", new byte[0]);
@@ -431,8 +429,8 @@ class ServerUtilsTest {
     @Test
     void registerForEmbeddedFileUpdates() {
         Note note = new Note("note", "", new Collection("collection", "test.com"));
-        note.id = 1L;
-        String expectedTopic = "/topic/notes/1/files";
+        note.id = UUID.randomUUID();
+        String expectedTopic = "/topic/notes/" + note.id +  "/files";
 
         when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
                 .thenReturn(subscriptionMock);
@@ -449,8 +447,8 @@ class ServerUtilsTest {
     @Test
     void registerForEmbeddedFilesDeleteUpdates() {
         Note note = new Note("note", "", new Collection("collection", "test.com"));
-        note.id = 1L;
-        String expectedTopic = "/topic/notes/1/files/deleteFile";
+        note.id = UUID.randomUUID();
+        String expectedTopic = "/topic/notes/"+note.id+"/files/deleteFile";
 
         when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
                 .thenReturn(deleteSubscriptionMock);
@@ -467,8 +465,8 @@ class ServerUtilsTest {
     @Test
     void registerForEmbeddedFilesRenameUpdates() {
         Note note = new Note("note", "", new Collection("collection", "test.com"));
-        note.id = 1L;
-        String expectedTopic = "/topic/notes/1/files/renameFile";
+        note.id = UUID.randomUUID();
+        String expectedTopic = "/topic/notes/"+note.id+"/files/renameFile";
 
         when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
                 .thenReturn(renameSubsciptionMock);
@@ -520,7 +518,7 @@ class ServerUtilsTest {
                 .thenReturn(subscriptionMock);
 
         serverUtils.setSession(sessionMock);
-        serverUtils.registerForMessages(destination, Long.class, consumerMock);
+        serverUtils.registerForMessages(destination, UUID.class, consumerMock);
 
         verify(sessionMock).subscribe(eq(destination), any(StompFrameHandler.class));
     }

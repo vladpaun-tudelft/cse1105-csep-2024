@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class EmbeddedFileService {
@@ -36,20 +37,20 @@ public class EmbeddedFileService {
         return file;
     }
 
-    public Optional<EmbeddedFile> findById(Long fileId) {
+    public Optional<EmbeddedFile> findById(UUID fileId) {
         return embeddedFileRepository.findById(fileId);
     }
 
-    public List<EmbeddedFile> getFilesByNoteId(Long noteId) {
+    public List<EmbeddedFile> getFilesByNoteId(UUID noteId) {
         return embeddedFileRepository.findByNoteId(noteId);
     }
 
-    public void deleteFile(Long id) {
+    public void deleteFile(UUID id) {
         embeddedFileRepository.deleteById(id);
     }
 
     @Transactional
-    public void deleteFilesByNoteId(Long noteId) {
+    public void deleteFilesByNoteId(UUID noteId) {
         embeddedFileRepository.deleteByNoteId(noteId);
     }
 

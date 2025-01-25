@@ -3,7 +3,6 @@ package server.api;
 import commons.Collection;
 import commons.EmbeddedFile;
 import commons.Note;
-import net.minidev.json.JSONUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -13,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import server.service.CollectionService;
 import server.service.EmbeddedFileService;
 import server.service.NoteService;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -63,7 +64,7 @@ class NoteControllerTest {
         note8 = new Note("note8", "bla", collection4);
 
         embeddedFile = new EmbeddedFile(note1, "file.txt", "text/plain", new byte[]{1, 2, 3, 4});
-        embeddedFile.setId(1L);
+        embeddedFile.setId(UUID.randomUUID());
     }
 
     @Test
@@ -102,11 +103,11 @@ class NoteControllerTest {
     @Test
     public void getNoteByIdTest() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
-        noteController.createNote(note2);
+        UUID id1 = noteController.createNote(note1).getBody().id;
+        UUID id2 = noteController.createNote(note2).getBody().id;
 
-        var actual1 = noteController.getNoteById(1);
-        var actual2 = noteController.getNoteById(2);
+        var actual1 = noteController.getNoteById(id1);
+        var actual2 = noteController.getNoteById(id2);
 
         assertEquals(ResponseEntity.ok(note1), actual1);
         assertEquals(ResponseEntity.ok(note2), actual2);
@@ -117,7 +118,7 @@ class NoteControllerTest {
         collectionController.createCollection(collection1);
         noteController.createNote(note1);
 
-        var actual = noteController.getNoteById(2);
+        var actual = noteController.getNoteById(UUID.randomUUID());
 
         assertEquals(ResponseEntity.notFound().build(), actual);
     }
@@ -125,13 +126,13 @@ class NoteControllerTest {
     @Test
     public void deleteNoteTest() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
 
-        var response = noteController.deleteNote(1);
+        var response = noteController.deleteNote(id1);
 
         assertEquals(ResponseEntity.noContent().build(), response);
 
-        var actual = noteController.getNoteById(1);
+        var actual = noteController.getNoteById(id1);
         assertEquals(ResponseEntity.notFound().build(), actual);
 
     }
@@ -139,24 +140,24 @@ class NoteControllerTest {
     @Test
     public void updateNoteTest() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
 
-        var response = noteController.updateNote(1, note2);
+        var response = noteController.updateNote(id1, note2);
         assertEquals(ResponseEntity.ok(note2), response);
 
-        var actual = noteController.getNoteById(1);
+        var actual = noteController.getNoteById(id1);
         assertEquals(ResponseEntity.ok(note2), actual);
     }
 
     @Test
     public void updateNoteNotFoundTest() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
 
-        var actual = noteController.updateNote(2, note3);
+        var actual = noteController.updateNote(UUID.randomUUID(), note3);
         assertEquals(ResponseEntity.notFound().build(), actual);
 
-        var actual2 = noteController.getNoteById(1);
+        var actual2 = noteController.getNoteById(id1);
         assertEquals(ResponseEntity.ok(note1), actual2);
     }
 
@@ -246,13 +247,13 @@ class NoteControllerTest {
     @Test
     public void sendEmbeddedFileUpdate() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
 
         MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
-        EmbeddedFile file = (EmbeddedFile) noteController.uploadFile(1L, mockFile).getBody();
-        file.setId(1L);
+        EmbeddedFile file = (EmbeddedFile) noteController.uploadFile(id1, mockFile).getBody();
+        file.setId(UUID.randomUUID());
 
-        Long result = noteController.sendEmbeddedFileUpdate(note1.id, file.getId());
+        UUID result = noteController.sendEmbeddedFileUpdate(note1.id, file.getId());
 
         assertEquals(file.getId(), result);
     }
@@ -260,13 +261,13 @@ class NoteControllerTest {
     @Test
     public void sendMessageAfterDelete() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
 
         MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
-        EmbeddedFile file = (EmbeddedFile) noteController.uploadFile(1L, mockFile).getBody();
-        file.setId(1L);
+        EmbeddedFile file = (EmbeddedFile) noteController.uploadFile(id1, mockFile).getBody();
+        file.setId(UUID.randomUUID());
 
-        Long result = noteController.sendMessageAfterDelete(note1.id, file.getId());
+        UUID result = noteController.sendMessageAfterDelete(note1.id, file.getId());
 
         assertEquals(file.getId(), result);
     }
@@ -274,16 +275,16 @@ class NoteControllerTest {
     @Test
     public void sendMessageAfterRename() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
 
         MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
-        EmbeddedFile file = (EmbeddedFile) noteController.uploadFile(1L, mockFile).getBody();
-        file.setId(1L);
+        EmbeddedFile file = (EmbeddedFile) noteController.uploadFile(id1, mockFile).getBody();
+        file.setId(UUID.randomUUID());
 
         String newFileName = "newName.txt";
 
         Object[] result = noteController.sendMessageAfterRename(note1.id, new Object[]{file.getId(), newFileName});
-        Long returnedId = (Long) result[0];
+        UUID returnedId = (UUID) result[0];
         String returnedFileName = (String) result[1];
 
         assertEquals(file.getId(), returnedId);
@@ -293,12 +294,12 @@ class NoteControllerTest {
     @Test
     public void getFilesTest() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
 
         MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
-        noteController.uploadFile(1L, mockFile);
+        noteController.uploadFile(id1, mockFile);
 
-        var response = noteController.getFiles(1L);
+        var response = noteController.getFiles(id1);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -311,7 +312,7 @@ class NoteControllerTest {
 
     @Test
     public void getFilesForNonExistentNoteTest() {
-        var response = noteController.getFiles(999L);
+        var response = noteController.getFiles(UUID.randomUUID());
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().isEmpty());
     }
@@ -319,12 +320,12 @@ class NoteControllerTest {
     @Test
     public void getFileById() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
 
         MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
-        var uploadResponse = noteController.uploadFile(1L, mockFile);
+        var uploadResponse = noteController.uploadFile(id1, mockFile);
         EmbeddedFile expected = (EmbeddedFile) uploadResponse.getBody();
-        expected.setId(1L);
+        expected.setId(UUID.randomUUID());
 
         var response = noteController.getFileById(note1.id, expected.getId());
         EmbeddedFile actual = response.getBody();
@@ -340,10 +341,10 @@ class NoteControllerTest {
     @Test
     public void uploadFileTest() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
 
         MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
-        var response = noteController.uploadFile(1L, mockFile);
+        var response = noteController.uploadFile(id1, mockFile);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         EmbeddedFile uploadedFile = (EmbeddedFile) response.getBody();
@@ -355,7 +356,7 @@ class NoteControllerTest {
     @Test
     public void uploadFileNoteNotFoundTest() {
         MultipartFile mockFile = new MockMultipartFile("file", "test.txt", "text/plain", "Hello World".getBytes());
-        var response = noteController.uploadFile(1L, mockFile);
+        var response = noteController.uploadFile(UUID.randomUUID(), mockFile);
 
         assertEquals(ResponseEntity.notFound().build(), response);
     }
@@ -363,22 +364,22 @@ class NoteControllerTest {
     @Test
     public void deleteFileTest() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
-        embeddedFileRepository.save(embeddedFile);
+        UUID id1 = noteController.createNote(note1).getBody().id;
+        UUID fileId = embeddedFileRepository.save(embeddedFile).getId();
 
-        var response = noteController.deleteFile(1L, 1L);
+        var response = noteController.deleteFile(id1, fileId);
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        assertTrue(embeddedFileRepository.findById(1L).isEmpty());
+        assertTrue(embeddedFileRepository.findById(fileId).isEmpty());
     }
 
     @Test
     public void renameFileTest() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
-        embeddedFileRepository.save(embeddedFile);
+        UUID id1 = noteController.createNote(note1).getBody().id;
+        UUID fileId = embeddedFileRepository.save(embeddedFile).getId();
 
-        var response = noteController.renameFile(1L, 1L, "new_name.txt");
+        var response = noteController.renameFile(id1, fileId, "new_name.txt");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         EmbeddedFile renamedFile = response.getBody();
@@ -388,7 +389,7 @@ class NoteControllerTest {
 
     @Test
     public void renameFileNotFoundTest() {
-        var response = noteController.renameFile(1L, 1L, "new_name.txt");
+        var response = noteController.renameFile(UUID.randomUUID(), UUID.randomUUID(), "new_name.txt");
 
         assertEquals(ResponseEntity.notFound().build(), response);
     }
@@ -396,13 +397,13 @@ class NoteControllerTest {
     @Test
     public void updateNoteWithInvalidDataTest() {
         collectionController.createCollection(collection1);
-        noteController.createNote(note1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
 
         Note invalidNote = new Note("", "invalid", collection1);
-        var response = noteController.updateNote(1, invalidNote);
+        var response = noteController.updateNote(id1, invalidNote);
 
         assertEquals(BAD_REQUEST, response.getStatusCode());
-        var actual = noteController.getNoteById(1);
+        var actual = noteController.getNoteById(id1);
         assertEquals(ResponseEntity.ok(note1), actual);
     }
 

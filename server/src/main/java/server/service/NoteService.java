@@ -7,6 +7,7 @@ import server.database.NoteRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class NoteService {
@@ -20,12 +21,12 @@ public class NoteService {
         return noteRepository.save(note);
     }
 
-    public Optional<Note> findById(long id) {
+    public Optional<Note> findById(UUID id) {
         return noteRepository.findById(id);
     }
 
     @Transactional
-    public void deleteById(long id) {
+    public void deleteById(UUID id) {
         noteRepository.deleteById(id);
     }
 
