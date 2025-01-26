@@ -63,6 +63,14 @@ public class CollectionCtrl {
         this.bundle = this.languageManager.getBundle();
     }
 
+    // for testing purposes
+    public CollectionCtrl(ServerUtils server, Config config, NoteCtrl noteCtrl) {
+        this.server = server;
+        this.config = config;
+        this.noteCtrl = noteCtrl;
+        this.notificationsCtrl = null;
+    }
+
 
     public void setReferences(ListView collectionView,
                               TreeView treeView,
@@ -446,6 +454,16 @@ public class CollectionCtrl {
 
     public void moveNote(Note currentNote, Collection selectedCollection) {
         currentNote.collection = selectedCollection;
+
+        if (!server.isServerAvailable(selectedCollection.serverURL)) {
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    bundle.getString("serverError.text"),
+                    bundle.getString("serverError.text"),
+                    bundle.getString("serverUnreachable.text")
+            ).showAndWait();
+            return;
+        }
 
         if(noteCtrl.isTitleDuplicate(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false)){
             currentNote.setTitle(noteCtrl.generateUniqueTitle(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false));
