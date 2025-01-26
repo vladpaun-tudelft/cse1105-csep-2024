@@ -111,7 +111,7 @@ public class DashboardCtrl implements Initializable {
     // Variables
     @Getter @Setter private Note currentNote = null;
     @Getter @Setter private Collection currentCollection = null;
-    @Getter @Setter private Collection defaultCollection = null;
+    @Getter private Collection defaultCollection = null;
     @Getter @Setter private Collection destinationCollection = null;
     @Getter @Setter public ObservableList<Collection> collections;
     @Getter @Setter private ObservableList<Note> allNotes;
@@ -251,7 +251,7 @@ public class DashboardCtrl implements Initializable {
 
         collectionCtrl.moveNotesInitialization();
 
-        noteTitleSync();
+
         listViewSetup(collectionNotes);
         treeViewSetup();
 
@@ -366,21 +366,26 @@ public class DashboardCtrl implements Initializable {
         }
     }
 
-    public void noteAdditionSync() {
+    public void noteAdditionSync(String url) {
         server.registerForMessages("/topic/notes", Note.class, note -> {
             Platform.runLater(() -> {
                 noteCtrl.updateViewAfterAdd(currentCollection, allNotes, collectionNotes, note);
             });
-        });
+        }, url);
     }
 
-    public void noteTitleSync() {
-        server.registerForNoteTitleUpdates(note -> {
+    public void noteTitleSync(String url) {
+        String topic = "/topic/notes/title";
+        server.registerForTopic(url, topic, Note.class, "noteTitle", note -> {
             Platform.runLater(() -> {
-                Note toUpdate = allNotes.stream().filter(n -> n.id.equals(note.id)).findFirst().get();
-                if(toUpdate!=null){
+                Note toUpdate = allNotes.stream()
+                        .filter(n -> n.id.equals(note.id))
+                        .findFirst()
+                        .orElse(null);
+
+                if (toUpdate != null) {
                     toUpdate.setTitle(note.getTitle());
-                    if(toUpdate.equals(currentNote)){
+                    if (toUpdate.equals(currentNote)) {
                         noteTitle.setText(note.getTitle());
                     }
                     collectionView.refresh();
@@ -390,12 +395,12 @@ public class DashboardCtrl implements Initializable {
         });
     }
 
-    public void noteDeletionSync() {
+    public void noteDeletionSync(String url) {
         server.registerForMessages("/topic/notes/delete", Note.class, note -> {
             Platform.runLater(() -> {
                 noteCtrl.updateAfterDelete(note, allNotes, collectionNotes);
             });
-        });
+        }, url);
     }
 
     /**
@@ -412,7 +417,6 @@ public class DashboardCtrl implements Initializable {
         // Set ListView entry as Title (editable)
         collectionView.setCellFactory(lv -> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server,notificationsCtrl));
 
-        noteTitleSync();
         collectionView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 if (!isProgrammaticChange) actionHistory.clear();
@@ -422,26 +426,26 @@ public class DashboardCtrl implements Initializable {
 
                 markdownViewBlocker.setVisible(false);
 
-                // FILE WEBSOCKETS
-                server.registerForEmbeddedFileUpdates(currentNote, embeddedFileId -> {
-                    Platform.runLater(() -> {
-                        filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId);
+                String serverURL = currentNote.collection.serverURL;
 
-                    });
+                // Unregister previous subscriptions (if any)
+                server.unregisterNoteSubscriptions(serverURL);
+
+                // FILE WEBSOCKETS
+                server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files", UUID.class, "embeddedFiles", embeddedFileId -> {
+                    Platform.runLater(() -> filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId));
                 });
-                server.registerForEmbeddedFilesDeleteUpdates(currentNote, embeddedFileId -> {
-                    Platform.runLater(() -> {
-                        filesCtrl.updateViewAfterDelete(currentNote, embeddedFileId);
-                    });
+
+                server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files/deleteFile", UUID.class, "embeddedFilesDelete", embeddedFileId -> {
+                    Platform.runLater(() -> filesCtrl.updateViewAfterDelete(currentNote, embeddedFileId));
                 });
-                server.registerForEmbeddedFilesRenameUpdates(currentNote, newFileName -> {
-                    Platform.runLater(() -> {
-                        filesCtrl.updateViewAfterRename(currentNote, newFileName);
-                    });
+
+                server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files/renameFile", Object[].class, "embeddedFilesRename", newFileName -> {
+                    Platform.runLater(() -> filesCtrl.updateViewAfterRename(currentNote, newFileName));
                 });
 
                 // NOTE CONTENT WEBSOCKETS
-                server.registerForNoteBodyUpdates(currentNote, newContent -> {
+                server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/body", Note.class, "noteBody", newContent -> {
                     Platform.runLater(() -> {
                         onNoteUpdate(newContent);
                         refreshTreeView();
@@ -449,14 +453,12 @@ public class DashboardCtrl implements Initializable {
                 });
 
             } else {
-                server.unregisterFromEmbeddedFileUpdates();
-                server.unregisterFromNoteBodyUpdates();
                 showBlockers();
             }
         });
 
+        // Clear the selection after setup
         collectionView.getSelectionModel().clearSelection();
-
     }
 
     /**
@@ -480,10 +482,30 @@ public class DashboardCtrl implements Initializable {
         collections.addListener((ListChangeListener<Collection>) change -> {
             while (change.next()) {
                 if (change.wasAdded()) {
-                    server.getWebSocketURL(change.getAddedSubList().getFirst().serverURL);
-                    noteAdditionSync();
-                    noteTitleSync();
-                    noteDeletionSync();
+                    for (Collection collection : change.getAddedSubList()) {
+                        String url = collection.serverURL;
+
+                        // Establish WebSocket connection and register for updates
+                        server.getWebSocketURL(url);
+                        noteAdditionSync(url);
+
+                        server.registerForTopic(url, "/topic/notes/title", Note.class, "noteTitle", note -> {
+                            Platform.runLater(() -> noteTitleSync(url));
+                        });
+
+                        server.registerForTopic(url, "/topic/notes/delete", Note.class, "noteDelete", note -> {
+                            Platform.runLater(() -> noteDeletionSync(url));
+                        });
+                    }
+                } else if (change.wasRemoved()) {
+                    for (Collection collection : change.getRemoved()) {
+                        String url = collection.serverURL;
+
+                        if (collections.stream().noneMatch(c -> c.serverURL.equals(url))) {
+                            // Disconnect and unregister all subscriptions
+                            server.disconnect(url);
+                        }
+                    }
                 }
                 syncTreeView(virtualRoot, collections, allNotes, false);
             }
@@ -492,10 +514,7 @@ public class DashboardCtrl implements Initializable {
         // Add selection change listener
         allNotesView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (currentCollection == null) {
-                // If the selected item is a note, show it,
-                // Content blockers otherwise
-                if (newValue != null && ((TreeItem)newValue).getValue() instanceof Note note) {
-
+                if (newValue != null && ((TreeItem<Object>) newValue).getValue() instanceof Note note) {
                     allNotesView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
                     if (!isProgrammaticChange) actionHistory.clear();
 
@@ -505,31 +524,30 @@ public class DashboardCtrl implements Initializable {
                     markdownViewBlocker.setVisible(false);
                     allNotesView.getFocusModel().focus(0);
 
-                    server.registerForEmbeddedFileUpdates(currentNote, embeddedFileId -> {
-                        Platform.runLater(() -> {
-                            filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId);
-                        });
-                    });
-                    server.registerForEmbeddedFilesDeleteUpdates(currentNote, embeddedFileId -> {
-                        Platform.runLater(() -> {
-                            filesCtrl.updateViewAfterDelete(currentNote, embeddedFileId);
-                        });
-                    });
-                    server.registerForEmbeddedFilesRenameUpdates(currentNote, newFileName -> {
-                        Platform.runLater(() -> {
-                            filesCtrl.updateViewAfterRename(currentNote, newFileName);
-                        });
+                    String serverURL = note.collection.serverURL;
+
+                    // Unregister any previous subscriptions
+                    server.unregisterNoteSubscriptions(serverURL);
+
+                    // Register for updates
+                    server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files", UUID.class, "embeddedFiles", embeddedFileId -> {
+                        Platform.runLater(() -> filesCtrl.updateViewAfterAdd(currentNote, embeddedFileId));
                     });
 
-                    // NOTE CONTENT WEBSOCKETS
-                    server.registerForNoteBodyUpdates(currentNote, newContent -> {
+                    server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files/deleteFile", UUID.class, "embeddedFilesDelete", embeddedFileId -> {
+                        Platform.runLater(() -> filesCtrl.updateViewAfterDelete(currentNote, embeddedFileId));
+                    });
+
+                    server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files/renameFile", Object[].class, "embeddedFilesRename", newFileName -> {
+                        Platform.runLater(() -> filesCtrl.updateViewAfterRename(currentNote, newFileName));
+                    });
+
+                    server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/body", Note.class, "noteBody", newContent -> {
                         Platform.runLater(() -> {
                             onNoteUpdate(newContent);
                             refreshTreeView();
                         });
                     });
-
-
                 } else {
                     showBlockers();
                 }
@@ -542,11 +560,10 @@ public class DashboardCtrl implements Initializable {
 
         // Set custom TreeCell factory for NoteTreeItem
         allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl, server));
-
     }
 
-    private void onNoteUpdate(Note newContent) {
-        if (currentNote.id.equals(newContent.id)) {
+    public void onNoteUpdate(Note newContent) {
+        if (currentNote != null && currentNote.id.equals(newContent.id)) {
             if (!currentNote.getBody().equals(newContent.getBody())) {
                 notificationsCtrl.pushNotification(bundle.getString("newContent"), false);
             }
@@ -566,8 +583,8 @@ public class DashboardCtrl implements Initializable {
         moveNotesButton.setText(bundle.getString("moveNote.text"));
         filesViewBlocker.setVisible(true);
 
-        server.unregisterFromEmbeddedFileUpdates();
-        server.unregisterFromNoteBodyUpdates();
+//        server.unregisterFromEmbeddedFileUpdates();
+//        server.unregisterFromNoteBodyUpdates();
     }
 
     /**
@@ -669,6 +686,7 @@ public class DashboardCtrl implements Initializable {
         if (itemToSelect != null) {
             // Select the TreeItem
             allNotesView.getSelectionModel().select(itemToSelect);
+            allNotesView.scrollTo(allNotesView.getSelectionModel().getSelectedIndex());
         }
     }
 
@@ -711,61 +729,42 @@ public class DashboardCtrl implements Initializable {
     }
 
     public void addNote() {
-        if (currentCollection == null) {
-            if (server.isServerAvailable(defaultCollection.serverURL)) {
-                if (ServerUtils.getUnavailableCollections().contains(defaultCollection)) {
-                    allNotes.removeIf(note -> note.collection.equals(defaultCollection));
-                    allNotes.addAll(server.getNotesByCollection(defaultCollection));
-                    server.getWebSocketURL(defaultCollection.serverURL);
-                    noteAdditionSync();
-                    noteTitleSync();
-                    noteDeletionSync();
-                }
-                ServerUtils.getUnavailableCollections().remove(defaultCollection);
+        Collection targetCollection = (currentCollection == null) ? defaultCollection : currentCollection;
+
+        // Check if the server is available for the target collection
+        if (server.isServerAvailable(targetCollection.serverURL)) {
+            // Synchronize notes if the collection was previously unavailable
+            if (ServerUtils.getUnavailableCollections().contains(targetCollection)) {
+                allNotes.removeIf(note -> note.collection.equals(targetCollection));
+                allNotes.addAll(server.getNotesByCollection(targetCollection));
             }
-            else {
-                if (!ServerUtils.getUnavailableCollections().contains(defaultCollection)) {
-                    ServerUtils.getUnavailableCollections().add(defaultCollection);
-                }
-                dialogStyler.createStyledAlert(
-                        Alert.AlertType.INFORMATION,
-                        bundle.getString("serverError.text"),
-                        bundle.getString("serverError.text"),
-                        bundle.getString("addNoteError")
-                ).showAndWait();
-                return;
+
+            // Ensure WebSocket connection is established for the target collection
+            server.getWebSocketURL(targetCollection.serverURL);
+            noteAdditionSync(targetCollection.serverURL);
+            noteTitleSync(targetCollection.serverURL);
+            noteDeletionSync(targetCollection.serverURL);
+
+            ServerUtils.getUnavailableCollections().remove(targetCollection);
+        } else {
+            // Mark the collection as unavailable and show an error dialog
+            if (!ServerUtils.getUnavailableCollections().contains(targetCollection)) {
+                ServerUtils.getUnavailableCollections().add(targetCollection);
             }
-        }
-        else {
-           if (server.isServerAvailable(currentCollection.serverURL)) {
-               if (ServerUtils.getUnavailableCollections().contains(currentCollection)) {
-                   allNotes.removeIf(note -> note.collection.equals(currentCollection));
-                   allNotes.addAll(server.getNotesByCollection(currentCollection));
-                   server.getWebSocketURL(currentCollection.serverURL);
-                   noteAdditionSync();
-                   noteTitleSync();
-                   noteDeletionSync();
-               }
-               ServerUtils.getUnavailableCollections().remove(currentCollection);
-           }
-           else {
-               if (!ServerUtils.getUnavailableCollections().contains(currentCollection.serverURL)) {
-                   ServerUtils.getUnavailableCollections().add(currentCollection);
-               }
-               dialogStyler.createStyledAlert(
-                       Alert.AlertType.INFORMATION,
-                       bundle.getString("serverError.text"),
-                       bundle.getString("serverError.text"),
-                       bundle.getString("addNoteError")
-               ).showAndWait();
-               return;
-           }
+
+            dialogStyler.createStyledAlert(
+                    Alert.AlertType.INFORMATION,
+                    bundle.getString("serverError.text"),
+                    bundle.getString("serverError.text"),
+                    bundle.getString("addNoteError")
+            ).showAndWait();
+            return;
         }
 
+        // Finalize adding the note
         setSearchIsActive(false);
         clearTags(null);
-        currentNote = noteCtrl.addNote(currentCollection,
-                allNotes, collectionNotes);
+        currentNote = noteCtrl.addNote(currentCollection, allNotes, collectionNotes);
         noteCtrl.showCurrentNote(currentNote);
     }
 
@@ -798,9 +797,9 @@ public class DashboardCtrl implements Initializable {
 
         if (defaultCollection != null && server.isServerAvailable(defaultCollection.serverURL)) {
             server.getWebSocketURL(defaultCollection.serverURL);
-            noteAdditionSync();
-            noteTitleSync();
-            noteDeletionSync();
+            noteAdditionSync(defaultCollection.serverURL);
+            noteTitleSync(defaultCollection.serverURL);
+            noteDeletionSync(defaultCollection.serverURL);
         }
     }
 
@@ -910,9 +909,9 @@ public class DashboardCtrl implements Initializable {
     public void refresh() {
         noteCtrl.saveAllPendingNotes();
         ObservableList<Note> allNotesRefreshed = FXCollections.observableArrayList(server.getAllNotes());
-        allNotesRefreshed.stream()
-                .filter(note -> !allNotes.contains(note))
-                .forEach(allNotes::add);
+        allNotes.clear();
+        allNotes.addAll(allNotesRefreshed);
+
         clearSearch();
         viewAllNotes();
     }
@@ -944,8 +943,7 @@ public class DashboardCtrl implements Initializable {
 
         config.writeToFile(collection);
         if (defaultCollection == null) {
-            defaultCollection = collection;
-            config.setDefaultCollection(collection);
+            setDefaultCollection(collection);
         }
 
         // add entry in collections menu
@@ -965,6 +963,11 @@ public class DashboardCtrl implements Initializable {
             // Save the file addition action to the history
             actionHistory.push(new Action(ActionType.ADD_FILE, currentNote, null, null, null, newFile));
         }
+    }
+
+    public void setDefaultCollection(Collection collection) {
+        defaultCollection = collection;
+        config.setDefaultCollection(collection);
     }
 
     // Temporary solution
@@ -1087,7 +1090,6 @@ public class DashboardCtrl implements Initializable {
      * CTRL + Z - Undoes the last action done to a note
      */
     public void undoLastAction(KeyEvent event) {
-
         if(actionHistory.isEmpty()){
             return;
         }
@@ -1107,9 +1109,8 @@ public class DashboardCtrl implements Initializable {
             }
             case ActionType.EDIT_TITLE -> {
                 String oldTitle = (String) lastAction.getPreviousState();
-                currentNote.setTitle(oldTitle);
-                noteTitle.setText(oldTitle);
-                noteTitleMD.setText(oldTitle);
+                changeTitle(currentNote, currentNote.title, oldTitle);
+
                 refreshTreeView();
                 collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server,notificationsCtrl));
             }
@@ -1130,13 +1131,23 @@ public class DashboardCtrl implements Initializable {
             case ActionType.MOVE_NOTE -> {
                 isProgrammaticChange = true;
                 Note note = currentNote;
-                collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
-                refreshTreeView();
-                allNotesView.getSelectionModel().clearSelection();
-                selectNoteInTreeView(note);
-
-                allNotesView.scrollTo(allNotesView.getSelectionModel().getSelectedIndex());
-                isProgrammaticChange = false;
+                String noteBody = currentNote.getBody();
+                Note movedNote = collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
+                movedNote.body = noteBody;
+                Platform.runLater(() -> {
+                    if (currentCollection != null) {
+                        collectionView.getSelectionModel().clearSelection();
+                        collectionView.getSelectionModel().select(
+                                collectionView.getItems().stream()
+                                        .filter(obj -> obj instanceof Note n && n.title.equals(note.title))
+                                        .findFirst().orElse(null)
+                        );
+                    } else {
+                        allNotesView.getSelectionModel().clearSelection();
+                        selectNoteInTreeView(note);
+                    }
+                    isProgrammaticChange = false;
+                });
             }
             case ActionType.MOVE_MULTIPLE_NOTES -> {
                 collectionCtrl.moveMultipleNotes((Collection)lastAction.getPreviousState());
@@ -1199,6 +1210,7 @@ public class DashboardCtrl implements Initializable {
                 }
             }
         } else {
+            collectionNotes = FXCollections.observableArrayList(getFilteredNotes());
             // Collection-specific behavior
             if (currentNote == null) {
                 currentNote = (direction > 0) ? collectionNotes.getFirst() : collectionNotes.getLast();
@@ -1316,6 +1328,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     public ObservableList<Note> filter() {
+        showBlockers();
         filterInTreeView();
         return filterInCollectionView();
     }
@@ -1394,5 +1407,29 @@ public class DashboardCtrl implements Initializable {
 
     public void showHelpMenu() {
         mainCtrl.showHelpMenu();
+    }
+
+    public void changeTitle(Note note, String oldTitle, String uniqueTitle) {
+        note.setTitle(uniqueTitle);
+        noteCtrl.getUpdatePendingNotes().add(note);
+        handleReferenceTitleChange(note, oldTitle, uniqueTitle);
+        noteCtrl.saveAllPendingNotes();
+
+        noteTitle.setText(uniqueTitle);
+        noteTitleMD.setText(uniqueTitle);
+
+        notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
+
+        noteCtrl.updateTitleWebsocket(note);
+    }
+
+    private void handleReferenceTitleChange(Note item, String oldTitle, String uniqueTitle) {
+        collectionNotes.stream()
+                .filter(note -> note.collection.equals(item.collection))
+                .filter(note -> note.body.contains("[[" + oldTitle + "]]"))
+                .forEach(note -> {
+                    note.body = note.body.replace("[[" + oldTitle + "]]", "[[" + uniqueTitle + "]]");
+                    noteCtrl.getUpdatePendingNotes().add(note);
+                });
     }
 }

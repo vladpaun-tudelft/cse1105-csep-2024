@@ -124,14 +124,6 @@ public class CustomTreeCell extends TreeCell<Object> {
     }
 
     private void configureNoteEventHandlers() {
-        // Delete button functionality
-
-        /*deleteNoteButton.setOnAction(event -> {
-            Note note = (Note) getItem();
-            if (note != null) {
-                dashboardCtrl.deleteSelectedNote();
-            }
-        });*/
         deleteNoteButton.setOnAction(event -> {
             ObservableList<TreeItem<Note>> treeItems = dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems();
             if (treeItems.size() > 1) {
@@ -290,21 +282,14 @@ public class CustomTreeCell extends TreeCell<Object> {
             if (uniqueTitle.equals(oldTitle)) {
                 throw new IllegalArgumentException("Title cannot be the same as the current title");
             }
-            note.setTitle(uniqueTitle);
-            noteCtrl.getUpdatePendingNotes().add(note);
-            handleReferenceTitleChange(note, oldTitle, uniqueTitle);
-            noteCtrl.saveAllPendingNotes();
-            noteTitleLabel.setText(uniqueTitle);
+            dashboardCtrl.changeTitle(note, oldTitle, uniqueTitle);
 
-            dashboardCtrl.getNoteTitle().setText(uniqueTitle);
-            dashboardCtrl.getNoteTitleMD().setText(uniqueTitle);
+            noteTitleLabel.setText(uniqueTitle);
 
             originalNoteTitle = newTitle;
 
             dashboardCtrl.getActionHistory().push(new Action(ActionType.EDIT_TITLE, note, oldTitle, null ,uniqueTitle));
-            notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
 
-            noteCtrl.updateTitleWebsocket(note);
         } catch (IllegalArgumentException | ClientErrorException e) {
             if (e instanceof IllegalArgumentException) {
                 notificationsCtrl.pushNotification(bundle.getString("sameName"), true);
@@ -315,16 +300,6 @@ public class CustomTreeCell extends TreeCell<Object> {
         }
 
         revertToNoteLabel();
-    }
-
-    private void handleReferenceTitleChange(Note item, String oldTitle, String uniqueTitle) {
-        dashboardCtrl.getCollectionNotes().stream()
-                .filter(note -> note.collection.equals(item.collection))
-                .filter(note -> note.body.contains("[[" + oldTitle + "]]"))
-                .forEach(note -> {
-                    note.body = note.body.replace("[[" + oldTitle + "]]", "[[" + uniqueTitle + "]]");
-                    noteCtrl.getUpdatePendingNotes().add(note);
-                });
     }
 
     private void revertToNoteLabel() {

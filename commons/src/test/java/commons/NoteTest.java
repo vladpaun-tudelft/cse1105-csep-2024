@@ -2,6 +2,8 @@ package commons;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class NoteTest {
@@ -19,6 +21,8 @@ public class NoteTest {
     public void equalsHashCode() {
         var a = new Note("title", "body", SOME_COLLECTION);
         var b = new Note("title", "body", SOME_COLLECTION);
+        a.id = UUID.randomUUID();
+        b.id = a.getId();
         assertEquals(a, b);
         assertEquals(a.hashCode(), b.hashCode());
     }
@@ -27,6 +31,8 @@ public class NoteTest {
     public void notEqualsHashCode() {
         var a = new Note("title", "body", SOME_COLLECTION);
         var b = new Note("title2", "body", SOME_COLLECTION);
+        a.id = UUID.randomUUID();
+        b.id = UUID.randomUUID();
         assertNotEquals(a,b);
         assertNotEquals(a.hashCode(), b.hashCode());
     }

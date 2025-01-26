@@ -222,18 +222,11 @@ public class NoteListItem extends ListCell<Note> {
             if (uniqueTitle.equals(oldTitle)) {
                 throw new IllegalArgumentException("Title cannot be the same as the current title");
             }
-
-            item.setTitle(uniqueTitle); // Update the title of the Note
             noteTitle.setText(uniqueTitle);
-            noteCtrl.getUpdatePendingNotes().add(item); // Notify NoteCtrl of the change
 
-            handleReferenceTitleChange(item, oldTitle, uniqueTitle);
-
-            noteCtrl.saveAllPendingNotes();
+            controller.changeTitle(item, item.title, uniqueTitle);
 
             controller.getActionHistory().push(new Action(ActionType.EDIT_TITLE, item, oldTitle, null ,uniqueTitle));
-            notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
-            noteCtrl.updateTitleWebsocket(item);
 
         } catch (IllegalArgumentException | ClientErrorException e) {
             if (e instanceof IllegalArgumentException) {
@@ -246,17 +239,6 @@ public class NoteListItem extends ListCell<Note> {
         }
 
         revertToLabel();
-    }
-
-    // This could be done more smart by having a db table with references?
-    private void handleReferenceTitleChange(Note item, String oldTitle, String uniqueTitle) {
-        controller.getCollectionNotes().stream()
-                .filter(note -> note.collection.equals(item.collection))
-                .filter(note -> note.body.contains("[[" + oldTitle + "]]"))
-                .forEach(note -> {
-                    note.body = note.body.replace("[[" + oldTitle + "]]", "[[" + uniqueTitle + "]]");
-                    noteCtrl.getUpdatePendingNotes().add(note);
-                });
     }
 
 

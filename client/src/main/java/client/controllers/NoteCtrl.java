@@ -16,10 +16,7 @@ import javafx.scene.web.WebView;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class NoteCtrl {
 
@@ -48,11 +45,13 @@ public class NoteCtrl {
     @Getter @Setter private List<Note> createPendingNotes;
     @Getter @Setter private List<Note> updatePendingNotes;
 
+    @Getter @Setter private List<EmbeddedFile> embeddedFilesCache = new ArrayList<>();
+    private List<Note> deletedNoteCache = new ArrayList<>();
+
     private Config config;
     private LanguageManager languageManager;
     private ResourceBundle bundle;
 
-    private long tempNoteId = -1;
 
     @Inject
     public NoteCtrl(ServerUtils server, Config config, NotificationsCtrl notificationsCtrl) {
@@ -97,6 +96,8 @@ public class NoteCtrl {
 
         Note newNote = generateNewNote(allNotes, collection);
 
+        server.send("/app/notes", newNote,newNote.collection.serverURL);
+
         allNotes.add(newNote);
         if (currentCollection != null) {
             collectionView.getItems().add(newNote);
@@ -120,9 +121,6 @@ public class NoteCtrl {
         String newTitle = generateUniqueTitle(allNotes, newNote, baseTitle, true);
 
         newNote.title = newTitle;
-//        newNote.id = this.tempNoteId--;
-
-        server.send("/app/notes", newNote);
 
         noteTitle.setText(newTitle);
         noteTitleMd.setText(newTitle);
@@ -138,13 +136,42 @@ public class NoteCtrl {
 
         if (oldNote != null) {
             oldNote.id = note.id;
+            dashboardCtrl.getCollectionCtrl().addFilesBack(oldNote);
+            registerNewNote(oldNote, oldNote.collection.serverURL);
+
         } else {
             allNotes.add(note);
             if (currentCollection != null && currentCollection.equals(note.collection)) {
-                collectionNotes.add(note);
+                dashboardCtrl.getCollectionView().getItems().add(note);
             }
+            dashboardCtrl.getCollectionCtrl().addFilesBack(note);
+            registerNewNote(note, note.collection.serverURL);
         }
+
         dashboardCtrl.refreshTreeView();
+    }
+
+    public void registerNewNote(Note currentNote, String serverURL) {
+        // FILE WEBSOCKETS
+        server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files", UUID.class, "embeddedFiles", embeddedFileId -> {
+            Platform.runLater(() -> dashboardCtrl.getFilesCtrl().updateViewAfterAdd(currentNote, embeddedFileId));
+        });
+
+        server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files/deleteFile", UUID.class, "embeddedFilesDelete", embeddedFileId -> {
+            Platform.runLater(() -> dashboardCtrl.getFilesCtrl().updateViewAfterDelete(currentNote, embeddedFileId));
+        });
+
+        server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files/renameFile", Object[].class, "embeddedFilesRename", newFileName -> {
+            Platform.runLater(() -> dashboardCtrl.getFilesCtrl().updateViewAfterRename(currentNote, newFileName));
+        });
+
+        // NOTE CONTENT WEBSOCKETS
+        server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/body", Note.class, "noteBody", newContent -> {
+            Platform.runLater(() -> {
+                dashboardCtrl.onNoteUpdate(newContent);
+                dashboardCtrl.refreshTreeView();
+            });
+        });
     }
 
     public void showCurrentNote(Note selectedNote) {
@@ -217,11 +244,11 @@ public class NoteCtrl {
             server.deleteFile(currentNote, file);
             currentNote.getEmbeddedFiles().remove(file);
         }
-        server.send("/app/deleteNote", currentNote);
+        server.send("/app/deleteNote", currentNote,currentNote.collection.serverURL);
 
         removeNoteFromClient(currentNote, collectionNotes, allNotes);
 
-        Platform.runLater(() -> dashboardCtrl.filter());
+        Platform.runLater(() -> {if(dashboardCtrl != null) dashboardCtrl.filter();});
     }
 
     public void removeNoteFromClient(Note currentNote, ObservableList<Note> collectionNotes, ObservableList<Note> allNotes) {
@@ -239,6 +266,7 @@ public class NoteCtrl {
 
         allNotes.remove(currentNote);
         collectionNotes.remove(currentNote);
+        deletedNoteCache.add(currentNote);
     }
 
     public void saveAllPendingNotes(DashboardCtrl dashboardCtrl) {
@@ -255,13 +283,10 @@ public class NoteCtrl {
                 }
                 else {
                     server.updateNote(note);
+                    Note newNote = new Note(note.getTitle(), note.getBody(), note.collection);
+                    newNote.id = note.id;
+                    server.send("/app/notes/" + note.id +"/body", newNote, note.collection.serverURL);
                 }
-            }
-            Note currentNote = dashboardCtrl.getCurrentNote();
-            if (currentNote != null) {
-                Note newNote = new Note(currentNote.getTitle(), currentNote.getBody(), dashboardCtrl.getCurrentCollection());
-                newNote.id = dashboardCtrl.getCurrentNote().id;
-                server.send("/app/notes/" + currentNote.id +"/body", newNote);
             }
 
             updatePendingNotes.clear();
@@ -316,7 +341,7 @@ public class NoteCtrl {
     public void updateTitleWebsocket(Note note){
         Note newNote = new Note(note.getTitle(),"", dashboardCtrl.getCurrentCollection());
         newNote.id = note.id;
-        server.send("/app/notes/title", newNote);
+        server.send("/app/notes/title", newNote,note.collection.serverURL);
     }
 
     /**
