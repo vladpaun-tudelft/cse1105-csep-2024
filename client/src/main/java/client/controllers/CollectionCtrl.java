@@ -10,6 +10,7 @@ import client.utils.Config;
 import client.utils.ServerUtils;
 import com.google.inject.Inject;
 import commons.Collection;
+import commons.EmbeddedFile;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
 import javafx.beans.binding.Bindings;
@@ -49,7 +50,8 @@ public class CollectionCtrl {
     private Button deleteCollectionButton;
     private MenuButton moveNotesButton;
 
-    @Getter @Setter ListView moveNotesListView;
+    @Getter @Setter private ListView moveNotesListView;
+    @Getter @Setter private List<EmbeddedFile> embeddedFilesCache = new ArrayList<>();
 
     @Inject
     public CollectionCtrl(ServerUtils server, Config config, NoteCtrl noteCtrl, SearchCtrl searchCtrl, NotificationsCtrl notificationsCtrl) {
@@ -306,40 +308,60 @@ public class CollectionCtrl {
     }
 
     public void setUp() {
-
         // Set up the collections menu
         ObservableList<Collection> collections = FXCollections.observableArrayList(config.readFromFile());
         dashboardCtrl.setCollections(collections);
 
-        if (!collections.isEmpty()) {
-            if (server.isServerAvailable(config.readDefaultCollection().serverURL)) {
-                ServerUtils.getUnavailableCollections().remove(config.readDefaultCollection());
-                server.getWebSocketURL(
-                        config.readDefaultCollection().serverURL
-                );
-                dashboardCtrl.noteAdditionSync();
-                dashboardCtrl.noteTitleSync();
-                dashboardCtrl.noteDeletionSync();
-            }
-            else {
-                if (!ServerUtils.getUnavailableCollections().contains(config.readDefaultCollection())) {
-                    ServerUtils.getUnavailableCollections().add(config.readDefaultCollection());
-                }
-                dialogStyler.createStyledAlert(
-                        Alert.AlertType.INFORMATION,
-                        bundle.getString("error.text"),
-                        bundle.getString("error.text"),
-                        bundle.getString("unavailableDefaultCollectionError")
-                ).showAndWait();
+        // Set the default collection if it exists
+        Collection defaultCollection = collections.stream()
+                .filter(collection -> collection.equals(config.readDefaultCollection()))
+                .findFirst()
+                .orElse(null);
+        dashboardCtrl.setDefaultCollection(defaultCollection);
 
+        // Iterate over all collections to connect to their servers
+        for (Collection collection : collections) {
+            String serverURL = collection.serverURL;
+
+            // Check if the server is available
+            if (server.isServerAvailable(serverURL)) {
+                ServerUtils.getUnavailableCollections().remove(collection);
+
+                // Establish WebSocket connection for the server
+                server.getWebSocketURL(serverURL);
+
+                // Register for updates on this server
+                dashboardCtrl.noteAdditionSync(serverURL);
+                dashboardCtrl.noteTitleSync(serverURL);
+                dashboardCtrl.noteDeletionSync(serverURL);
+
+            } else {
+                // Handle unavailable servers
+                if (!ServerUtils.getUnavailableCollections().contains(collection)) {
+                    ServerUtils.getUnavailableCollections().add(collection);
+                }
+
+                if (collection.equals(defaultCollection)) {
+                    // Special message for unavailable default collection
+                    dialogStyler.createStyledAlert(
+                            Alert.AlertType.INFORMATION,
+                            bundle.getString("error.text"),
+                            bundle.getString("error.text"),
+                            bundle.getString("unavailableDefaultCollectionError")
+                    ).showAndWait();
+                } else {
+                    // General message for unavailable collections
+                    dialogStyler.createStyledAlert(
+                            Alert.AlertType.INFORMATION,
+                            bundle.getString("error.text"),
+                            bundle.getString("error.text"),
+                            bundle.getString("unavailableCollectionsError") + collection.title
+                    ).showAndWait();
+                }
             }
         }
 
-        Collection defaultCollection = collections.stream()
-                .filter(collection -> collection.equals(config.readDefaultCollection()))
-                .findFirst().orElse(null);
-        dashboardCtrl.setDefaultCollection(defaultCollection);
-
+        // Disable the "Add Note" button if there are no collections
         dashboardCtrl.getAddButton().disableProperty().bind(
                 Bindings.createBooleanBinding(
                         collections::isEmpty,
@@ -347,13 +369,16 @@ public class CollectionCtrl {
                 )
         );
 
-
+        // Populate the collections menu with buttons
         for (Collection c : collections) {
             dashboardCtrl.createCollectionButton(c, currentCollectionTitle, collectionSelect);
         }
 
+        // Initialize dropout collection label
         initializeDropoutCollectionLabel();
     }
+
+
 
 
     public ObservableList<Note> viewNotes() {
@@ -444,16 +469,37 @@ public class CollectionCtrl {
 
 
     public void moveNote(Note currentNote, Collection selectedCollection) {
-        currentNote.collection = selectedCollection;
 
+        embeddedFilesCache.addAll(currentNote.embeddedFiles);
+
+        // DELETE NOTE
+        noteCtrl.deleteNote(currentNote, dashboardCtrl.getCollectionNotes(), dashboardCtrl.getAllNotes());
+
+        // MOVE NOTE
+        currentNote.collection = selectedCollection;
         if(noteCtrl.isTitleDuplicate(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false)){
             currentNote.setTitle(noteCtrl.generateUniqueTitle(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false));
         }
-        noteCtrl.getUpdatePendingNotes().add(currentNote);
-        noteCtrl.saveAllPendingNotes(dashboardCtrl);
+
+        // ADD IT BACK
+        server.send("/app/notes", currentNote,currentNote.collection.serverURL);
+
+        dashboardCtrl.getAllNotes().add(currentNote);
+        if (dashboardCtrl.getCurrentCollection() != null) {
+            collectionView.getItems().add(currentNote);
+        }
+
         if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("movedNote") + selectedCollection.title, false);
     }
 
+    public void addFilesBack(Note note) {
+        for (EmbeddedFile file : embeddedFilesCache) {
+            if (!note.embeddedFiles.contains(file)) {
+                note.embeddedFiles.add(file);
+                dashboardCtrl.getFilesCtrl().addDeletedFile(note, file);
+            }
+        }
+    }
 
     public void updateCollection(Collection collection, List<Collection> collections) {
         server.updateCollection(collection);
@@ -605,8 +651,5 @@ public class CollectionCtrl {
         }
         return null;
     }
-
-
-
 }
 

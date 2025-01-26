@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -171,8 +172,11 @@ class TagServiceTest {
     public void testFilterNotesByTags() {
         Collection collection = new Collection("test-collection", "url");
         Note note1 = new Note("1", "First note with #tag1 and #tag2.", collection);
+        note1.id = UUID.randomUUID();
         Note note2 = new Note("2", "Second note with #tag2 and #tag3.", collection);
+        note2.id = UUID.randomUUID();
         Note note3 = new Note("3", "Third note with #tag1 only.", collection);
+        note3.id = UUID.randomUUID();
         List<Note> notes = List.of(note1, note2, note3);
 
         List<String> selectedTags = List.of("tag1", "tag2");

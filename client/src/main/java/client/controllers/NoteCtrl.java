@@ -48,11 +48,12 @@ public class NoteCtrl {
     @Getter @Setter private List<Note> createPendingNotes;
     @Getter @Setter private List<Note> updatePendingNotes;
 
+    @Getter @Setter private List<EmbeddedFile> embeddedFilesCache = new ArrayList<>();
+
     private Config config;
     private LanguageManager languageManager;
     private ResourceBundle bundle;
 
-    private long tempNoteId = -1;
 
     @Inject
     public NoteCtrl(ServerUtils server, Config config, NotificationsCtrl notificationsCtrl) {
@@ -97,6 +98,8 @@ public class NoteCtrl {
 
         Note newNote = generateNewNote(allNotes, collection);
 
+        server.send("/app/notes", newNote,newNote.collection.serverURL);
+
         allNotes.add(newNote);
         if (currentCollection != null) {
             collectionView.getItems().add(newNote);
@@ -120,9 +123,6 @@ public class NoteCtrl {
         String newTitle = generateUniqueTitle(allNotes, newNote, baseTitle, true);
 
         newNote.title = newTitle;
-//        newNote.id = this.tempNoteId--;
-
-        server.send("/app/notes", newNote);
 
         noteTitle.setText(newTitle);
         noteTitleMd.setText(newTitle);
@@ -138,12 +138,15 @@ public class NoteCtrl {
 
         if (oldNote != null) {
             oldNote.id = note.id;
+            dashboardCtrl.getCollectionCtrl().addFilesBack(oldNote);
         } else {
             allNotes.add(note);
             if (currentCollection != null && currentCollection.equals(note.collection)) {
                 collectionNotes.add(note);
             }
+            dashboardCtrl.getCollectionCtrl().addFilesBack(note);
         }
+
         dashboardCtrl.refreshTreeView();
     }
 
@@ -217,11 +220,11 @@ public class NoteCtrl {
             server.deleteFile(currentNote, file);
             currentNote.getEmbeddedFiles().remove(file);
         }
-        server.send("/app/deleteNote", currentNote);
+        server.send("/app/deleteNote", currentNote,currentNote.collection.serverURL);
 
         removeNoteFromClient(currentNote, collectionNotes, allNotes);
 
-        Platform.runLater(() -> dashboardCtrl.filter());
+        Platform.runLater(() -> {if(dashboardCtrl != null) dashboardCtrl.filter();});
     }
 
     public void removeNoteFromClient(Note currentNote, ObservableList<Note> collectionNotes, ObservableList<Note> allNotes) {
@@ -261,7 +264,7 @@ public class NoteCtrl {
             if (currentNote != null) {
                 Note newNote = new Note(currentNote.getTitle(), currentNote.getBody(), dashboardCtrl.getCurrentCollection());
                 newNote.id = dashboardCtrl.getCurrentNote().id;
-                server.send("/app/notes/" + currentNote.id +"/body", newNote);
+                server.send("/app/notes/" + currentNote.id +"/body", newNote,currentNote.collection.serverURL);
             }
 
             updatePendingNotes.clear();
@@ -316,7 +319,7 @@ public class NoteCtrl {
     public void updateTitleWebsocket(Note note){
         Note newNote = new Note(note.getTitle(),"", dashboardCtrl.getCurrentCollection());
         newNote.id = note.id;
-        server.send("/app/notes/title", newNote);
+        server.send("/app/notes/title", newNote,note.collection.serverURL);
     }
 
     /**

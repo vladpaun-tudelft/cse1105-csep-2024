@@ -56,8 +56,8 @@ public class ServerUtils {
 	private LanguageManager manager;
 	private ResourceBundle bundle;
 
-	@Getter @Setter
-	private static StompSession session;
+//	@Getter @Setter
+//	private static StompSession session;
 	@Getter @Setter
 	private StompSession.Subscription embeddedFilesSubscription;
 	@Getter @Setter
@@ -73,6 +73,10 @@ public class ServerUtils {
 	@Getter @Setter
 	private static List<Collection> unavailableCollections;
 
+	@Getter private static Map<String, StompSession> sessions = new HashMap<>();
+	@Getter private static Map<String, Map<String, StompSession.Subscription>> sessionSubscriptions = new HashMap<>();
+
+
 
 	@Inject
 	public ServerUtils(Config config, DialogStyler dialogStyler) {
@@ -84,204 +88,162 @@ public class ServerUtils {
 		this.bundle = this.manager.getBundle();
 	}
 
-	public void registerForEmbeddedFileUpdates(Note selectedNote, Consumer<UUID> consumer) {
-		if (!isServerAvailable(selectedNote.collection.serverURL)) {
-			return;
-		}
+	// ----------------------- SOCKET CONNECTION MANAGEMENT -----------------------
 
-		if (embeddedFilesSubscription != null && session != null) {
-			try {
-				embeddedFilesSubscription.unsubscribe();
-			} catch (IllegalStateException _) {}
-		}
-
-		String topic = "/topic/notes/" + selectedNote.getId() + "/files";
-		embeddedFilesSubscription = session.subscribe(topic, new StompFrameHandler() {
-			@Override
-			public Type getPayloadType(StompHeaders headers) {
-				return UUID.class;
-			}
-
-			@Override
-			public void handleFrame(StompHeaders headers, Object payload) {
-				consumer.accept((UUID) payload);
-			}
-		});
-	}
-
-	public void registerForNoteBodyUpdates(Note selectedNote, Consumer<Note> consumer) {
-
-		if (!isServerAvailable(selectedNote.collection.serverURL)) {
-			return;
-		}
-
-		if (noteBodySubscription != null && session != null) {
-			try {
-				noteBodySubscription.unsubscribe();
-			} catch (IllegalStateException ignored) {}
-		}
-
-		String topic = "/topic/notes/" + selectedNote.getId() + "/body";
-		noteBodySubscription = session.subscribe(topic, new StompFrameHandler() {
-			@Override
-			public Type getPayloadType(StompHeaders headers) {
-				return Note.class;
-			}
-
-			@Override
-			public void handleFrame(StompHeaders headers, Object payload) {
-				consumer.accept((Note) payload);
-			}
-		});
-	}
-
-	public void registerForNoteTitleUpdates(Consumer<Note> consumer) {
-		if(session==null){
-			return;
-		}
-
-		String dest = "/topic/notes/title";
-		noteTitleSubscription = session.subscribe(dest, new StompFrameHandler() {
-			@Override
-			public Type getPayloadType(StompHeaders headers) {
-				return Note.class;
-			}
-
-			@Override
-			public void handleFrame(StompHeaders headers, Object payload) {
-				consumer.accept((Note) payload);
-			}
-		});
-	}
-
-	public void registerForEmbeddedFilesDeleteUpdates(Note selectedNote, Consumer<UUID> consumer) {
-		if (!isServerAvailable(selectedNote.collection.serverURL)) {
-			return;
-		}
-
-		if (embeddedFilesDeleteUpdates != null && session != null) {
-			try {
-				embeddedFilesDeleteUpdates.unsubscribe();
-			} catch (IllegalStateException _) {}
-		}
-
-		String topic = "/topic/notes/" + selectedNote.getId() + "/files/deleteFile";
-		embeddedFilesDeleteUpdates = session.subscribe(topic, new StompFrameHandler() {
-			@Override
-			public Type getPayloadType(StompHeaders headers) {
-				return UUID.class;
-			}
-
-			@Override
-			public void handleFrame(StompHeaders headers, Object payload) {
-				consumer.accept((UUID) payload);
-			}
-		});
-	}
-
-	public void registerForEmbeddedFilesRenameUpdates(Note selectedNote,
-													  Consumer<Object[]> consumer) {
-		if (!isServerAvailable(selectedNote.collection.serverURL)) {
-			return;
-		}
-
-		if (embeddedFilesRenameUpdates != null && session != null) {
-			try {
-				embeddedFilesRenameUpdates.unsubscribe();
-			} catch (IllegalStateException _) {}
-		}
-
-		String topic = "/topic/notes/" + selectedNote.getId() + "/files/renameFile";
-		embeddedFilesRenameUpdates = session.subscribe(topic, new StompFrameHandler() {
-			@Override
-			public Type getPayloadType(StompHeaders headers) {
-				return Object[].class;
-			}
-
-			@Override
-			public void handleFrame(StompHeaders headers, Object payload) {
-				consumer.accept(
-						(Object[]) payload
-				);
-			}
-		});
-	}
-
-	public void unregisterFromEmbeddedFileUpdates() {
-		if (embeddedFilesSubscription != null && session != null) {
-			try {
-				embeddedFilesSubscription.unsubscribe();
-			} catch (IllegalStateException _) {}
-			embeddedFilesSubscription = null;
-		}
-		if (embeddedFilesDeleteUpdates != null && session != null) {
-			try {
-				embeddedFilesDeleteUpdates.unsubscribe();
-			} catch (IllegalStateException _) {}
-			embeddedFilesDeleteUpdates = null;
-		}
-		if (embeddedFilesRenameUpdates != null && session != null) {
-			try {
-				embeddedFilesRenameUpdates.unsubscribe();
-			} catch (IllegalStateException _) {}
-			embeddedFilesRenameUpdates = null;
-		}
-	}
-
-	public void unregisterFromNoteBodyUpdates() {
-		if (noteBodySubscription != null && session != null) {
-			try {
-				noteBodySubscription.unsubscribe();
-			} catch (IllegalStateException _) {}
-			noteBodySubscription = null;
-		}
-	}
-
-
+	/**
+	 * Establish a WebSocket connection for the given server URL.
+	 * If the session already exists, it will reuse it.
+	 *
+	 * @param serverURL The server URL for which to establish a connection.
+	 */
 	public void getWebSocketURL(String serverURL) {
-		if (session != null) {
-			try {
-				session.disconnect();
-			} catch (RuntimeException _) {}
-		}
-
-		String webSocket = serverURL.replace("http", "ws");
-		webSocket += "websocket";
-		session = connect(webSocket);
+		sessions.computeIfAbsent(serverURL, url -> {
+			String webSocketURL = convertToWebSocketURL(url);
+			return connect(webSocketURL);
+		});
 	}
 
-	// for testing purposes
+	/**
+	 * Convert an HTTP/HTTPS URL to its WebSocket equivalent.
+	 *
+	 * @param serverURL The server URL to convert.
+	 * @return The WebSocket equivalent URL.
+	 */
+	private String convertToWebSocketURL(String serverURL) {
+		return serverURL.replace("http", "ws") + "websocket";
+	}
+
+	/**
+	 * Create and configure a WebSocketStompClient for testing or production.
+	 *
+	 * @param client The standard WebSocket client.
+	 * @return A configured WebSocketStompClient instance.
+	 */
 	public WebSocketStompClient getWebSocketStompClient(StandardWebSocketClient client) {
-		return new WebSocketStompClient(client);
-	}
-	public StandardWebSocketClient getStandardWebSocketClient() {
-		return new StandardWebSocketClient();
-	}
-
-	public StompSession connect(String url) {
-		var client = getStandardWebSocketClient();
-		var stomp = getWebSocketStompClient(client);
-
+		WebSocketStompClient stompClient = new WebSocketStompClient(client);
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
+
 		MappingJackson2MessageConverter messageConverter = new MappingJackson2MessageConverter();
 		messageConverter.setObjectMapper(objectMapper);
-		stomp.setMessageConverter(messageConverter);
-		try {
-            return stomp.connectAsync(url, new StompSessionHandlerAdapter() {}).get();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		}
-		throw new IllegalStateException();
+
+		stompClient.setMessageConverter(messageConverter);
+		return stompClient;
 	}
 
-	public <T> void registerForMessages(String dest, Class<T> type, Consumer<T> consumer) {
-		if (this.session == null) {
+	/**
+	 * Establish a WebSocket connection to the specified URL.
+	 *
+	 * @param url The WebSocket URL.
+	 * @return A connected StompSession.
+	 */
+	public StompSession connect(String url) {
+		try {
+			WebSocketStompClient stompClient = getWebSocketStompClient(new StandardWebSocketClient());
+			return stompClient.connectAsync(url, new StompSessionHandlerAdapter() {}).get();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException("Thread interrupted while connecting to WebSocket: " + url, e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException("Failed to connect to WebSocket: " + url, e);
+		}
+	}
+
+	/**
+	 * Disconnect from the WebSocket for the specified server URL, removing all subscriptions and the session.
+	 *
+	 * @param serverURL The server URL to disconnect.
+	 */
+	public void disconnect(String serverURL) {
+		// Unsubscribe from all topics for this server
+		Map<String, StompSession.Subscription> subscriptions = sessionSubscriptions.remove(serverURL);
+		if (subscriptions != null) {
+			subscriptions.values().forEach(subscription -> {
+				try {
+					subscription.unsubscribe();
+				} catch (IllegalStateException ignored) {
+					// Already unsubscribed or invalid state, safe to ignore
+				}
+			});
+		}
+
+		// Disconnect the session
+		StompSession session = sessions.remove(serverURL);
+		if (session != null) {
+			session.disconnect();
+		}
+	}
+
+
+	// ----------------------- MULTI SUBSCRIPTION LOGIC -----------------------
+
+
+	private void addSubscription(String serverURL, String type, StompSession.Subscription subscription) {
+		sessionSubscriptions
+				.computeIfAbsent(serverURL, k -> new HashMap<>())
+				.put(type, subscription);
+	}
+
+	private StompSession.Subscription getSubscription(String serverURL, String type) {
+		return sessionSubscriptions.getOrDefault(serverURL, Collections.emptyMap()).get(type);
+	}
+
+	private void removeSubscription(String serverURL, String type) {
+		Map<String, StompSession.Subscription> subscriptions = sessionSubscriptions.get(serverURL);
+		if (subscriptions != null) {
+			StompSession.Subscription subscription = subscriptions.remove(type);
+			if (subscription != null) {
+				try {
+					subscription.unsubscribe();
+				} catch (IllegalStateException ignored) {}
+			}
+			if (subscriptions.isEmpty()) {
+				sessionSubscriptions.remove(serverURL);
+			}
+		}
+	}
+
+	// ----------------------- REGISTERING FOR SUBSCRIPTIONS -----------------------
+
+	public <T> void registerForTopic(String serverURL, String topic, Class<T> payloadType, String subscriptionType, Consumer<T> consumer) {
+		if (!isServerAvailable(serverURL)) {
 			return;
-        }
-		this.session.subscribe(dest, new StompFrameHandler() {
+		}
+
+		getWebSocketURL(serverURL);
+
+		// Unsubscribe from the previous subscription if it exists
+		removeSubscription(serverURL, subscriptionType);
+
+		// Subscribe to the topic and register the new subscription
+		StompSession.Subscription subscription = sessions.get(serverURL).subscribe(topic, new StompFrameHandler() {
+			@Override
+			public Type getPayloadType(StompHeaders headers) {
+				return payloadType;
+			}
+
+			@Override
+			public void handleFrame(StompHeaders headers, Object payload) {
+				consumer.accept(payloadType.cast(payload));
+			}
+		});
+
+		// Add the subscription to the session-specific map
+		addSubscription(serverURL, subscriptionType, subscription);
+	}
+
+	public void unregisterNoteSubscriptions(String serverURL) {
+		removeSubscription(serverURL, "embeddedFiles");
+		removeSubscription(serverURL, "embeddedFilesDelete");
+		removeSubscription(serverURL, "embeddedFilesRename");
+		removeSubscription(serverURL, "noteBody");
+	}
+
+	public <T> void registerForMessages(String dest, Class<T> type, Consumer<T> consumer, String url) {
+		if (sessions.get(url) == null) {
+			return;
+		}
+		this.sessions.get(url).subscribe(dest, new StompFrameHandler() {
 			@Override
 			public Type getPayloadType(StompHeaders headers) {
 				return type;
@@ -294,12 +256,18 @@ public class ServerUtils {
 		});
 	}
 
-	public void send(String dest, Object o) {
-		if (session == null || !session.isConnected()) {
+
+	// ----------------------- SENDING SOCKET UPDATES -----------------------
+
+	public void send(String dest, Object o, String url) {
+		if (sessions.get(url) == null || !sessions.get(url).isConnected()) {
 			return;
 		}
-		session.send(dest, o);
+		sessions.get(url).send(dest, o);
 	}
+
+
+	// ----------------------- NORMAL SERVER METHODS -----------------------
 
 	public Note addNote(Note note) {
 		if (!isServerAvailableWithAlert(note.collection.serverURL)) return null;

@@ -9,7 +9,6 @@ import client.utils.Config;
 import client.utils.ServerUtils;
 import commons.Collection;
 import commons.Note;
-import jakarta.ws.rs.ClientErrorException;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -184,40 +183,49 @@ public class EditCollectionsCtrl implements Initializable {
     }
 
     private void migrateCollection(Collection collection, String newServerURL) {
-        // Fetch all notes from the old server
-        List<Note> notesToMigrate = dashboardCtrl.getAllNotes().stream()
-                .filter(note -> note.collection.equals(collection))
-                .collect(Collectors.toList());
+        try {
+            Collection collectionCopy = new Collection(collection.title, newServerURL);
+            collectionCopy.id = collection.id;
 
-        // Delete notes from the old server
-        for (Note note : notesToMigrate) {
-            noteCtrl.deleteNote(note, FXCollections.observableArrayList(notesToMigrate), dashboardCtrl.getAllNotes());
-        }
+            serverUtils.addCollection(collectionCopy);
+            collectionCopy.id = serverUtils.getCollectionID(collectionCopy);
 
-        // Delete collection from old server
-        serverUtils.deleteCollection(collection);
+            // Check if the server is available
+            if (serverUtils.isServerAvailable(newServerURL)) {
+                serverUtils.getWebSocketURL(newServerURL);
 
-        // Update collection details for the new server
-        collection.serverURL = newServerURL;
-        serverUtils.addCollection(collection);
-        collection.id = serverUtils.getCollectionID(collection);
-        config.writeAllToFile(collectionList);
-
-        // Add notes to the new server
-        for (Note note : notesToMigrate) {
-            try {
-                Note savedNote = serverUtils.addNote(note);
-                note.id = savedNote.id;
-            } catch (ClientErrorException e) {
-                System.out.println(e.getResponse().readEntity(String.class));
+                // Register for updates on this server
+                dashboardCtrl.noteAdditionSync(newServerURL);
+                dashboardCtrl.noteTitleSync(newServerURL);
+                dashboardCtrl.noteDeletionSync(newServerURL);
             }
 
+            // Fetch all notes from the old server
+            List<Note> notesToMigrate = dashboardCtrl.getAllNotes().stream()
+                    .filter(note -> note.collection.equals(collection))
+                    .collect(Collectors.toList());
 
+            for (Note note : notesToMigrate) {
+                note.collection = collectionCopy;
+                collectionCtrl.moveNote(note, collectionCopy);
+            }
+
+            // Delete collection from old server
+            serverUtils.deleteCollection(collection);
+
+            collection.serverURL = collectionCopy.serverURL;
+            collection.title = collectionCopy.title;
+            collection.id = collectionCopy.id;
+
+            config.writeAllToFile(collectionList);
+
+            collectionStatusLabel.setTextFill(Paint.valueOf("GREEN"));
+            collectionStatusLabel.setText(bundle.getString("migratedSuccessfully.text"));
+            oldServerLabel.setText(newServerURL);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        collectionStatusLabel.setTextFill(Paint.valueOf("GREEN"));
-        collectionStatusLabel.setText(bundle.getString("migratedSuccessfully.text"));
-        oldServerLabel.setText(newServerURL);
     }
 
     @FXML

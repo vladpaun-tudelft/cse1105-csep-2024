@@ -27,10 +27,7 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 import java.io.File;
 import java.net.ConnectException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -428,87 +425,94 @@ class ServerUtilsTest {
 
     @Test
     void registerForEmbeddedFileUpdates() {
-        Note note = new Note("note", "", new Collection("collection", "test.com"));
+        Note note = new Note("note", "", new Collection("collection", "http://mock-server.com"));
         note.id = UUID.randomUUID();
-        String expectedTopic = "/topic/notes/" + note.id +  "/files";
+        String expectedTopic = "/topic/notes/" + note.id + "/files";
 
-        when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
-                .thenReturn(subscriptionMock);
+        when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class))).thenReturn(subscriptionMock);
 
         ServerUtils spyServerUtils = spy(serverUtils);
-        doReturn(true).when(spyServerUtils).isServerAvailable(any());
+        spyServerUtils.getSessions().put("http://mock-server.com", sessionMock);
 
-        spyServerUtils.setSession(sessionMock);
-        spyServerUtils.registerForEmbeddedFileUpdates(note, consumerMock);
+        spyServerUtils.registerForTopic("http://mock-server.com", expectedTopic, UUID.class, "embeddedFiles", consumerMock);
 
         verify(sessionMock).subscribe(eq(expectedTopic), any(StompFrameHandler.class));
     }
 
     @Test
     void registerForEmbeddedFilesDeleteUpdates() {
-        Note note = new Note("note", "", new Collection("collection", "test.com"));
+        Note note = new Note("note", "", new Collection("collection", "http://mock-server.com"));
         note.id = UUID.randomUUID();
-        String expectedTopic = "/topic/notes/"+note.id+"/files/deleteFile";
+        String expectedTopic = "/topic/notes/" + note.id + "/files/deleteFile";
 
-        when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
-                .thenReturn(deleteSubscriptionMock);
+        when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class))).thenReturn(deleteSubscriptionMock);
 
         ServerUtils spyServerUtils = spy(serverUtils);
-        doReturn(true).when(spyServerUtils).isServerAvailable(any());
+        spyServerUtils.getSessions().put("http://mock-server.com", sessionMock);
 
-        spyServerUtils.setSession(sessionMock);
-        spyServerUtils.registerForEmbeddedFilesDeleteUpdates(note, consumerMock);
+        spyServerUtils.registerForTopic("http://mock-server.com", expectedTopic, UUID.class, "embeddedFilesDelete", consumerMock);
 
         verify(sessionMock).subscribe(eq(expectedTopic), any(StompFrameHandler.class));
     }
 
     @Test
     void registerForEmbeddedFilesRenameUpdates() {
-        Note note = new Note("note", "", new Collection("collection", "test.com"));
+        Note note = new Note("note", "", new Collection("collection", "http://mock-server.com"));
         note.id = UUID.randomUUID();
-        String expectedTopic = "/topic/notes/"+note.id+"/files/renameFile";
+        String expectedTopic = "/topic/notes/" + note.id + "/files/renameFile";
 
-        when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class)))
-                .thenReturn(renameSubsciptionMock);
+        when(sessionMock.subscribe(eq(expectedTopic), any(StompFrameHandler.class))).thenReturn(renameSubsciptionMock);
 
         ServerUtils spyServerUtils = spy(serverUtils);
-        doReturn(true).when(spyServerUtils).isServerAvailable(any());
+        spyServerUtils.getSessions().put("http://mock-server.com", sessionMock);
 
-        spyServerUtils.setSession(sessionMock);
-        spyServerUtils.registerForEmbeddedFilesRenameUpdates(note, renameConsumerMock);
+        spyServerUtils.registerForTopic("http://mock-server.com", expectedTopic, Object[].class, "embeddedFilesRename", renameConsumerMock);
 
         verify(sessionMock).subscribe(eq(expectedTopic), any(StompFrameHandler.class));
     }
 
     @Test
     void unregisterFromEmbeddedFileUpdates() {
-        serverUtils.setEmbeddedFilesSubscription(subscriptionMock);
-        serverUtils.setEmbeddedFilesRenameUpdates(renameSubsciptionMock);
-        serverUtils.setEmbeddedFilesDeleteUpdates(deleteSubscriptionMock);
+        // Mock the subscriptions
+        Map<String, StompSession.Subscription> subscriptions = new HashMap<>();
+        subscriptions.put("embeddedFiles", subscriptionMock);
+        subscriptions.put("embeddedFilesDelete", deleteSubscriptionMock);
+        subscriptions.put("embeddedFilesRename", renameSubsciptionMock);
 
-        serverUtils.unregisterFromEmbeddedFileUpdates();
+        // Mock the sessions map
+        String serverURL = "http://mock-server.com";
+        serverUtils.getSessionSubscriptions().put(serverURL, subscriptions);
 
+        // Call the method to unregister
+        serverUtils.disconnect(serverURL);
+
+        // Verify that the subscriptions are unsubscribed
         verify(subscriptionMock).unsubscribe();
-        verify(renameSubsciptionMock).unsubscribe();
         verify(deleteSubscriptionMock).unsubscribe();
-        assertNull(serverUtils.getEmbeddedFilesSubscription());
-        assertNull(serverUtils.getEmbeddedFilesRenameUpdates());
-        assertNull(serverUtils.getEmbeddedFilesDeleteUpdates());
+        verify(renameSubsciptionMock).unsubscribe();
+        assertFalse(serverUtils.getSessionSubscriptions().containsKey(serverURL));
     }
 
     @Test
     void getWebSocketURL() {
         ServerUtils spyServerUtils = spy(serverUtils);
         String serverURL = "http://mock-server.com/";
+        String expectedWebSocketURL = "ws://mock-server.com/websocket";
 
-        doReturn(sessionMock).when(spyServerUtils).connect(anyString());
+        // Mock the connect method
+        doReturn(sessionMock).when(spyServerUtils).connect(eq(expectedWebSocketURL));
 
+        // Call the method under test
         spyServerUtils.getWebSocketURL(serverURL);
 
-        String expectedWebSocketURL = "ws://mock-server.com/websocket";
+        // Verify that connect was called with the expected WebSocket URL
         verify(spyServerUtils).connect(eq(expectedWebSocketURL));
-        assertNotNull(spyServerUtils.getSession());
+
+        // Assert that the session is stored in the sessions map
+        assertNotNull(spyServerUtils.getSessions().get(serverURL));
+        assertEquals(sessionMock, spyServerUtils.getSessions().get(serverURL));
     }
+
 
     @Test
     void registerForMessages() {
@@ -517,8 +521,9 @@ class ServerUtilsTest {
         when(sessionMock.subscribe(eq(destination), any(StompFrameHandler.class)))
                 .thenReturn(subscriptionMock);
 
-        serverUtils.setSession(sessionMock);
-        serverUtils.registerForMessages(destination, UUID.class, consumerMock);
+        serverUtils.getSessions().put("http://mock-server.com", sessionMock);
+
+        serverUtils.registerForTopic("http://mock-server.com", destination, UUID.class, "messageSubscription", consumerMock);
 
         verify(sessionMock).subscribe(eq(destination), any(StompFrameHandler.class));
     }
@@ -530,8 +535,8 @@ class ServerUtilsTest {
 
         when(sessionMock.isConnected()).thenReturn(true);
 
-        serverUtils.setSession(sessionMock);
-        serverUtils.send(destination, file);
+        serverUtils.getSessions().put("http://mock-server.com", sessionMock);
+        serverUtils.send(destination, file, "http://mock-server.com");
 
         verify(sessionMock).send(eq(destination), eq(file));
     }
@@ -543,33 +548,39 @@ class ServerUtilsTest {
 
         when(sessionMock.isConnected()).thenReturn(false);
 
-        serverUtils.setSession(sessionMock);
-        serverUtils.send(destination, file);
+        serverUtils.getSessions().put("http://mock-server.com", sessionMock);
+        serverUtils.send(destination, file, "http://mock-server.com");
 
         verify(sessionMock, never()).send(anyString(), any());
     }
 
     @Test
     void connect() {
-        StandardWebSocketClient clientMock = mock(StandardWebSocketClient.class);
+        // Mock dependencies
         WebSocketStompClient stompClientMock = mock(WebSocketStompClient.class);
         StompSession stompSessionMock = mock(StompSession.class);
 
+        // Spy on the ServerUtils instance
         ServerUtils spyServerUtils = spy(serverUtils);
 
-        when(spyServerUtils.getStandardWebSocketClient()).thenReturn(clientMock);
-        when(spyServerUtils.getWebSocketStompClient(clientMock)).thenReturn(stompClientMock);
+        // Mock WebSocketStompClient creation inside the `connect` method
+        doReturn(stompClientMock).when(spyServerUtils).getWebSocketStompClient(any(StandardWebSocketClient.class));
 
-        String url = "ws://mock-server.com/websocket";
+        // Mock the asynchronous connection behavior
+        String websocketUrl = "ws://mock-server.com/websocket";
+        CompletableFuture<StompSession> futureSession = CompletableFuture.completedFuture(stompSessionMock);
+        when(stompClientMock.connectAsync(eq(websocketUrl), any(StompSessionHandlerAdapter.class))).thenReturn(futureSession);
 
-        CompletableFuture<StompSession> futureSession = new CompletableFuture<>();
-        futureSession.complete(stompSessionMock);
+        // Invoke the connect method
+        StompSession result = spyServerUtils.connect(websocketUrl);
 
-        when(stompClientMock.connectAsync(eq(url), any(StompSessionHandlerAdapter.class))).thenReturn(futureSession);
+        // Verify the result and interactions
+        assertNotNull(result, "The result should not be null");
+        assertEquals(stompSessionMock, result, "The returned session should match the mock session");
 
-        StompSession result = spyServerUtils.connect(url);
-
-        assertNotNull(result);
-        assertEquals(stompSessionMock, result);
+        // Verify interactions with the mocked WebSocketStompClient
+        verify(stompClientMock).connectAsync(eq(websocketUrl), any(StompSessionHandlerAdapter.class));
     }
+
+
 }

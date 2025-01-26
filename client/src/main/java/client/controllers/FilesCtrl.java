@@ -85,7 +85,7 @@ public class FilesCtrl {
 
         try {
             EmbeddedFile embeddedFile = serverUtils.addFile(currentNote, file);
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", embeddedFile.getId());
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", embeddedFile.getId(),currentNote.collection.serverURL);
 
             return embeddedFile;
         } catch (Exception exception) {
@@ -140,9 +140,7 @@ public class FilesCtrl {
         if (currentNote == null) {
             return;
         }
-        EmbeddedFile fileToRemove = new EmbeddedFile(currentNote, "", "", null, null);
-        fileToRemove.setId(fileId);
-        currentNote.getEmbeddedFiles().remove(fileToRemove);
+        currentNote.getEmbeddedFiles().removeIf(file -> file.getId().equals(fileId));
         updateView(currentNote);
     }
 
@@ -238,6 +236,7 @@ public class FilesCtrl {
                 ).showAndWait();
                 return;
             }
+            List<EmbeddedFile> files = currentNote.getEmbeddedFiles();
             EmbeddedFile efToRemove = currentNote.getEmbeddedFiles().stream()
                     .filter(embeddedFile -> embeddedFile.getFileName().equals(file.getFileName()))
                     .findFirst().orElse(null);
@@ -246,7 +245,7 @@ public class FilesCtrl {
                     currentNote,
                     efToRemove
             );
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/deleteFile", efToRemove.getId());
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/deleteFile", efToRemove.getId(),currentNote.collection.serverURL);
         }
     }
 
@@ -291,7 +290,7 @@ public class FilesCtrl {
     public void renameFileInputted(EmbeddedFile file, String fileName, Note currentNote) {
         EmbeddedFile e = serverUtils.renameFile(currentNote, file, fileName);
         Object[] renameRequest = {e.getId(), fileName};
-        serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", renameRequest);
+        serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", renameRequest,currentNote.collection.serverURL);
         persistFileName(currentNote, file.getFileName(), fileName);
     }
     public void renameFileByName(String oldName, String fileName, Note currentNote) {
@@ -399,11 +398,11 @@ public class FilesCtrl {
             String newFileName = ef.getFileName();
 
             EmbeddedFile embeddedFile = serverUtils.addFile(currentNote, file);
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", embeddedFile.getId());
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files", embeddedFile.getId(),currentNote.collection.serverURL);
 
             EmbeddedFile e = serverUtils.renameFile(currentNote, embeddedFile, newFileName);
             Object[] renameRequest = {embeddedFile.getId(), newFileName};
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", renameRequest);
+            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/renameFile", renameRequest,currentNote.collection.serverURL);
             persistFileName(currentNote, e.getFileName(), newFileName);
 
             return embeddedFile;

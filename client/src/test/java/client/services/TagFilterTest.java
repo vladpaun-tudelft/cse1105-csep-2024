@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -23,8 +24,11 @@ class TagFilterTest {
     void setUp() {
         tagService = mock(TagService.class);
         note1 = new Note("Note 1", "Body 1", null);
+        note1.id = UUID.randomUUID();
         note2 = new Note("Note 2", "Body 2", null);
+        note2.id = UUID.randomUUID();
         note3 = new Note("Note 3", "Body 3", null);
+        note3.id = UUID.randomUUID();
         tagFilter = new TagFilter(Arrays.asList("tag1", "tag2"), tagService);
     }
 

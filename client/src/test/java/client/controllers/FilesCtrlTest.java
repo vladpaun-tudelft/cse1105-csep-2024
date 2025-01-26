@@ -94,7 +94,7 @@ public class FilesCtrlTest {
         doAnswer(invocationOnMock -> {
             sampleNote.getEmbeddedFiles().add(embeddedFile);
             return null;
-        }).when(serverUtils).send(any(), any());
+        }).when(serverUtils).send(any(), any(), any());
 
         EmbeddedFile result = filesCtrlSpy.addFile(sampleNote);
 
@@ -218,7 +218,7 @@ public class FilesCtrlTest {
 
         // Mock serverUtils methods
         doNothing().when(serverUtils).deleteFile(eq(sampleNote), eq(sampleFile2));
-        doNothing().when(serverUtils).send(any(), any());
+        doNothing().when(serverUtils).send(any(), any(), any());
 
         // Spy on the FilesCtrl to ensure updates work properly
         FilesCtrl filesCtrlSpy = spy(filesCtrl);
@@ -234,7 +234,7 @@ public class FilesCtrlTest {
 
         // Verify interactions with serverUtils
         verify(serverUtils, times(1)).deleteFile(eq(sampleNote), eq(sampleFile2));
-        verify(serverUtils, times(1)).send(eq("/app/notes/" + sampleNote.getId() + "/files/deleteFile"), eq(sampleFile2.getId()));
+        verify(serverUtils, times(1)).send(eq("/app/notes/" + sampleNote.getId() + "/files/deleteFile"), eq(sampleFile2.getId()), eq(sampleNote.collection.serverURL));
     }
 
     @Test
@@ -269,7 +269,7 @@ public class FilesCtrlTest {
         doAnswer(invocationOnMock -> {
             filesCtrlSpy.updateViewAfterRename(sampleNote, new Object[]{sampleFile.getId(), "newfile.txt"});
             return null;
-        }).when(serverUtils).send(any(), any());
+        }).when(serverUtils).send(any(), any(), any());
 
         filesCtrlSpy.renameFile(sampleNote, sampleFile);
 
