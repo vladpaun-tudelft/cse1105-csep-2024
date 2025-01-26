@@ -417,4 +417,39 @@ class NoteControllerTest {
 
         assertEquals(BAD_REQUEST, response.getStatusCode());
     }
+
+    @Test
+    public void renameFileWithEmptyNameTest() {
+        collectionController.createCollection(collection1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
+        embeddedFileRepository.save(embeddedFile);
+        var response = noteController.renameFile(id1, id1, "");
+        EmbeddedFile renamedFile = response.getBody();
+        assertNull(renamedFile);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    public void deleteNonExistingFileTest() {
+        collectionController.createCollection(collection1);
+        UUID id1 = noteController.createNote(note1).getBody().id;
+        var response = noteController.deleteFile(id1 , UUID.randomUUID());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    public void getAllNotesWhenEmptyTest() {
+        var response = noteController.getAllNotes();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    public void createNoteIdAssignmentTest() {
+        collectionController.createCollection(collection1);
+        var response = noteController.createNote(note1);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().id);
+    }
 }
