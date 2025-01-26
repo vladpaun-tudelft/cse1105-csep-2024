@@ -13,6 +13,7 @@ import commons.Collection;
 import commons.EmbeddedFile;
 import commons.Note;
 import jakarta.ws.rs.ClientErrorException;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -20,9 +21,7 @@ import javafx.scene.control.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -51,7 +50,7 @@ public class CollectionCtrl {
     private MenuButton moveNotesButton;
 
     @Getter @Setter private ListView moveNotesListView;
-    @Getter @Setter private List<EmbeddedFile> embeddedFilesCache = new ArrayList<>();
+    @Getter @Setter private Map<String, List<EmbeddedFile>> embeddedFilesCache = new HashMap<>();
 
     @Inject
     public CollectionCtrl(ServerUtils server, Config config, NoteCtrl noteCtrl, SearchCtrl searchCtrl, NotificationsCtrl notificationsCtrl) {
@@ -131,6 +130,35 @@ public class CollectionCtrl {
         });
     }
 
+    public void updateRadioMenuItem(Collection renamedCollection, String oldCollectionTitle) {
+        collectionSelect.getToggles().forEach(toggle -> {
+            if (toggle instanceof RadioMenuItem item) {
+                if (item.getText().equals(oldCollectionTitle)) {
+                    item.setText(renamedCollection.title);
+                }
+            }
+        });
+    }
+    public void updateMoveNotesListView(Collection renamedCollection, ObservableList<Collection> collections) {
+        // Reinitialize the moveNotesListView with the updated collection list
+        listViewSetupForMovingNotes(moveNotesListView, collections);
+
+        // Ensure that the renamed collection is selected (if necessary)
+        if (dashboardCtrl.getCurrentNote() != null) {
+            Collection currentCollection = dashboardCtrl.getCurrentNote().collection;
+            if (currentCollection.equals(renamedCollection)) {
+                moveNotesListView.getSelectionModel().select(renamedCollection);
+            }
+        }
+    }
+    public void reinitializeMoveNotesButton() {
+        ObservableList<Collection> collections = FXCollections.observableArrayList(dashboardCtrl.getCollections());
+        moveNotesInitialization(); // Reinitialize moveNotesButton with updated collections
+    }
+
+
+
+
     /**
      * method that displays only collection titles in listview
      *
@@ -194,9 +222,21 @@ public class CollectionCtrl {
                         dashboardCtrl.setProgrammaticChange(true);
                         moveNoteFromCollection(currentNote, selectedCollection);
                         dashboardCtrl.refreshTreeView();
-                        dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
-                        dashboardCtrl.selectNoteInTreeView(currentNote);
-                        dashboardCtrl.setProgrammaticChange(false);
+                        Platform.runLater(() -> {
+                                if (dashboardCtrl.getCurrentCollection() != null) {
+                                    dashboardCtrl.collectionView.getSelectionModel().clearSelection();
+                                    dashboardCtrl.collectionView.getSelectionModel().select(
+                                            dashboardCtrl.collectionView.getItems().stream()
+                                                    .filter(obj -> obj instanceof Note note && note.title.equals(currentNote.title))
+                                                    .findFirst().orElse(null)
+                                    );
+                                } else {
+                                    dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
+                                    dashboardCtrl.selectNoteInTreeView(currentNote);
+                                }
+                            dashboardCtrl.setProgrammaticChange(false);
+                        });
+
                         if (dashboardCtrl.getCurrentCollection() == null) {
                             dashboardCtrl.allNotesView.scrollTo(dashboardCtrl.allNotesView.getSelectionModel().getSelectedIndex());
                         } else {
@@ -386,9 +426,6 @@ public class CollectionCtrl {
         initializeDropoutCollectionLabel();
     }
 
-
-
-
     public ObservableList<Note> viewNotes() {
         dashboardCtrl.setSearchIsActive(false);
         dashboardCtrl.clearTags(null);
@@ -441,9 +478,9 @@ public class CollectionCtrl {
     /**
      * A method used to move note from one collection to the other
      */
-    public void moveNoteFromCollection(Note currentNote, Collection selectedCollection) {
-        if(selectedCollection.title==null){
-            return;
+    public Note moveNoteFromCollection(Note currentNote, Collection selectedCollection) {
+        if(selectedCollection == null || selectedCollection.title==null){
+            return null;
         }
         if (!server.isServerAvailable(currentNote.collection.serverURL) || !server.isServerAvailable(selectedCollection.serverURL)) {
             String alertText = bundle.getString("noteUpdateError") + "\n" + currentNote.title;
@@ -453,17 +490,15 @@ public class CollectionCtrl {
                     bundle.getString("serverCouldNotBeReached.text"),
                     alertText
             ).showAndWait();
-            return;
+            return null;
         }
-
-
 
         RadioMenuItem selectedRadioMenuItem = collectionSelect.getToggles().stream()
                 .filter(toggle -> toggle instanceof RadioMenuItem item && item.getText().equals(selectedCollection.title))
                 .map(toggle -> (RadioMenuItem) toggle)
                 .findFirst().orElse(null);
         if (selectedRadioMenuItem != null && dashboardCtrl.getCurrentNote() != null) {
-            moveNote(currentNote, selectedCollection);
+            Note note = moveNote(currentNote, selectedCollection);
 
             if(dashboardCtrl.getCurrentCollection() != null ) {
                 selectedRadioMenuItem.fire();   // If not in all note view
@@ -472,11 +507,13 @@ public class CollectionCtrl {
 
             collectionSelect.selectToggle(selectedRadioMenuItem);
             moveNotesButton.hide();
+            return note;
         }
+        return null;
     }
 
 
-    public void moveNote(Note currentNote, Collection selectedCollection) {
+    public Note moveNote(Note currentNote, Collection selectedCollection) {
         if (!server.isServerAvailable(selectedCollection.serverURL)) {
             dialogStyler.createStyledAlert(
                     Alert.AlertType.INFORMATION,
@@ -484,47 +521,70 @@ public class CollectionCtrl {
                     bundle.getString("serverError.text"),
                     bundle.getString("serverUnreachable.text")
             ).showAndWait();
-            return;
+            return null;
+        }
+        List<EmbeddedFile> embeddedFiles = server.getFilesByNote(currentNote);
+
+        // Make a copy of the note and add it to the new collection
+
+        Note noteCopy = new Note(currentNote.title, currentNote.body, selectedCollection);
+
+        if(noteCtrl.isTitleDuplicate(dashboardCtrl.getAllNotes(), noteCopy, noteCopy.getTitle(), false)){
+            noteCopy.setTitle(noteCtrl.generateUniqueTitle(dashboardCtrl.getAllNotes(), noteCopy, noteCopy.getTitle(), false));
         }
 
-        embeddedFilesCache.addAll(currentNote.embeddedFiles);
-
-        // DELETE NOTE
-        noteCtrl.deleteNote(currentNote, dashboardCtrl.getCollectionNotes(), dashboardCtrl.getAllNotes());
-
-        // MOVE NOTE
-        currentNote.collection = selectedCollection;
-        
-
-        if(noteCtrl.isTitleDuplicate(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false)){
-            currentNote.setTitle(noteCtrl.generateUniqueTitle(dashboardCtrl.getAllNotes(), currentNote, currentNote.getTitle(), false));
-        }
-
-        // ADD IT BACK
-        server.send("/app/notes", currentNote,currentNote.collection.serverURL);
-
-        dashboardCtrl.getAllNotes().add(currentNote);
+        dashboardCtrl.getAllNotes().add(noteCopy);
         if (dashboardCtrl.getCurrentCollection() != null) {
-            collectionView.getItems().add(currentNote);
+            collectionView.getItems().add(noteCopy);
         }
+
+        server.send("/app/notes", noteCopy,selectedCollection.serverURL);
+
+        // DELETE OLD NOTE
+        UUID noteID = currentNote.id;
+        noteCtrl.deleteNote(currentNote, dashboardCtrl.getCollectionNotes(), dashboardCtrl.getAllNotes());
+        noteCopy.id = noteID;
+
+        if (!embeddedFilesCache.containsKey(noteCopy.title)) {
+            embeddedFilesCache.put(noteCopy.title, new ArrayList<>());
+        }
+        embeddedFilesCache.get(noteCopy.title).addAll(embeddedFiles);
+
 
         if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("movedNote") + selectedCollection.title, false);
+        return noteCopy;
     }
 
     public void addFilesBack(Note note) {
-        for (EmbeddedFile file : embeddedFilesCache) {
-            if (!note.embeddedFiles.contains(file)) {
-                note.embeddedFiles.add(file);
-                dashboardCtrl.getFilesCtrl().addDeletedFile(note, file);
+        if (embeddedFilesCache.containsKey(note.title)) {
+            for (EmbeddedFile file : embeddedFilesCache.get(note.title)) {
+                if (!note.embeddedFiles.contains(file)) {
+                    note.embeddedFiles.add(file);
+                    EmbeddedFile addedFile = dashboardCtrl.getFilesCtrl().addDeletedFile(note, file);
+                    if (addedFile != null) {
+                        file.setId(addedFile.getId());
+                    }
+                }
             }
+            embeddedFilesCache.remove(note.title);
         }
     }
 
-    public void updateCollection(Collection collection, List<Collection> collections) {
+    public void updateCollection(Collection collection, List<Collection> collections, String oldCollectionTitle) {
         server.updateCollection(collection);
         config.writeAllToFile(collections);
-        if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("updatedCollection") + collection.title, false);
+        if (notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("updatedCollection") + collection.title, false);
+
+        // Update RadioMenuItems for the collection menu
+        updateRadioMenuItem(collection, oldCollectionTitle);
+
+        // Update moveNotesListView with the updated collection
+        updateMoveNotesListView(collection, FXCollections.observableArrayList(collections));
+
+        // Reinitialize moveNotesButton (if required)
+        reinitializeMoveNotesButton();
     }
+
 
     public Collection addInputtedCollection(Collection inputtedCollection, Collection currentCollection, List<Collection> collections) {
         Collection addedCollection;
@@ -579,12 +639,15 @@ public class CollectionCtrl {
                 moveNoteFromCollection(note, destinationCollection);
             }
 
-           //dashboardCtrl.refreshTreeView();
+            //dashboardCtrl.refreshTreeView();
             collectionView.getSelectionModel().clearSelection();
             //reselect items
             for (Note note : previouslySelectedNotes) {
-                collectionView.getSelectionModel().select(note);
+                ObservableList<Note> notes = collectionView.getItems();
+                Note noteToSelect = notes.stream().filter(n -> n.title.equals(note.title)).findFirst().orElse(null);
+                collectionView.getSelectionModel().select(noteToSelect);
             }
+
 
             dashboardCtrl.setProgrammaticChange(false);
             if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("movedNotesMultiple") + destinationCollection.title, false);
@@ -612,20 +675,28 @@ public class CollectionCtrl {
                 .collect(Collectors.toList());
 
         if(!isUndo){
-            for (Note note : selectedNotes) {
-                moveNoteFromCollection(note, destinationCollection);
+            for (Note note : selectedNotes.stream().toList()) {
+                Note newNote = moveNoteFromCollection(note, destinationCollection);
+                selectedNotes = selectedNotes.stream().map(n -> {
+                    if (newNote == null || n.id == null || newNote.id == null) return null;
+                    return n.id.equals(newNote.id)? newNote : n;
+                    }).collect(Collectors.toList());
             }
         } else {
-            for( Note note : selectedNotes ) {
+            for( Note note : selectedNotes.stream().toList() ) {
 
                 TreeItem<Note> previousNote = previousNotes
                         .stream()
-                        .filter(n -> n.getValue().id == note.getId())
+                        .filter(n -> n.getValue().title.equals(note.title))
                         .findFirst()
                         .orElse(null);
 
                 if (previousNote != null) {
-                    moveNoteFromCollection(note, previousNote.getValue().collection);
+                    Note newNote = moveNoteFromCollection(note, previousNote.getValue().collection);
+                    selectedNotes = selectedNotes.stream().map(n -> {
+                        if (n.id == null || newNote.id == null) return null;
+                        return n.id.equals(newNote.id)? newNote : n;
+                    }).collect(Collectors.toList());
                 }
 
             }
@@ -637,11 +708,15 @@ public class CollectionCtrl {
         // select items that were selected in another collection
         List<TreeItem<Note>> itemsToSelect = new ArrayList<>();
         for (Note note : selectedNotes) {
-            TreeItem<Note> matchingItem = findTreeItem(dashboardCtrl.allNotesView.getRoot(), note);
+            if (note == null) continue;
+            Note noteToSelect = dashboardCtrl.getAllNotes().stream().filter(n -> n.title.equals(note.title) && n.collection.equals(note.collection))
+                    .findFirst().orElse(null);
+            TreeItem<Note> matchingItem = findTreeItem(dashboardCtrl.allNotesView.getRoot(), noteToSelect);
             if (matchingItem != null) {
                 itemsToSelect.add(matchingItem);
             }
         }
+
         dashboardCtrl.allNotesView.getSelectionModel().clearSelection();
         for (TreeItem<Note> treeItem : itemsToSelect) {
             dashboardCtrl.allNotesView.getSelectionModel().select(treeItem);
@@ -651,6 +726,7 @@ public class CollectionCtrl {
                 - dashboardCtrl.allNotesView.getSelectionModel().getSelectedItems().size()/2);
 
         dashboardCtrl.setProgrammaticChange(false);
+
     }
 
     /**

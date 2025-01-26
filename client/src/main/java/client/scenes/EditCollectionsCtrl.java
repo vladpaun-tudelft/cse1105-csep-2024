@@ -170,10 +170,11 @@ public class EditCollectionsCtrl implements Initializable {
             migrateCollection(currentCollection, newServerURL);
         } else {
             // Standard save logic
+            String oldCollectionTitile = currentCollection.title;
             currentCollection.title = newTitle;
             currentCollection.serverURL = newServerURL;
 
-            collectionCtrl.updateCollection(currentCollection, collectionList);
+            collectionCtrl.updateCollection(currentCollection, collectionList, oldCollectionTitile);
             dashboardCtrl.refresh();
             refreshListView();
 

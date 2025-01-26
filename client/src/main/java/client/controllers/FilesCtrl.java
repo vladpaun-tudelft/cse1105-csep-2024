@@ -236,8 +236,7 @@ public class FilesCtrl {
                 ).showAndWait();
                 return;
             }
-            List<EmbeddedFile> files = currentNote.getEmbeddedFiles();
-            EmbeddedFile efToRemove = currentNote.getEmbeddedFiles().stream()
+            EmbeddedFile efToRemove = serverUtils.getFilesByNote(currentNote).stream()
                     .filter(embeddedFile -> embeddedFile.getFileName().equals(file.getFileName()))
                     .findFirst().orElse(null);
 
@@ -246,6 +245,7 @@ public class FilesCtrl {
                     efToRemove
             );
             serverUtils.send("/app/notes/" + currentNote.getId() + "/files/deleteFile", efToRemove.getId(),currentNote.collection.serverURL);
+            updateViewAfterDelete(currentNote, efToRemove.getId());
         }
     }
 
@@ -308,6 +308,10 @@ public class FilesCtrl {
         String newBody = body.replaceAll(regex, replacement);
         currentNote.setBody(newBody);
         dashboardCtrl.getNoteCtrl().showCurrentNote(currentNote);
+
+        if (!dashboardCtrl.getNoteCtrl().getUpdatePendingNotes().contains(currentNote)) {
+            dashboardCtrl.getNoteCtrl().getUpdatePendingNotes().add(currentNote);
+        }
     }
 
     public void downloadFile(EmbeddedFile embeddedFile) {

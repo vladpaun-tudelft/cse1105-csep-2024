@@ -49,6 +49,7 @@ public class NoteCtrl {
     @Getter @Setter private List<Note> updatePendingNotes;
 
     @Getter @Setter private List<EmbeddedFile> embeddedFilesCache = new ArrayList<>();
+    private List<Note> deletedNoteCache = new ArrayList<>();
 
     private Config config;
     private LanguageManager languageManager;
@@ -242,6 +243,7 @@ public class NoteCtrl {
 
         allNotes.remove(currentNote);
         collectionNotes.remove(currentNote);
+        deletedNoteCache.add(currentNote);
     }
 
     public void saveAllPendingNotes(DashboardCtrl dashboardCtrl) {
@@ -258,13 +260,10 @@ public class NoteCtrl {
                 }
                 else {
                     server.updateNote(note);
+                    Note newNote = new Note(note.getTitle(), note.getBody(), note.collection);
+                    newNote.id = note.id;
+                    server.send("/app/notes/" + note.id +"/body", newNote, note.collection.serverURL);
                 }
-            }
-            Note currentNote = dashboardCtrl.getCurrentNote();
-            if (currentNote != null) {
-                Note newNote = new Note(currentNote.getTitle(), currentNote.getBody(), dashboardCtrl.getCurrentCollection());
-                newNote.id = dashboardCtrl.getCurrentNote().id;
-                server.send("/app/notes/" + currentNote.id +"/body", newNote,currentNote.collection.serverURL);
             }
 
             updatePendingNotes.clear();

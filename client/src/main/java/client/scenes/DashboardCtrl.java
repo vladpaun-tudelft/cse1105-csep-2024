@@ -686,6 +686,7 @@ public class DashboardCtrl implements Initializable {
         if (itemToSelect != null) {
             // Select the TreeItem
             allNotesView.getSelectionModel().select(itemToSelect);
+            allNotesView.scrollTo(allNotesView.getSelectionModel().getSelectedIndex());
         }
     }
 
@@ -1089,7 +1090,6 @@ public class DashboardCtrl implements Initializable {
      * CTRL + Z - Undoes the last action done to a note
      */
     public void undoLastAction(KeyEvent event) {
-
         if(actionHistory.isEmpty()){
             return;
         }
@@ -1109,9 +1109,8 @@ public class DashboardCtrl implements Initializable {
             }
             case ActionType.EDIT_TITLE -> {
                 String oldTitle = (String) lastAction.getPreviousState();
-                currentNote.setTitle(oldTitle);
-                noteTitle.setText(oldTitle);
-                noteTitleMD.setText(oldTitle);
+                changeTitle(currentNote, currentNote.title, oldTitle);
+
                 refreshTreeView();
                 collectionView.setCellFactory(lv-> new NoteListItem(noteTitle, noteTitleMD, noteBody, this, noteCtrl, server,notificationsCtrl));
             }
@@ -1132,13 +1131,23 @@ public class DashboardCtrl implements Initializable {
             case ActionType.MOVE_NOTE -> {
                 isProgrammaticChange = true;
                 Note note = currentNote;
-                collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
-                refreshTreeView();
-                allNotesView.getSelectionModel().clearSelection();
-                selectNoteInTreeView(note);
-
-                allNotesView.scrollTo(allNotesView.getSelectionModel().getSelectedIndex());
-                isProgrammaticChange = false;
+                String noteBody = currentNote.getBody();
+                Note movedNote = collectionCtrl.moveNoteFromCollection(currentNote, (Collection) lastAction.getPreviousState());
+                movedNote.body = noteBody;
+                Platform.runLater(() -> {
+                    if (currentCollection != null) {
+                        collectionView.getSelectionModel().clearSelection();
+                        collectionView.getSelectionModel().select(
+                                collectionView.getItems().stream()
+                                        .filter(obj -> obj instanceof Note n && n.title.equals(note.title))
+                                        .findFirst().orElse(null)
+                        );
+                    } else {
+                        allNotesView.getSelectionModel().clearSelection();
+                        selectNoteInTreeView(note);
+                    }
+                    isProgrammaticChange = false;
+                });
             }
             case ActionType.MOVE_MULTIPLE_NOTES -> {
                 collectionCtrl.moveMultipleNotes((Collection)lastAction.getPreviousState());
@@ -1201,6 +1210,7 @@ public class DashboardCtrl implements Initializable {
                 }
             }
         } else {
+            collectionNotes = FXCollections.observableArrayList(getFilteredNotes());
             // Collection-specific behavior
             if (currentNote == null) {
                 currentNote = (direction > 0) ? collectionNotes.getFirst() : collectionNotes.getLast();
@@ -1318,6 +1328,7 @@ public class DashboardCtrl implements Initializable {
     }
 
     public ObservableList<Note> filter() {
+        showBlockers();
         filterInTreeView();
         return filterInCollectionView();
     }
@@ -1396,5 +1407,29 @@ public class DashboardCtrl implements Initializable {
 
     public void showHelpMenu() {
         mainCtrl.showHelpMenu();
+    }
+
+    public void changeTitle(Note note, String oldTitle, String uniqueTitle) {
+        note.setTitle(uniqueTitle);
+        noteCtrl.getUpdatePendingNotes().add(note);
+        handleReferenceTitleChange(note, oldTitle, uniqueTitle);
+        noteCtrl.saveAllPendingNotes();
+
+        noteTitle.setText(uniqueTitle);
+        noteTitleMD.setText(uniqueTitle);
+
+        notificationsCtrl.pushNotification(bundle.getString("validRename"), false);
+
+        noteCtrl.updateTitleWebsocket(note);
+    }
+
+    private void handleReferenceTitleChange(Note item, String oldTitle, String uniqueTitle) {
+        collectionNotes.stream()
+                .filter(note -> note.collection.equals(item.collection))
+                .filter(note -> note.body.contains("[[" + oldTitle + "]]"))
+                .forEach(note -> {
+                    note.body = note.body.replace("[[" + oldTitle + "]]", "[[" + uniqueTitle + "]]");
+                    noteCtrl.getUpdatePendingNotes().add(note);
+                });
     }
 }

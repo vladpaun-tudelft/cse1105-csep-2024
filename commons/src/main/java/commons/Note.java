@@ -119,7 +119,8 @@ public class Note {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Note note = (Note) obj;
-        return id.equals(note.id);
+        if (id != null ? !id.equals(note.id) : note.id != null) return false;
+        return title.equals(note.title) && collection.equals(note.collection);
     }
 
     /**
