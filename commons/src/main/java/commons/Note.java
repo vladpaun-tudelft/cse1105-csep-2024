@@ -11,6 +11,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.apache.commons.lang3.builder.ToStringStyle.MULTI_LINE_STYLE;
 
@@ -26,7 +27,7 @@ public class Note {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
-    public long id;
+    public UUID id;
 
 
     @Column(nullable = false)
@@ -56,7 +57,7 @@ public class Note {
     }
 
     // region Getters and Setters
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 

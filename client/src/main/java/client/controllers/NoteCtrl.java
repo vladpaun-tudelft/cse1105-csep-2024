@@ -28,6 +28,7 @@ public class NoteCtrl {
     private DialogStyler dialogStyler = new DialogStyler();
 
     // Dashboard reference
+    @Setter
     private DashboardCtrl dashboardCtrl;
     private NotificationsCtrl notificationsCtrl;
 
@@ -63,10 +64,6 @@ public class NoteCtrl {
         this.config = config;
         this.languageManager = LanguageManager.getInstance(this.config);
         this.bundle = this.languageManager.getBundle();
-    }
-
-    public void setDashboardCtrl(DashboardCtrl dashboardCtrl) {
-        this.dashboardCtrl = dashboardCtrl;
     }
 
     public void setReferences(
@@ -107,6 +104,7 @@ public class NoteCtrl {
             collectionView.getSelectionModel().select(newNote);
             collectionView.scrollTo(newNote);
         } else {
+            treeView.getSelectionModel().clearSelection();
             dashboardCtrl.selectNoteInTreeView(newNote);
             treeView.scrollTo(treeView.getSelectionModel().getSelectedIndex()-1);
         }
@@ -122,7 +120,7 @@ public class NoteCtrl {
         String newTitle = generateUniqueTitle(allNotes, newNote, baseTitle, true);
 
         newNote.title = newTitle;
-        newNote.id = this.tempNoteId--;
+//        newNote.id = this.tempNoteId--;
 
         server.send("/app/notes", newNote);
 
@@ -136,34 +134,17 @@ public class NoteCtrl {
     }
 
     public void updateViewAfterAdd(Collection currentCollection, ObservableList<Note> allNotes,ObservableList<Note> collectionNotes, Note note) {
-        boolean addedNoteIsSelectedTreeView = false;
-        boolean addedNoteIsSelectedCollectionView = false;
-        if (collectionView.getSelectionModel().getSelectedItem() != null) {
-            Note selectedNote = (Note)collectionView.getSelectionModel().getSelectedItem();
-            if (selectedNote.title.equals(note.title) && selectedNote.collection.equals(note.collection)) {
-                addedNoteIsSelectedCollectionView = true;
-            }
-        }
-        if (treeView.getSelectionModel().getSelectedItem() != null) {
-            if(((TreeItem)treeView.getSelectionModel().getSelectedItem()).getValue() instanceof Note n && n.title.equals(note.title) && n.collection.equals(note.collection)){
-                addedNoteIsSelectedTreeView = true;
-            }
-        }
-        allNotes.removeIf(n -> n.title.equals(note.title) && n.collection.equals(note.collection));
-        allNotes.add(note);
-        if (currentCollection != null && currentCollection.equals(note.collection)) {
-            collectionNotes.removeIf(n -> n.title.equals(note.title) && n.collection.equals(note.collection));
-            collectionNotes.add(note);
-        }
+        Note oldNote = allNotes.stream().filter(n -> n.title.equals(note.title) && n.collection.equals((note.collection))).findFirst().orElse(null);
 
-        if(addedNoteIsSelectedTreeView) {
-            treeView.getSelectionModel().clearSelection();
-            dashboardCtrl.selectNoteInTreeView(note);
-            dashboardCtrl.filter();
+        if (oldNote != null) {
+            oldNote.id = note.id;
+        } else {
+            allNotes.add(note);
+            if (currentCollection != null && currentCollection.equals(note.collection)) {
+                collectionNotes.add(note);
+            }
         }
-        if(addedNoteIsSelectedCollectionView) {
-            collectionView.getSelectionModel().select(note);
-        }
+        dashboardCtrl.refreshTreeView();
     }
 
     public void showCurrentNote(Note selectedNote) {
@@ -185,7 +166,9 @@ public class NoteCtrl {
             noteBody.setText(selectedNote.body);
             contentBlocker.setVisible(false);
             filesViewBlocker.setVisible(false);
-            dashboardCtrl.getFilesCtrl().showFiles(selectedNote);
+            Platform.runLater(() -> {
+                dashboardCtrl.getFilesCtrl().showFiles(selectedNote);
+            });
             dashboardCtrl.getMarkdownCtrl().setCurrentNote(selectedNote);
             dashboardCtrl.getMarkdownCtrl().updateMarkdownView(selectedNote.getBody());
 
@@ -258,7 +241,7 @@ public class NoteCtrl {
         collectionNotes.remove(currentNote);
     }
 
-    public void saveAllPendingNotes() {
+    public void saveAllPendingNotes(DashboardCtrl dashboardCtrl) {
         try {
             for (Note note : updatePendingNotes) {
                 if (!server.isServerAvailable(note.collection.serverURL)) {
@@ -271,17 +254,23 @@ public class NoteCtrl {
                     ).showAndWait();
                 }
                 else {
-                    Note newNote = new Note(dashboardCtrl.getCurrentNote().getTitle(), dashboardCtrl.getCurrentNote().getBody(), dashboardCtrl.getCurrentCollection());
-                    newNote.id = dashboardCtrl.getCurrentNote().id;
-                    server.send("/app/notes/" + dashboardCtrl.getCurrentNote().id +"/body", newNote);
-
                     server.updateNote(note);
                 }
             }
+            Note currentNote = dashboardCtrl.getCurrentNote();
+            if (currentNote != null) {
+                Note newNote = new Note(currentNote.getTitle(), currentNote.getBody(), dashboardCtrl.getCurrentCollection());
+                newNote.id = dashboardCtrl.getCurrentNote().id;
+                server.send("/app/notes/" + currentNote.id +"/body", newNote);
+            }
+
             updatePendingNotes.clear();
         } catch (Exception e) {
             throw e;
         }
+    }
+    public void saveAllPendingNotes() {
+        saveAllPendingNotes(dashboardCtrl);
     }
 
     public void onBodyChanged(Note currentNote) {

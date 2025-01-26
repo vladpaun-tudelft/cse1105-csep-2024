@@ -13,6 +13,7 @@ import server.service.NoteService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/collection")
@@ -80,7 +81,7 @@ public class CollectionController {
         return ResponseEntity.ok(collection);
     }
     @GetMapping("/id/{id}")
-    public ResponseEntity<Collection> getCollectionById(@PathVariable long id) {
+    public ResponseEntity<Collection> getCollectionById(@PathVariable UUID id) {
         Optional<Collection> collection = collectionService.getCollectionById(id);
         return collection.isPresent()? ResponseEntity.ok(collection.get()) : ResponseEntity.notFound().build();
     }
@@ -95,7 +96,7 @@ public class CollectionController {
      * endpoint for deleting the collection
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCollection(@PathVariable long id) {
+    public ResponseEntity<Void> deleteCollection(@PathVariable UUID id) {
         if (collectionService.findById(id).isPresent()) {
             collectionService.deleteById(id);
             return ResponseEntity.noContent().build();
@@ -111,7 +112,7 @@ public class CollectionController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCollection(
-            @PathVariable long id,
+            @PathVariable UUID id,
             @RequestBody Collection updatedCollection) {
         if (updatedCollection == null) {
             return ResponseEntity.badRequest().build();

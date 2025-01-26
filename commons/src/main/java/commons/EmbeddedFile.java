@@ -6,13 +6,14 @@ import jakarta.persistence.*;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 public class EmbeddedFile {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "note_id", nullable = false)
@@ -32,6 +33,7 @@ public class EmbeddedFile {
     @Column(nullable = false)
     private LocalDateTime uploadedAt;
 
+    @Lob
     private File file;
 
     public EmbeddedFile() {}
@@ -55,11 +57,11 @@ public class EmbeddedFile {
     }
 
     // Getters and Setters
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -105,14 +107,12 @@ public class EmbeddedFile {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EmbeddedFile that = (EmbeddedFile) o;
-        return Objects.equals(id, that.id) /*&& Objects.equals(note, that.note) && Objects.equals(fileName, that.fileName) && Objects.equals(fileType, that.fileType) && Arrays.equals(fileContent, that.fileContent) && Objects.equals(uploadedAt, that.uploadedAt)*/;
+        return Objects.equals(id, that.id) && Objects.equals(note, that.note);
     }
 
     @Override
     public int hashCode() {
-        /* int result = Objects.hash(id, note, fileName, fileType, uploadedAt);
-        result = 31 * result + Arrays.hashCode(fileContent);
-        return result; */
-        return Objects.hash(id);
+        return Objects.hash(id, note);
     }
+
 }

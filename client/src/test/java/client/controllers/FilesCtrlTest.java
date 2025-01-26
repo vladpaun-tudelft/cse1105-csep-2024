@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -53,7 +54,7 @@ public class FilesCtrlTest {
 
         sampleNote = new Note("Sample Note", "This is a test note.", null);
         sampleFile = new EmbeddedFile(sampleNote, "test.txt", "text/plain", new byte[]{});
-        sampleFile.setId(1L);
+        sampleFile.setId(UUID.randomUUID());
         sampleNote.getEmbeddedFiles().add(sampleFile);
         Collection sampleCollection = new Collection("Sample Collection", "test.com");
         sampleNote.collection = sampleCollection;
@@ -83,7 +84,7 @@ public class FilesCtrlTest {
         when(mockFile.isDirectory()).thenReturn(false);
 
         EmbeddedFile embeddedFile = new EmbeddedFile(sampleNote, "valid.txt", "text/plain", new byte[]{});
-        embeddedFile.setId(2L);
+        embeddedFile.setId(UUID.randomUUID());
         when(serverUtils.addFile(eq(sampleNote), eq(mockFile))).thenReturn(embeddedFile);
 
         filesCtrl.setFileChooser(mockFileChooser);
@@ -207,7 +208,7 @@ public class FilesCtrlTest {
     void deleteFile() {
         // Create a new EmbeddedFile object
         EmbeddedFile sampleFile2 = new EmbeddedFile(sampleNote, "test.txt", "text/plain", new byte[]{});
-        sampleFile2.setId(1L);
+        sampleFile2.setId(sampleFile.getId());
         sampleNote.getEmbeddedFiles().add(sampleFile2);
 
         // Mock the alert dialog
@@ -335,7 +336,7 @@ public class FilesCtrlTest {
     void updateViewAfterAdd() {
         FilesCtrl filesCtrlSpy = spy(filesCtrl);
 
-        Long fileId = 2L;
+        UUID fileId = UUID.randomUUID();
         EmbeddedFile newFile = new EmbeddedFile();
         newFile.setId(fileId);
         when(serverUtils.getFileById(sampleNote, fileId)).thenReturn(newFile);
@@ -351,7 +352,7 @@ public class FilesCtrlTest {
     void updateViewAfterDelete() {
         FilesCtrl filesCtrlSpy = spy(filesCtrl);
 
-        Long fileId = 2L;
+        UUID fileId = UUID.randomUUID();
         EmbeddedFile fileToRemove = new EmbeddedFile(sampleNote, "test.txt", "text/plain", new byte[]{});
         fileToRemove.setId(fileId);
 
@@ -367,7 +368,7 @@ public class FilesCtrlTest {
     void updateViewAfterRename() {
         FilesCtrl filesCtrlSpy = spy(filesCtrl);
 
-        long fileId = 1L;
+        UUID fileId = sampleFile.getId();
         String newFileName = "new_name.txt";
         Object[] newFileNameArray = {fileId, newFileName};
 

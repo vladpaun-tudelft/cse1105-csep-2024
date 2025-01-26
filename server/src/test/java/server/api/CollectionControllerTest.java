@@ -10,6 +10,8 @@ import server.service.CollectionService;
 import server.service.EmbeddedFileService;
 import server.service.NoteService;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class CollectionControllerTest {
@@ -185,16 +187,21 @@ class CollectionControllerTest {
     }
 
     @Test
-    public void getCollectionByIdTest() {
+    public void getCollectionByTitleTest() {
         collectionController.createCollection(collection1);
         collectionController.createCollection(collection2);
         collectionController.createCollection(collection3);
         collectionController.createCollection(collection4);
 
-        var actual1 = collectionController.getCollectionById(1);
-        var actual2 = collectionController.getCollectionById(2);
-        var actual3 = collectionController.getCollectionById(3);
-        var actual4 = collectionController.getCollectionById(4);
+        collection1.title = "Title1";
+        collection2.title = "Title2";
+        collection3.title = "Title3";
+        collection4.title = "Title4";
+
+        ResponseEntity<Collection> actual1 = collectionController.getCollectionByTitle("Title1");
+        ResponseEntity<Collection> actual2 = collectionController.getCollectionByTitle("Title2");
+        ResponseEntity<Collection> actual3 = collectionController.getCollectionByTitle("Title3");
+        ResponseEntity<Collection> actual4 = collectionController.getCollectionByTitle("Title4");
 
         assertEquals(ResponseEntity.ok(collection1), actual1);
         assertEquals(ResponseEntity.ok(collection2), actual2);
@@ -203,22 +210,73 @@ class CollectionControllerTest {
     }
 
     @Test
+    public void getCollectionByIdTest() {
+        ResponseEntity<?> response1 = collectionController.createCollection(collection1);
+        ResponseEntity<?> response2 = collectionController.createCollection(collection2);
+        ResponseEntity<?> response3 = collectionController.createCollection(collection3);
+        ResponseEntity<?> response4 = collectionController.createCollection(collection4);
+
+        UUID id1 = ((Collection) response1.getBody()).id;
+        UUID id2 = ((Collection) response2.getBody()).id;
+        UUID id3 = ((Collection) response3.getBody()).id;
+        UUID id4 = ((Collection) response4.getBody()).id;
+
+        var actual1 = collectionController.getCollectionById(id1);
+        var actual2 = collectionController.getCollectionById(id2);
+        var actual3 = collectionController.getCollectionById(id3);
+        var actual4 = collectionController.getCollectionById(id4);
+
+        assertEquals(ResponseEntity.ok(collection1), actual1);
+        assertEquals(ResponseEntity.ok(collection2), actual2);
+        assertEquals(ResponseEntity.ok(collection3), actual3);
+        assertEquals(ResponseEntity.ok(collection4), actual4);
+    }
+
+    @Test
+    public void testCollectionsHaveUniqueTitles() {
+
+        // Create the collections
+        collectionController.createCollection(collection1);
+        collectionController.createCollection(collection2);
+        collectionController.createCollection(collection3);
+        collectionController.createCollection(collection4);
+
+        var response = collectionController.getAllCollections();
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        assertEquals(4, response.getBody().size());
+
+        var firstTitle = response.getBody().get(0).title;
+        var secondTitle = response.getBody().get(1).title;
+        var thirdTitle = response.getBody().get(2).title;
+        var fourthTitle = response.getBody().get(3).title;
+
+        assertNotEquals(firstTitle, secondTitle);
+        assertNotEquals(firstTitle, thirdTitle);
+        assertNotEquals(firstTitle, fourthTitle);
+        assertNotEquals(secondTitle, thirdTitle);
+        assertNotEquals(secondTitle, fourthTitle);
+        assertNotEquals(thirdTitle, fourthTitle);
+    }
+
+    @Test
     public void getCollectionByIdNotFoundTest() {
         collectionController.createCollection(collection1);
 
-        var actual = collectionController.getCollectionById(2);
+        var actual = collectionController.getCollectionById(UUID.randomUUID());
 
         assertEquals(ResponseEntity.notFound().build(), actual);
     }
 
     @Test
     public void deleteCollectionTest() {
-        collectionController.createCollection(collection1);
+        ResponseEntity<?> response1 = collectionController.createCollection(collection1);
 
-        var response = collectionController.deleteCollection(1);
+        var response = collectionController.deleteCollection(((Collection) response1.getBody()).id);
         assertEquals(ResponseEntity.noContent().build(), response);
 
-        var actual = collectionController.getCollectionById(1);
+        var actual = collectionController.getCollectionById(((Collection) response1.getBody()).id);
 
         assertEquals(ResponseEntity.notFound().build(), actual);
     }
@@ -227,18 +285,19 @@ class CollectionControllerTest {
     public void deleteCollectionNotFoundTest() {
         collectionController.createCollection(collection1);
 
-        var actual = collectionController.deleteCollection(2);
+        var actual = collectionController.deleteCollection(UUID.randomUUID());
         assertEquals(ResponseEntity.notFound().build(), actual);
     }
 
     @Test
     public void updateCollectionTest() {
-        collectionController.createCollection(collection1);
+        ResponseEntity<?> response1 = collectionController.createCollection(collection1);
+        UUID id = ((Collection) response1.getBody()).id;
 
-        var response = collectionController.updateCollection(1, collection2);
+        var response = collectionController.updateCollection(id, collection2);
         assertEquals(ResponseEntity.ok(collection2), response);
 
-        var actual = collectionController.getCollectionById(1);
+        var actual = collectionController.getCollectionById(id);
         assertEquals(ResponseEntity.ok(collection2), actual);
     }
 
@@ -246,24 +305,75 @@ class CollectionControllerTest {
     public void updateCollectionNotFoundTest() {
         collectionController.createCollection(collection1);
 
-        var actual = collectionController.updateCollection(2, collection1);
+        var actual = collectionController.updateCollection(UUID.randomUUID(), collection1);
         assertEquals(ResponseEntity.notFound().build(), actual);
     }
 
     @Test
     public void updateCollectionInvalidTest() {
-        collectionController.createCollection(collection1);
-        collectionController.createCollection(collection2);
+        ResponseEntity<?> response1 = collectionController.createCollection(collection1);
+        ResponseEntity<?> response2 = collectionController.createCollection(collection2);
+        UUID id1 = ((Collection) response1.getBody()).id;
+        UUID id2 = ((Collection) response2.getBody()).id;
 
-        var actual = collectionController.updateCollection(1, new Collection("", "http://localhost:8080/"));
+        var actual = collectionController.updateCollection(id1, new Collection("", "http://localhost:8080/"));
 
         assertEquals(ResponseEntity.badRequest().body("A collection needs a title."), actual);
 
-        var actual2 = collectionController.updateCollection(1, new Collection(null, "http://localhost:8080/"));
+        var actual2 = collectionController.updateCollection(id1, new Collection(null, "http://localhost:8080/"));
 
         assertEquals(ResponseEntity.badRequest().body("A collection needs a title."), actual2);
 
-        var actual3 = collectionController.updateCollection(1, new Collection("collection2", "http://localhost:8080/"));
+        var actual3 = collectionController.updateCollection(id1, new Collection("collection2", "http://localhost:8080/"));
         assertEquals(ResponseEntity.status(HttpStatus.CONFLICT).body("Duplicated collection title"), actual3);
+    }
+
+    @Test
+    public void getNotesInNonExistentCollectionTest() {
+        String nonExistentTitle = "CollectionDoesNotExist";
+        var response = collectionController.getNotesInCollection(nonExistentTitle);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    public void createCollectionsSameTitleDifferentServerURLTest() {
+        var firstResponse = collectionController.createCollection(collection1);
+        assertEquals(HttpStatus.OK, firstResponse.getStatusCode());
+
+        Collection sameTitleDiffURL = new Collection(collection1.title, "differentServerURL");
+        var secondResponse = collectionController.createCollection(sameTitleDiffURL);
+
+        assertEquals(HttpStatus.CONFLICT, secondResponse.getStatusCode());
+        assertEquals("Duplicated collection title.", secondResponse.getBody());
+    }
+
+    @Test
+    public void updateCollectionWithBlankServerURLTest() {
+        ResponseEntity<?> response1 = collectionController.createCollection(collection1);
+        Collection blankURLUpdate = new Collection(collection1.title, "");
+        UUID id1 = ((Collection) response1.getBody()).id;
+        var updateResponse = collectionController.updateCollection(id1, blankURLUpdate);
+
+        assertEquals(HttpStatus.BAD_REQUEST, updateResponse.getStatusCode());
+        assertEquals("A collection needs a serverURL.", updateResponse.getBody());
+    }
+
+    @Test
+    public void updateCollectionWithNullServerURLTest() {
+        ResponseEntity<?> response1 = collectionController.createCollection(collection1);
+        Collection nullURLUpdate = new Collection(collection1.title, null);
+        UUID id1 = ((Collection) response1.getBody()).id;
+        var updateResponse = collectionController.updateCollection(id1, nullURLUpdate);
+        assertEquals(HttpStatus.BAD_REQUEST, updateResponse.getStatusCode());
+        assertEquals("A collection needs a serverURL.", updateResponse.getBody());
+    }
+
+    @Test
+    public void createCollectionWithNullServerURLTest() {
+        Collection invalidUrlCollection = new Collection("InvalidURLCollection", null);
+        var response = collectionController.createCollection(invalidUrlCollection);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 }

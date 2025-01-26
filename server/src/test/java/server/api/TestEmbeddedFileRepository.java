@@ -11,6 +11,7 @@ import server.database.EmbeddedFileRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
@@ -18,14 +19,14 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
     private List<EmbeddedFile> embeddedFiles = new ArrayList<>();
 
     @Override
-    public List<EmbeddedFile> findByNoteId(Long noteId) {
+    public List<EmbeddedFile> findByNoteId(UUID  noteId) {
         return embeddedFiles.stream()
-                .filter(file -> file.getNote().getId() == noteId)
+                .filter(file -> file.getNote().getId().equals(noteId))
                 .toList();
     }
 
     @Override
-    public void deleteByNoteId(Long noteId) {
+    public void deleteByNoteId(UUID noteId) {
 
     }
 
@@ -50,7 +51,7 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
     }
 
     @Override
-    public void deleteAllByIdInBatch(Iterable<Long> longs) {
+    public void deleteAllByIdInBatch(Iterable<UUID > longs) {
 
     }
 
@@ -60,17 +61,17 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
     }
 
     @Override
-    public EmbeddedFile getOne(Long aLong) {
+    public EmbeddedFile getOne(UUID  aUUID ) {
         return null;
     }
 
     @Override
-    public EmbeddedFile getById(Long aLong) {
+    public EmbeddedFile getById(UUID  aUUID ) {
         return null;
     }
 
     @Override
-    public EmbeddedFile getReferenceById(Long aLong) {
+    public EmbeddedFile getReferenceById(UUID  aUUID ) {
         return null;
     }
 
@@ -121,14 +122,14 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
     }
 
     @Override
-    public Optional<EmbeddedFile> findById(Long id) {
+    public Optional<EmbeddedFile> findById(UUID  id) {
         return embeddedFiles.stream()
                 .filter(file -> file.getId().equals(id))
                 .findFirst();
     }
 
     @Override
-    public boolean existsById(Long aLong) {
+    public boolean existsById(UUID  aUUID ) {
         return false;
     }
 
@@ -138,7 +139,7 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
     }
 
     @Override
-    public List<EmbeddedFile> findAllById(Iterable<Long> longs) {
+    public List<EmbeddedFile> findAllById(Iterable<UUID > longs) {
         return null;
     }
 
@@ -147,7 +148,7 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
         return 0;
     }
 
-    public void deleteById(Long id) {
+    public void deleteById(UUID  id) {
         embeddedFiles.removeIf(file -> file.getId().equals(id));
     }
 
@@ -157,7 +158,7 @@ public class TestEmbeddedFileRepository implements EmbeddedFileRepository {
     }
 
     @Override
-    public void deleteAllById(Iterable<? extends Long> longs) {
+    public void deleteAllById(Iterable<? extends UUID > longs) {
 
     }
 

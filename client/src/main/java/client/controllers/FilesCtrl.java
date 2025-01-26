@@ -127,7 +127,7 @@ public class FilesCtrl {
         filesView.getChildren().add(new Region());
     }
 
-    public void updateViewAfterAdd(Note currentNote, Long fileId) {
+    public void updateViewAfterAdd(Note currentNote, UUID fileId) {
         if (currentNote == null) {
             return;
         }
@@ -136,7 +136,7 @@ public class FilesCtrl {
         updateView(currentNote);
     }
 
-    public void updateViewAfterDelete(Note currentNote, Long fileId) {
+    public void updateViewAfterDelete(Note currentNote, UUID fileId) {
         if (currentNote == null) {
             return;
         }
@@ -150,7 +150,8 @@ public class FilesCtrl {
         if (currentNote == null) {
             return;
         }
-        Long fileId = ((Number) newFileName[0]).longValue();
+
+        UUID fileId = UUID.fromString(newFileName[0].toString());
         String fileName = (String) newFileName[1];
         for (EmbeddedFile file : currentNote.getEmbeddedFiles()) {
             if (Objects.equals(file.getId(), fileId)) {
@@ -196,7 +197,7 @@ public class FilesCtrl {
         deleteButton.setTooltip(deleteTooltip);
         deleteButton.setOnAction(event -> {
             dashboardCtrl.getActionHistory().push(
-                    new Action(ActionType.DELETE_FILE,currentNote,null,null, file)
+                    new Action(ActionType.DELETE_FILE,currentNote,null,null,null, file)
             );
             deleteFile(currentNote, file);
         });
