@@ -908,9 +908,9 @@ public class DashboardCtrl implements Initializable {
     public void refresh() {
         noteCtrl.saveAllPendingNotes();
         ObservableList<Note> allNotesRefreshed = FXCollections.observableArrayList(server.getAllNotes());
-        allNotesRefreshed.stream()
-                .filter(note -> !allNotes.contains(note))
-                .forEach(allNotes::add);
+        allNotes.clear();
+        allNotes.addAll(allNotesRefreshed);
+
         clearSearch();
         viewAllNotes();
     }
