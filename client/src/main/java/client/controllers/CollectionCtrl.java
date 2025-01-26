@@ -648,6 +648,8 @@ public class CollectionCtrl {
                 collectionView.getSelectionModel().select(noteToSelect);
             }
 
+            collectionView.scrollTo(collectionView.getSelectionModel().getSelectedIndex());
+
 
             dashboardCtrl.setProgrammaticChange(false);
             if(notificationsCtrl != null) notificationsCtrl.pushNotification(bundle.getString("movedNotesMultiple") + destinationCollection.title, false);

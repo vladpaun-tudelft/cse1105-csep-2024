@@ -210,6 +210,7 @@ public class FilesCtrlTest {
         EmbeddedFile sampleFile2 = new EmbeddedFile(sampleNote, "test.txt", "text/plain", new byte[]{});
         sampleFile2.setId(sampleFile.getId());
         sampleNote.getEmbeddedFiles().add(sampleFile2);
+        when(serverUtils.getFilesByNote(sampleNote)).thenReturn(List.of(sampleFile2));
 
         // Mock the alert dialog
         Alert mockAlert = mock(Alert.class);
@@ -230,7 +231,7 @@ public class FilesCtrlTest {
         filesCtrlSpy.deleteFile(sampleNote, sampleFile2);
 
         // Verify the file is removed from the note's embedded files
-        assertTrue(sampleNote.getEmbeddedFiles().contains(sampleFile2));
+        assertFalse(sampleNote.getEmbeddedFiles().contains(sampleFile2));
 
         // Verify interactions with serverUtils
         verify(serverUtils, times(1)).deleteFile(eq(sampleNote), eq(sampleFile2));

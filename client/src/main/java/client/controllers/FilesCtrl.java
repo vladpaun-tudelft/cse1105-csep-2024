@@ -240,12 +240,14 @@ public class FilesCtrl {
                     .filter(embeddedFile -> embeddedFile.getFileName().equals(file.getFileName()))
                     .findFirst().orElse(null);
 
-            serverUtils.deleteFile(
-                    currentNote,
-                    efToRemove
-            );
-            serverUtils.send("/app/notes/" + currentNote.getId() + "/files/deleteFile", efToRemove.getId(),currentNote.collection.serverURL);
-            updateViewAfterDelete(currentNote, efToRemove.getId());
+            if (efToRemove != null) {
+                serverUtils.deleteFile(
+                        currentNote,
+                        efToRemove
+                );
+                serverUtils.send("/app/notes/" + currentNote.getId() + "/files/deleteFile", efToRemove.getId(),currentNote.collection.serverURL);
+                updateViewAfterDelete(currentNote, efToRemove.getId());
+            }
         }
     }
 

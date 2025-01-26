@@ -562,7 +562,7 @@ public class DashboardCtrl implements Initializable {
         allNotesView.setCellFactory(param -> new CustomTreeCell(this, noteCtrl, dialogStyler, notificationsCtrl, server));
     }
 
-    private void onNoteUpdate(Note newContent) {
+    public void onNoteUpdate(Note newContent) {
         if (currentNote != null && currentNote.id.equals(newContent.id)) {
             if (!currentNote.getBody().equals(newContent.getBody())) {
                 notificationsCtrl.pushNotification(bundle.getString("newContent"), false);

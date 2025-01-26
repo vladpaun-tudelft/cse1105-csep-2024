@@ -16,10 +16,7 @@ import javafx.scene.web.WebView;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class NoteCtrl {
 
@@ -140,15 +137,41 @@ public class NoteCtrl {
         if (oldNote != null) {
             oldNote.id = note.id;
             dashboardCtrl.getCollectionCtrl().addFilesBack(oldNote);
+            registerNewNote(oldNote, oldNote.collection.serverURL);
+
         } else {
             allNotes.add(note);
             if (currentCollection != null && currentCollection.equals(note.collection)) {
-                collectionNotes.add(note);
+                dashboardCtrl.getCollectionView().getItems().add(note);
             }
             dashboardCtrl.getCollectionCtrl().addFilesBack(note);
+            registerNewNote(note, note.collection.serverURL);
         }
 
         dashboardCtrl.refreshTreeView();
+    }
+
+    public void registerNewNote(Note currentNote, String serverURL) {
+        // FILE WEBSOCKETS
+        server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files", UUID.class, "embeddedFiles", embeddedFileId -> {
+            Platform.runLater(() -> dashboardCtrl.getFilesCtrl().updateViewAfterAdd(currentNote, embeddedFileId));
+        });
+
+        server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files/deleteFile", UUID.class, "embeddedFilesDelete", embeddedFileId -> {
+            Platform.runLater(() -> dashboardCtrl.getFilesCtrl().updateViewAfterDelete(currentNote, embeddedFileId));
+        });
+
+        server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/files/renameFile", Object[].class, "embeddedFilesRename", newFileName -> {
+            Platform.runLater(() -> dashboardCtrl.getFilesCtrl().updateViewAfterRename(currentNote, newFileName));
+        });
+
+        // NOTE CONTENT WEBSOCKETS
+        server.registerForTopic(serverURL, "/topic/notes/" + currentNote.getId() + "/body", Note.class, "noteBody", newContent -> {
+            Platform.runLater(() -> {
+                dashboardCtrl.onNoteUpdate(newContent);
+                dashboardCtrl.refreshTreeView();
+            });
+        });
     }
 
     public void showCurrentNote(Note selectedNote) {
