@@ -1,5 +1,8 @@
 # NetNote
 
+> **⚠️ Archived Repository**  
+> This project is no longer actively maintained. It was originally developed as part of the TU Delft CSE1105 course (2024) and is now archived for reference and historical purposes only.
+
 This repository contains the NetNote application, developed as part of the CSE project. NetNote is a distributed note-taking application designed to run in a client-server architecture, enabling seamless note organization, collaboration, and synchronization.
 
 ---
